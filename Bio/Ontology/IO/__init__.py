@@ -6,8 +6,11 @@
 from Bio.File import as_handle
 
 import OboIO
+import GoaIO
 
-_FormatToIterator = { "obo" : OboIO.OboIterator }
+_FormatToIterator = { "obo" : OboIO.OboIterator,
+                      "tsv" : GoaIO.TsvIterator,
+                      "gaf" : GoaIO.GafIterator }
 
 def parse(handle, file_format):
     """
@@ -19,7 +22,7 @@ def parse(handle, file_format):
     if not file_format:
         raise ValueError("Format required (lower case string)")          
     if file_format != file_format.lower():
-        raise ValueError("Format string '%s' should be lower case" % form    at)
+        raise ValueError("Format string '%s' should be lower case" % format)
     with as_handle(handle, 'rU') as fp:
         if file_format in _FormatToIterator:
             iterator_generator = _FormatToIterator[file_format]
@@ -29,7 +32,3 @@ def parse(handle, file_format):
                 yield el
         else:
             raise ValueError("Unknown format '%s'" % file_format)
-
-if __name__ == "__main__":
-    from Bio._utils import run_doctest
-    run_doctest()

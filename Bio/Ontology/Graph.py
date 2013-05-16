@@ -6,7 +6,7 @@
 
 from functools import total_ordering
 
-class DiGraph:
+class DiGraph(object):
     """
     Base class for directed graph representation.
 
@@ -57,11 +57,24 @@ class DiGraph:
         Parameters
         ----------
         u - node to add
+        data - node data
         """
         if u not in self.nodes:
             self.nodes[u] = DiNode(u, data)
         else:
             raise ValueError("Node already exists")
+
+    def set_node(self, u, data):
+        """
+        Adds node to the graph whether it exists or not
+
+        Parameters
+        ----------
+        u - node to add
+        data - node data
+        """
+        self.nodes[u] = DiNode(u, data)
+
 
     def get_node(self, u):
         """
@@ -74,7 +87,7 @@ class DiGraph:
         return self.nodes[u]
 
 @total_ordering
-class DiNode:
+class DiNode(object):
     """
     Class containing information about graph structure. Only used
     internally in DiGraph.
