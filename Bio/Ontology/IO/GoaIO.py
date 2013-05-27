@@ -68,12 +68,3 @@ class GafIterator(object):
     
     def __iter__(self):
         return iter(self.records)
-        
-
-# prawdopodobnie trzeba bedzie tutaj jakos ladnie zwinac te wszystkie wiersze
-# dodac funkcje ktora wyciagnie slownik z tego association i z tego slownika resolver
-# a resolver bedzie dzialal na bag of genes ktory daje user a get_rows bedzie glupi i sie bedzie wywalal
-# na niewlasciwych info
-
-#    def get_go_ids(self, gid, try_alter = False):
-#        return [x[_GO_IDX] for x in self.get_row(gid, try_alter)]
