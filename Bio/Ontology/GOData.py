@@ -11,17 +11,42 @@ class GOGraph(DiGraph):
     Represents Gene Ontology graph.
     """
     
+    _ANCESTORS = "ancestors"
+    
     def __init__(self, terms):
         DiGraph.__init__(self)
         for (term_type, data) in terms:
             if term_type == "Term": # Add only terms for now
                 nid = data["id"][0]
-                self.set_node(nid, data)
+                if self.node_exists(nid):
+                    self.update_node(nid, data)
+                else:
+                    self.add_node(nid, data)
                 for edge in data["is_a"]:
-                    self.add_edge(nid, edge)
-
+                    self.add_edge(nid, edge, "is_a")
+                for edge in data["relationship"]:
+                    p = edge.find("part_of")
+                    if p >= 0:
+                        r_edge = edge[p + 7:].strip()
+                        self.add_edge(nid, r_edge, "part_of")
+                        
     def get_term(self, go_id):
         return self.get_node(go_id).data
+    
+    def get_ancestors(self, go_id):
+        node = self.get_node(go_id)
+        return self._get_ancestors(node)
+    
+    def _get_ancestors(self, node):
+        if GOGraph._ANCESTORS in node.attr:
+            return node.attr[GOGraph._ANCESTORS]
+        else:
+            anc_set = set()
+            for edge in node.succ:
+                anc_set |= self._get_ancestors(edge.to_node)
+                anc_set.add(edge.to_node.label)
+            node.attr[GOGraph._ANCESTORS] = anc_set
+            return anc_set    
 
 
 class GOAObject(object):

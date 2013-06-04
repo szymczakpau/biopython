@@ -32,7 +32,7 @@ class DiGraph(object):
             for (u, v) in edges:
                 self.add_edge(u, v)
 
-    def add_edge(self, u, v):
+    def add_edge(self, u, v, data = None):
         """
         Adds an edge u->v to the graph
 
@@ -47,8 +47,8 @@ class DiGraph(object):
         
         u_node = self.nodes[u]
         v_node = self.nodes[v]
-        v_node.pred.add(u_node)
-        u_node.succ.add(v_node)
+        v_node.pred.add(DiEdge(u_node, data))
+        u_node.succ.add(DiEdge(v_node, data))
         
     def add_node(self, u, data = None):
         """
@@ -59,21 +59,22 @@ class DiGraph(object):
         u - node to add
         data - node data
         """
-        if u not in self.nodes:
-            self.nodes[u] = DiNode(u, data)
-        else:
-            raise ValueError("Node already exists")
+        
+        self.nodes[u] = DiNode(u, data)
+        
+    def node_exists(self, u):
+        return u in self.nodes
 
-    def set_node(self, u, data):
+    def update_node(self, u, data):
         """
-        Adds node to the graph whether it exists or not
+        Updates node data
 
         Parameters
         ----------
-        u - node to add
+        u - node to update
         data - node data
         """
-        self.nodes[u] = DiNode(u, data)
+        self.nodes[u].data = data
 
 
     def get_node(self, u):
@@ -86,6 +87,27 @@ class DiGraph(object):
         """
         return self.nodes[u]
 
+class DiEdge(object):
+    """
+    Class representing an edge in the graph.
+    """
+    
+    def __init__(self, to_node, data):
+        self.to_node = to_node
+        self.data = data
+
+    def __eq__(self, other):
+        return self.to_node == other.to_node and self.data == other.data
+
+    def __hash__(self):
+        return hash((self.to_node, self.data))
+
+    def __str__(self):
+        return str(self.to_node) + "(" + str(self.data) + ")"
+
+    def __repr__(self):
+        return str(self.to_node) + "(" + str(self.data) + ")"
+    
 @total_ordering
 class DiNode(object):
     """
