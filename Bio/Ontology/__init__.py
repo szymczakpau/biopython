@@ -47,8 +47,9 @@ class ManualResolver(object):
 
 class EnrichmentEntry(object):
 
-    def __init__(self, oid, p_value, study_count, study_n, population_count, population_n):
+    def __init__(self, oid, name, p_value, study_count, study_n, population_count, population_n):
         self.oid = oid
+        self.name = name
         self.p_value = p_value
         self.study_count = study_count
         self.study_n = study_n
@@ -56,16 +57,17 @@ class EnrichmentEntry(object):
         self.population_n = population_n
 
     def __repr__(self):
-        return 'EnrichmentEntry([("ID" : {0}), ("p-value" : {1}), ("hits in study" : {2}), ("elements in study" : {3}), ("hits in population" : {4}), ("population count" : {5})])'.format(self.oid, self.p_value, self.study_count, self.study_n, self.population_count, self.population_n)
+        return 'EnrichmentEntry([("ID" : {0}), ("name" : {6}), ("p-value" : {1}), ("hits in study" : {2}), ("elements in study" : {3}), ("hits in population" : {4}), ("population count" : {5})])'.format(self.oid, self.p_value, self.study_count, self.study_n, self.population_count, self.population_n, self.name)
 
     def __str__(self):
         return """ID : {0}
+name : {6}
 p-value : {1}
 hits in study : {2}
 elements in study : {3}
 hits in population : {4}
 population count : {5}
-""".format(self.oid, self.p_value, self.study_count, self.study_n, self.population_count, self.population_n)
+""".format(self.oid, self.p_value, self.study_count, self.study_n, self.population_count, self.population_n, self.name)
 
 class EnrichmentFinder(object):
     
@@ -104,7 +106,7 @@ class EnrichmentFinder(object):
             population_count = self.population_counts[term]
             pval = Stats.hypergeometric_test(study_count, study_n, population_count, population_n)
 
-            entry = EnrichmentEntry(term, pval,
+            entry = EnrichmentEntry(term, self.o_graph.get_term(term).name, pval,
                                     study_count, study_n, population_count,
                                     population_n)
 

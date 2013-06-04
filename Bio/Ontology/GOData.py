@@ -18,13 +18,15 @@ class GOGraph(DiGraph):
         for (term_type, data) in terms:
             if term_type == "Term": # Add only terms for now
                 nid = data["id"][0]
+                name = data["name"][0]
+                term = GOTerm(nid, name, data)
                 if self.node_exists(nid):
-                    self.update_node(nid, data)
+                    self.update_node(nid, term)
                 else:
-                    self.add_node(nid, data)
+                    self.add_node(nid, term)
                 for edge in data["is_a"]:
                     self.add_edge(nid, edge, "is_a")
-                for edge in data["relationship"]:
+                for edge in data["relationship"]: #TODO: parse relationship better 
                     p = edge.find("part_of")
                     if p >= 0:
                         r_edge = edge[p + 7:].strip()
@@ -48,6 +50,21 @@ class GOGraph(DiGraph):
             node.attr[GOGraph._ANCESTORS] = anc_set
             return anc_set    
 
+
+class GOTerm(object):
+    
+    def __init__(self, nid, name, attrs):
+        self.id = nid
+        self.name = name
+        self.attrs = attrs
+        
+    def __str__(self):
+        s = self.name + "\n" + "id: " + self.id + "\n"
+        for k, v in self.attrs.items():
+            s += "{0} : {1}\n".format(k, v)
+            
+    def __repr__(self):
+        return "GOTerm(id = " + self.id + ", name = " + self.name + ")" 
 
 class GOAObject(object):
     """
