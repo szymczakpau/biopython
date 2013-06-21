@@ -17,8 +17,8 @@ class GOGraph(DiGraph):
         DiGraph.__init__(self)
         for (term_type, data) in terms:
             if term_type == "Term": # Add only terms for now
-                nid = data["id"][0]
-                name = data["name"][0]
+                nid = data.pop("id")[0]
+                name = data.pop("name")[0]
                 term = GOTerm(nid, name, data)
                 if self.node_exists(nid):
                     self.update_node(nid, term)

@@ -28,7 +28,11 @@ class GafIterator(object):
     """
     
     
-    _GAF_LABELS = ['DB', 'DB Object ID', 'DB Object Symbol', 'Qualifier', 'GO ID', 'DB:Reference', 'Evidence Code', 'With (or) From', 'Aspect', 'DB Object Name', 'DB Object Synonym', 'DB Object Type', 'Taxon', 'Date', 'Assigned By', 'Annotation Extension', 'Gene Product Form ID']
+    _GAF_LABELS = ['DB', 'DB Object ID', 'DB Object Symbol', 'Qualifier', 'GO ID',
+                   'DB:Reference', 'Evidence Code', 'With (or) From', 'Aspect',
+                   'DB Object Name', 'DB Object Synonym', 'DB Object Type',
+                   'Taxon', 'Date', 'Assigned By', 'Annotation Extension',
+                   'Gene Product Form ID']
 
     _LABEL_MAP = { "1.0" : _GAF_LABELS[:15], "2.0" : _GAF_LABELS }
     

@@ -12,7 +12,31 @@ EOF = 3
 import collections
 import re
 
-class OboIterator:
+from Bio.Ontology.GOData import GOTerm
+
+class OboWriter(object):
+    """
+    Writes obo files.
+    """
+    
+    def __init__(self, file_handle):
+        self.handle = file_handle
+    
+    def write_file(self, terms_list, version):
+        # now only terms are valid for writing
+        if version != None:
+            self.handle.write("format-version:" + version + "\n")
+        for term in terms_list:
+            if isinstance(term, GOTerm):
+                self.handle.write("\n[Term]\n")
+                self.handle.write("id: " + term.id + "\n")
+                self.handle.write("name: " + term.name + "\n")
+                for k, v in term.attrs.iteritems():
+                    for vi in v:
+                        self.handle.write(k + ": " + vi + "\n")
+                
+        
+class OboIterator(object):
     """
     Parses obo files.
     """

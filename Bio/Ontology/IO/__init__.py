@@ -12,6 +12,36 @@ _FormatToIterator = { "obo" : OboIO.OboIterator,
                       "tsv" : GoaIO.TsvIterator,
                       "gaf" : GoaIO.GafIterator }
 
+_FormatToWriter = {"obo" : OboIO.OboWriter }
+
+def write(data, handle, file_format, version = None):
+    """
+    Write an ontology data to file.
+
+    Arguments:
+     - data - data to write to a file,
+     - handle - File handle object to write to, or filename as string
+                   (note older versions of Biopython only took a handle),
+     - file_format - lower case string describing the file format to write,
+     - version - file format version .
+     
+    You should close the handle after calling this function.
+
+    """
+    
+    if not isinstance(file_format, basestring):
+        raise TypeError("Need a string for the file format (lower case)")
+    if not file_format:
+        raise ValueError("Format required (lower case string)")
+
+    with as_handle(handle, 'w') as fp:
+        #Map the file format to a writer class
+        if file_format in _FormatToWriter:
+            writer_class = _FormatToWriter[file_format]
+            writer_class(fp).write_file(data, version)
+        else:
+            raise ValueError("Unknown format '%s'" % file_format)
+
 def parse(handle, file_format):
     """
     Iterate over a gene ontology file.

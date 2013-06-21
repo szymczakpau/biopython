@@ -149,10 +149,10 @@ class DiNode(object):
         return hash(self.label)
 
     def __str__(self):
-        return str(self.label)
+        return str("Node: " + self.label)
 
     def __repr__(self):
-        return repr(self.label)
+        return repr("DiNode(" + self.label + ")")
 
 if __name__ == "__main__":
     import doctest
