@@ -9,7 +9,7 @@ import Stats, IdResolver
 
 class EnrichmentEntry(object):
     """
-    Represents result returned by EnrichmentFinder.
+    Represents one result returned by EnrichmentFinder.
     """
     def __init__(self, oid, name, p_value, study_count, study_n, population_count, population_n):
         self.oid = oid
@@ -35,6 +35,21 @@ hits in population : {4}
 population count : {5}""".format(self.oid, self.p_value, self.study_count, self.study_n,
            self.population_count, self.population_n, self.name, self.corrections)
 
+class Enrichment(object):
+    """
+    Contains all results found by EnrichmentFinder
+    """
+    
+    def __init__(self, entries, warnings):
+        self.entries = entries
+        self.warnings = warnings
+        
+    def __repr__(self):
+        return "Enrichment(entries_num = {0} , warnings_num = {1})".format(len(self.entries), len(self.warnings))
+
+    def __str__(self):
+        return "Enrichment: {0} entries, {1} warnings.".format(len(self.entries),
+                                                               len(self.warnings))
 
 class EnrichmentFinder(object):
     """
@@ -79,10 +94,12 @@ class EnrichmentFinder(object):
     >>> corrections = ['bonferroni', 'bh_fdr']
     >>> result = ef.find_enrichment(genes_to_study, corrections)
     
-    The result is a list of EnrichmentEntry instances. Each for a node in graph
-    which is enriched.
+    The result contains a list of EnrichmentEntry instances - each for a node in graph
+    which is enriched - and a list of warnings.
     
-    >>> print result[0]
+    >>> print result
+    Enrichment: 64 entries, 0 warnings.
+    >>> print result.entries[0]
     ID : GO:0016020
     name : membrane
     p-value : 0.333333333333
@@ -167,10 +184,14 @@ class EnrichmentFinder(object):
             for c_id in corrections:
                 cfun = Stats.corrections[c_id]
                 corr_pvals.append((c_id, cfun(pvals)))
-            print corr_pvals
             for i in xrange(len(result)):
                 result[i].corrections = [(c_id, pv[i]) for c_id, pv in corr_pvals] #TODO: tests
-        return result
+        
+        warnings = []
+        # check for warnings
+        if len(self.o_graph.cycles) > 0:
+            warnings.append("Graph contains cycles: " + str(self.o_graph.cycles))
+        return Enrichment(result, warnings)
     
 if __name__ == "__main__":
     from Bio._utils import run_doctest

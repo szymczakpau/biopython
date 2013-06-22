@@ -10,9 +10,7 @@ class GOGraph(DiGraph):
     """
     Represents Gene Ontology graph.
     """
-    
-    _ANCESTORS = "ancestors"
-    
+
     def __init__(self, terms):
         DiGraph.__init__(self)
         for (term_type, data) in terms:
@@ -37,18 +35,9 @@ class GOGraph(DiGraph):
     
     def get_ancestors(self, go_id):
         node = self.get_node(go_id)
-        return self._get_ancestors(node)
-    
-    def _get_ancestors(self, node):
-        if GOGraph._ANCESTORS in node.attr:
-            return node.attr[GOGraph._ANCESTORS]
-        else:
-            anc_set = set()
-            for edge in node.succ:
-                anc_set |= self._get_ancestors(edge.to_node)
-                anc_set.add(edge.to_node.label)
-            node.attr[GOGraph._ANCESTORS] = anc_set
-            return anc_set    
+        _, res = self._get_reachable(node)
+        return res
+
 
 
 class GOTerm(object):

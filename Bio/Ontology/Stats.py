@@ -25,7 +25,7 @@ def lngamma(z):
     for i in range(1, _g+2):
         x += _p[i]/(z+i)
     t = z + _g + 0.5
-    return 0.9189385332046727 + (z + 0.5) * log(t) - t + log(x) # 0.9189385332046727 = log(sqrt(2*pi))
+    return 0.9189385332046727 + (z + 0.5) * log(t) - t + log(x) # log(sqrt(2*pi)) = 0.9189385332046727
 
 def lnfactorial(n):
     return 0 if n < 1 else lngamma(n + 1)
@@ -42,7 +42,7 @@ def hypergeometric_probability(k, n, K, N):
 def hypergeometric_test(k, n, K, N):
     um = min(n, K)
     lm = max(0, n + K - N)
-    eps = 1e-10
+    eps = 1e-15
 
     if um == lm:
         return(1.0, 1.0, 1.0)

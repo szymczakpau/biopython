@@ -19,6 +19,9 @@ class DiGraph(object):
 
     """
     
+    _REACHABLE = "reachable"
+    _IS_VISITED = "is_visited"
+    
     def __init__(self, edges=None):
         """
         Initialize graph with edges.
@@ -27,6 +30,11 @@ class DiGraph(object):
         ----------
         data - list of edges in a graph.
         """
+        
+        self.has_cycle = False
+        
+        self.cycles = []
+        
         self.nodes = {}
         if edges != None:
             for (u, v) in edges:
@@ -87,6 +95,61 @@ class DiGraph(object):
         """
         return self.nodes[u]
 
+    
+    def _get_reachable(self, node):
+        """
+        Gets all nodes reachable from given node. Finds cycles along the way.
+
+        Parameters
+        ----------
+        node - node which descendants we want to obtain.
+        
+        >>> g = DiGraph([(1,2), (2,3), (3,4), (3,5), (5,2), (5,6), (6,8), (6,7), (2,9), (9,2)])
+        
+        Get all nodes reachable from 2.
+        
+        >>> n1 = g.get_node(2)
+        >>> g._get_reachable(n1)
+        ([], set([2, 3, 4, 5, 6, 7, 8, 9]))
+        >>> n2 = g.get_node(6)
+        >>> g._get_reachable(n2)
+        ([], set([8, 7]))
+        
+        Let's see cycles that we found:
+        
+        >>> g.cycles
+        [[2, 9], [2, 5, 3]]
+        
+        """
+        if DiGraph._REACHABLE in node.attr:
+            return ([], node.attr[DiGraph._REACHABLE]) # generalnie trzeba wlozyc tutaj label od node'a ktory zaczyna cykl
+        else:
+            my_set = set()
+            
+            if DiGraph._IS_VISITED in node.attr:
+                in_cycle = [node.label]
+            else:
+                node.attr[DiGraph._IS_VISITED] = None
+                
+                in_cycle = []
+                for edge in node.succ:
+                    up_cycle, up_set = self._get_reachable(edge.to_node)
+                    if len(up_cycle) > 0:
+                        if up_cycle[0] == node.label:
+                            # we closed the cycle
+                            self.cycles.append(up_cycle)
+                        else:
+                            up_cycle.append(node.label)
+                            in_cycle = up_cycle
+                        up_set |= my_set
+                        my_set = up_set # we are binding sets of reachable nodes of every node in cycle
+                    else:
+                        my_set |= up_set
+                    my_set.add(edge.to_node.label)
+                node.attr[DiGraph._REACHABLE] = my_set
+                node.attr.pop(DiGraph._IS_VISITED)
+            return (in_cycle, my_set)
+
 class DiEdge(object):
     """
     Class representing an edge in the graph.
@@ -121,7 +184,7 @@ class DiNode(object):
     >>> a >= b
     True
     >>> a
-    1
+    DiNode(1)
     """
 
     def __init__(self, label, data = None):
@@ -149,11 +212,11 @@ class DiNode(object):
         return hash(self.label)
 
     def __str__(self):
-        return str("Node: " + self.label)
+        return "Node: " + str(self.label)
 
     def __repr__(self):
-        return repr("DiNode(" + self.label + ")")
+        return "DiNode(" + repr(self.label)+ ")"
 
 if __name__ == "__main__":
-    import doctest
-    doctest.testmod()
+    from Bio._utils import run_doctest
+    run_doctest()
