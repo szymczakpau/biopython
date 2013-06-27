@@ -31,15 +31,13 @@ class DiGraph(object):
         data - list of edges in a graph.
         """
         
-        self.has_cycle = False
-        
         self.cycles = []
         
         self.nodes = {}
         if edges != None:
             for (u, v) in edges:
                 self.add_edge(u, v)
-
+    
     def add_edge(self, u, v, data = None):
         """
         Adds an edge u->v to the graph
@@ -94,11 +92,37 @@ class DiGraph(object):
         u - node id
         """
         return self.nodes[u]
-
+    
+    def get_induced_subgraph(self, nodes_ids):
+        """
+        Gets graph induced by given nodes labels.
+        
+        Parameters
+        ----------
+        nodes_ids - list of nodes labels
+        
+        >>> g = DiGraph([(1,2), (2,3), (3,4), (3,5), (5,2), (5,6), (6,8), (6,7), (2,9), (9,2)])
+        >>> print g
+        DiGraph(nodes = [1, 2, 3, 4, 5, 6, 7, 8, 9], edges = [1->2, 2->9, 2->3, 3->4, 3->5, 5->6, 5->2, 6->8, 6->7, 9->2])
+        >>> ig = g.get_induced_subgraph([2, 3, 4, 5, 8, 9])
+        >>> print ig
+        DiGraph(nodes = [2, 3, 4, 5, 8, 9], edges = [2->9, 2->3, 3->4, 3->5, 5->2, 9->2])
+        """
+        
+        igraph = DiGraph()
+        id_set = set(nodes_ids)
+        
+        for nid in nodes_ids:
+            n = self.nodes[nid]
+            igraph.add_node(nid, n.data)
+            for edge in n.succ:
+                if edge.to_node.label in id_set:
+                    igraph.add_edge(nid, edge.to_node.label, edge.data)
+        return igraph
     
     def _get_reachable(self, node):
         """
-        Gets all nodes reachable from given node. Finds cycles along the way.
+        Gets ids of all nodes reachable from given node. Finds cycles along the way.
 
         Parameters
         ----------
@@ -119,7 +143,6 @@ class DiGraph(object):
         
         >>> g.cycles
         [[2, 9], [2, 5, 3]]
-        
         """
         if DiGraph._REACHABLE in node.attr:
             return ([], node.attr[DiGraph._REACHABLE]) # generalnie trzeba wlozyc tutaj label od node'a ktory zaczyna cykl
@@ -149,7 +172,19 @@ class DiGraph(object):
                 node.attr[DiGraph._REACHABLE] = my_set
                 node.attr.pop(DiGraph._IS_VISITED)
             return (in_cycle, my_set)
-
+    
+    def __repr__(self):
+        first = True
+        result = "DiGraph(nodes = " + str(self.nodes.keys()) + ", edges = ["
+        for n in self.nodes.values():
+            for e in n.succ:
+                if not first:
+                    result += ", "
+                else:
+                    first = False
+                result += str(n.label) + str(e)
+        return result + "])"
+    
 class DiEdge(object):
     """
     Class representing an edge in the graph.
@@ -166,7 +201,11 @@ class DiEdge(object):
         return hash((self.to_node, self.data))
 
     def __str__(self):
-        return str(self.to_node) + "(" + str(self.data) + ")"
+        res = ""
+        if self.data != None:
+            res += "-"
+            res += str(self.data)
+        return res + "->" + str(self.to_node.label)
 
     def __repr__(self):
         return str(self.to_node) + "(" + str(self.data) + ")"
@@ -184,7 +223,7 @@ class DiNode(object):
     >>> a >= b
     True
     >>> a
-    DiNode(1)
+    DiNode(label = 1)
     """
 
     def __init__(self, label, data = None):
@@ -215,7 +254,7 @@ class DiNode(object):
         return "Node: " + str(self.label)
 
     def __repr__(self):
-        return "DiNode(" + repr(self.label)+ ")"
+        return "DiNode(label = " + repr(self.label)+ ")"
 
 if __name__ == "__main__":
     from Bio._utils import run_doctest

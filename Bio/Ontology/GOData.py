@@ -5,6 +5,7 @@
 
 
 from Bio.Ontology.Graph import DiGraph
+import copy
 
 class GOGraph(DiGraph):
     """
@@ -36,9 +37,14 @@ class GOGraph(DiGraph):
     def get_ancestors(self, go_id):
         node = self.get_node(go_id)
         _, res = self._get_reachable(node)
+        return copy.copy(res) # return copy so user won't disturb cached values
+
+    def get_parents(self, go_id):
+        node = self.get_node(go_id)
+        res = set()
+        for edge in node.succ:
+            res.add(edge.to_node.label)
         return res
-
-
 
 class GOTerm(object):
     

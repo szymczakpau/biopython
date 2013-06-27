@@ -28,24 +28,39 @@ def lngamma(z):
     return 0.9189385332046727 + (z + 0.5) * log(t) - t + log(x) # log(sqrt(2*pi)) = 0.9189385332046727
 
 def lnfactorial(n):
+    """
+    Returns logarithm of factorial of n.
+    """
     return 0 if n < 1 else lngamma(n + 1)
 
 
 def lncombination(n, k):
+    """
+    Returns logarithm of number of k-element sets that can be drawn from
+    n-element set without replacement.
+    """
     return lnfactorial(n) - lnfactorial(k) - lnfactorial(n - k)
 
 
 def hypergeometric_probability(k, n, K, N):
+    """
+    Returns probability of k successes in n draws without replacement from
+    a finite population of size N containing a maximum of K successes.
+    """
     return exp(lncombination(K, k) + lncombination(N - K, n - k) - lncombination(N, n))
 
 
 def hypergeometric_test(k, n, K, N):
+    """
+    Returns probability of getting k or less probable number of successes in
+    hypergeometric probability distribution.
+    """
     um = min(n, K)
     lm = max(0, n + K - N)
     eps = 1e-15
 
     if um == lm:
-        return(1.0, 1.0, 1.0)
+        return 1.0
 
     prob = hypergeometric_probability(k, n, K, N)
     

@@ -40,16 +40,20 @@ class Enrichment(object):
     Contains all results found by EnrichmentFinder
     """
     
-    def __init__(self, entries, warnings):
+    def __init__(self, method, entries, warnings):
         self.entries = entries
         self.warnings = warnings
-        
+        self.method = method
     def __repr__(self):
-        return "Enrichment(entries_num = {0} , warnings_num = {1})".format(len(self.entries), len(self.warnings))
+        return "Enrichment(method = {2}, entries_num = {0} , warnings_num = {1})".format(len(self.entries), len(self.warnings), self.method)
 
     def __str__(self):
-        return "Enrichment: {0} entries, {1} warnings.".format(len(self.entries),
-                                                               len(self.warnings))
+        return "Enrichment using {2} method: {0} entries, {1} warnings.".format(len(self.entries),
+                                                               len(self.warnings), self.method)
+
+_METHOD_PARENT_CHILD = "parent-child"
+
+_METHOD_TERM_BY_TERM = "term_by_term"
 
 class EnrichmentFinder(object):
     """
@@ -98,16 +102,34 @@ class EnrichmentFinder(object):
     which is enriched - and a list of warnings.
     
     >>> print result
-    Enrichment: 64 entries, 0 warnings.
+    Enrichment using term_by_term method: 64 entries, 0 warnings.
     >>> print result.entries[0]
-    ID : GO:0016020
-    name : membrane
-    p-value : 0.333333333333
+    ID : GO:0044707
+    name : single-multicellular organism process
+    p-value : 1.0
     corrected p-values: [('bonferroni', 1.0), ('bh_fdr', 1.0)]
-    hits in study : 1
+    hits in study : 2
     elements in study : 3
-    hits in population : 1
+    hits in population : 5
     population count : 9
+    
+    You can also specify a method of computing p-values. Default method is
+    term by term, but additionaly you can choose method that takes parent-child
+    relationship into account:
+    
+    >>> result = ef.find_enrichment(genes_to_study, corrections, "parent-child")
+    
+    >>> print result
+    Enrichment using parent-child method: 64 entries, 0 warnings.
+    >>> print result.entries[0]
+    ID : GO:0044707
+    name : single-multicellular organism process
+    p-value : 1.0
+    corrected p-values: [('bonferroni', 1.0), ('bh_fdr', 1.0)]
+    hits in study : 2
+    elements in study : 2
+    hits in population : 5
+    population count : 5
     
     """
     
@@ -133,18 +155,18 @@ class EnrichmentFinder(object):
         self.population_counts = self._count_terms(self.population)
         
     def _count_terms(self, gene_list):
-        terms_counts = collections.defaultdict(int)
+        terms_counts = collections.defaultdict(set)
         for gene in gene_list:
             if gene in self.assocs:
                 enriched_terms = set()
                 for go_terms in self.assocs[gene].associations: # qualifier co z nim?
-                    enriched_terms.add(go_terms.go_id) # czy mozliwy jest mapping do ancestora taki podwojny
+                    enriched_terms.add(go_terms.go_id)
                     enriched_terms |= self.o_graph.get_ancestors(go_terms.go_id)
                 for t in enriched_terms:
-                    terms_counts[t] += 1
+                    terms_counts[t].add(gene)
         return terms_counts
     
-    def find_enrichment(self, gene_list, corrections = []):
+    def find_enrichment(self, gene_list, corrections = [], method = _METHOD_TERM_BY_TERM):
         """
         Finds enrichment of specified group of genes.
         
@@ -155,6 +177,13 @@ class EnrichmentFinder(object):
             Possible values are:
                 o "bonferroni" - Bonferroni correction,
                 o "fh_fdr" - Benjamin-Hochberg FDR correction.
+        method - method of computing the p-values
+            Possible values are:
+                o "term_by_term" - standard method in which each term is
+                    treated independently,
+                o "parent_child" - method in which we take the parent-child
+                    relation into account when computing p-value.
+                    Reference: http://bioinformatics.oxfordjournals.org/content/23/22/3024.long
         """
         
         resolved_list = [self.resolver.resolve(x) for x in gene_list]
@@ -165,17 +194,49 @@ class EnrichmentFinder(object):
         
         result = []
         
-        # Calculate enrichment for every term given the counts
-        for term, study_count in study_counts.items():
-            population_count = self.population_counts[term]
-            pval = Stats.hypergeometric_test(study_count, study_n,
-                                             population_count, population_n)
-
-            entry = EnrichmentEntry(term, self.o_graph.get_term(term).name,
-                                    pval, study_count, study_n,
-                                    population_count, population_n)
-
-            result.append(entry)
+        if method == _METHOD_PARENT_CHILD:
+            # Calculate enrichment for every term taking parent-child
+            # relation into account
+            for term, study_set in study_counts.items():
+                study_hits = len(study_set)
+                population_hits = len(self.population_counts[term])
+                fst = True
+                parents_study = set()
+                parents_population = set()
+                # calculate sets of genes annotated to parents
+                for parent in self.o_graph.get_parents(term):
+                    s_set = study_counts[parent] if parent in study_counts else set()
+                    p_set = self.population_counts[parent]
+                    if fst:
+                        parents_study |= s_set
+                        parents_population |= p_set
+                        fst = False
+                    else:
+                        parents_study &= s_set
+                        parents_population &= p_set
+                        
+                pval = Stats.hypergeometric_test(study_hits, len(parents_study),
+                                                 population_hits, len(parents_population))
+    
+                entry = EnrichmentEntry(term, self.o_graph.get_term(term).name,
+                                        pval, study_hits, len(parents_study),
+                                        population_hits, len(parents_population))
+    
+                result.append(entry)
+                
+        else:
+            # Calculate enrichment for every term given the counts (term by term)
+            for term, study_set in study_counts.items():
+                study_hits = len(study_set)
+                population_hits = len(self.population_counts[term])
+                pval = Stats.hypergeometric_test(study_hits, study_n,
+                                                 population_hits, population_n)
+    
+                entry = EnrichmentEntry(term, self.o_graph.get_term(term).name,
+                                        pval, study_hits, study_n,
+                                        population_hits, population_n)
+    
+                result.append(entry)
         
         # Calculate chosen corrections
         if len(corrections) > 0:
@@ -191,7 +252,7 @@ class EnrichmentFinder(object):
         # check for warnings
         if len(self.o_graph.cycles) > 0:
             warnings.append("Graph contains cycles: " + str(self.o_graph.cycles))
-        return Enrichment(result, warnings)
+        return Enrichment(method, result, warnings)
     
 if __name__ == "__main__":
     from Bio._utils import run_doctest
