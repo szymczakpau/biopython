@@ -7,12 +7,14 @@ from Bio.File import as_handle
 
 import OboIO
 import GoaIO
+import GraphIO
 
 _FormatToIterator = { "obo" : OboIO.OboIterator,
                       "tsv" : GoaIO.TsvIterator,
                       "gaf" : GoaIO.GafIterator }
 
-_FormatToWriter = {"obo" : OboIO.OboWriter }
+_FormatToWriter = {"obo" : OboIO.OboWriter,
+                   "gml" : GraphIO.GmlWriter}
 
 def write(data, handle, file_format, version = None):
     """

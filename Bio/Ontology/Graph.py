@@ -195,10 +195,10 @@ class DiEdge(object):
         self.data = data
 
     def __eq__(self, other):
-        return self.to_node == other.to_node and self.data == other.data
+        return self.to_node == other.to_node
 
     def __hash__(self):
-        return hash((self.to_node, self.data))
+        return hash(self.to_node)
 
     def __str__(self):
         res = ""
