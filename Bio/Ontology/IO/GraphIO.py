@@ -69,7 +69,7 @@ class GmlWriter(object):
             for k, v in data.items():
                 lines += self.data_to_gml(k, v, indent + 1)
             lines.append(_INDENT * indent + "]")
-        else:
+        elif data != None:
             if isinstance(data, basestring) or isinstance(data, list):
                 rdata = '"' + str(data) + '"'
             else:
@@ -83,10 +83,14 @@ class GmlWriter(object):
         edges = []
         
         lines = ["graph [", _INDENT + "directed 1"]
+        
+        for k, v in graph.attrs.items():
+            lines += self.data_to_gml(k, v, 1)
+            
         for label, node in graph.nodes.items():
             lines.append(_INDENT + "node [")
             lines.append(_INDENT * 2 + "id " + str(i))
-            lines.append(_INDENT * 2 + "label " + str(label))
+            lines.append(_INDENT * 2 + "label \"" + str(label) + '"')
             if isinstance(node.data, dict):
                 for k, v in node.data.items():
                     lines += self.data_to_gml(k, v, 2)
@@ -104,6 +108,9 @@ class GmlWriter(object):
             if isinstance(data, dict):
                 for k, v in data.items():
                     lines += self.data_to_gml(k, v, 2)
+            else:
+                # by default it will be label
+                lines += self.data_to_gml("label", data, 2)
             lines.append(_INDENT + "]")
         lines.append("]")
         return lines

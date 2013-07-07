@@ -76,6 +76,7 @@ class GraphIOTest(unittest.TestCase):
   edge [
     source 4
     target 1
+    label "zzzz"
   ]
 ]"""
         out = StringIO()
@@ -83,7 +84,7 @@ class GraphIOTest(unittest.TestCase):
         graph = DiGraph([(1,2), (2,3), (3,4), (3,5)])
         graph.update_node(1, {'a' : 1, 'bb' : 2, 'abb' : [1, 2] })
         graph.add_edge(1, 4, {'x' : 'x'})
-        graph.add_edge(5, 2, "nothing_printed")
+        graph.add_edge(5, 2, "zzzz")
         writer.write_file(graph)
         self.assertEqual(correct_output, out.getvalue())
 

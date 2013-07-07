@@ -32,7 +32,7 @@ class DiGraph(object):
         """
         
         self.cycles = []
-        
+        self.attrs = {}
         self.nodes = {}
         if edges != None:
             for (u, v) in edges:
