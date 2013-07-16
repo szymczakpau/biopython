@@ -54,7 +54,7 @@ def get_gradient(color_a, color_b, k):
 
 class GmlPrinter(object):
     """
-    Stores GOGraph as graph visualization in gml format.
+    Stores found enrichments as a graph in gml format.
     """
     
     def __init__(self, file_handle, params = {"step" : 10,
@@ -103,7 +103,7 @@ class GmlPrinter(object):
 
 class GraphVizPrinter(object):
     """
-    Stores GOGraph as visualization in png format using graphviz library.
+    Stores found enrichments as visualization in png format using graphviz library.
     """
     
     def __init__(self, file_handle, params = {"dpi" : 96,
@@ -117,7 +117,7 @@ class GraphVizPrinter(object):
                                      self.gradient_step)
     
     def entry_to_label(self, entry):
-        return "{0}\n{1}\np:{2:.2f}".format(entry.oid, entry.name, entry.p_value)
+        return "{0}\n{1}\np:{2}".format(entry.oid, entry.name, entry.p_value)
 
     def to_printable_graph(self, enrichment, graph):
         import pygraphviz
@@ -150,7 +150,138 @@ class GraphVizPrinter(object):
         
         vg = self.to_printable_graph(enrichment, g)
         vg.draw(self.handle, prog="dot")
+
+class TxtPrinter(object):
+    """
+    Prints found enrichments to txt file.
+    """
     
+    def __init__(self, file_handle, params = None):
+        self.handle = file_handle
+        self.params = params
+        
+    def pretty_print(self, enrichment, graph):
+        self.handle.write("Enrichments found using {0} method.\n\nEnrichments:\n\n"
+                          .format(enrichment.method))
+        sorted_entries = sorted(enrichment.entries, key = lambda x: x.p_value)
+        for x in sorted_entries:
+            self.handle.write(str(x))
+            self.handle.write("\n\n")
+        if (len(enrichment.warnings) > 0):
+            self.handle.write("Warnings:\n")
+            for x in enrichment.warnings:
+                self.handle.write(str(x))
+
+
+class HtmlPrinter(object):
+    """
+    Prints found enrichments to html file.
+    """
+    
+    def __init__(self, file_handle, params = None):
+        self.handle = file_handle
+        self.params = params
+        self.style = """<style type="text/css">
+.warning
+{
+    color:#D13F31;
+}
+body
+{
+    margin:45px;
+}
+h1
+{
+    color:#669;
+}
+table
+{
+    font-family: Sans-Serif;
+    font-size: 14px;
+    background: #fff;
+    margin: 45px 0px;
+    border-collapse: collapse;
+    text-align: left;
+}
+th
+{
+    font-size: 16px;
+    font-weight: normal;
+    color: #009;
+    padding: 12px 10px;
+    border-bottom: 2px solid #6678b0;
+}
+td
+{
+    color: #669;
+    padding: 8px 10px;
+    border-bottom: 1px solid #ccc;
+}
+tbody tr:hover td
+{
+    color: #009;
+}
+</style>
+"""
+    
+    
+    def write_tag(self, tag, text, attrs = None):
+        self.open_tag(tag, attrs)
+        self.handle.write(text)
+        self.close_tag(tag)
+    
+    def open_tag(self, tag, attrs = None):
+        ot = "<" + tag
+        if attrs != None:
+            for k, v in attrs.items():
+                ot += ' {0}="{1}"'.format(k,v)
+        ot += ">\n"
+        self.handle.write(ot)
+        
+    def close_tag(self, tag):
+        self.handle.write("</" + tag + ">\n")
+    
+    def pretty_print(self, enrichment, graph):
+        self.handle.write("<!DOCTYPE html>")
+        
+        self.open_tag("html")
+        self.open_tag("head")
+        self.handle.write(self.style)
+        self.close_tag("head")
+        self.open_tag("body")
+        self.write_tag("h1", "Enrichments found using {0} method."
+                          .format(enrichment.method))
+        
+        sorted_entries = sorted(enrichment.entries, key = lambda x: x.p_value)
+        
+        self.open_tag("table")
+        
+        self.open_tag("tr")        
+        for header in ["ID", "name", "p-value", "study hit ratio", "population hit ratio"]:
+            self.write_tag("th", header)
+        self.close_tag("tr")
+        
+        for x in sorted_entries:
+            self.open_tag("tr")
+            self.write_tag("td", str(x.oid))
+            self.write_tag("td", str(x.name))
+            self.write_tag("td", str(x.p_value))
+            self.write_tag("td", str(x.study_hit_ratio()))
+            self.write_tag("td", str(x.population_hit_ratio()))
+            self.close_tag("tr")
+            
+        self.close_tag("table")
+        
+        if (len(enrichment.warnings) > 0):
+            self.write_tag("h1", "Warnings:", {"class" : "warning"})
+            self.open_tag("ul", {"class" : "warning"})
+            for x in enrichment.warnings:
+                self.write_tag("li", str(x))
+            self.close_tag("ul")
+        
+        self.close_tag("body")
+        self.close_tag("html")
+
 if __name__ == '__main__':
     from Bio._utils import run_doctest
     run_doctest()

@@ -66,19 +66,28 @@ class GOAObject(object):
     Represents one gene ontology association object
     """
     
-    def __init__(self, db, oid, symbol, name, otype, taxon, ext = None, gp_id = None, synonyms = None, associations = None):
+    def __init__(self, db, oid, symbol, name, synonyms, otype, taxon, ext = None, gp_id = None, associations = None):
         self.db = db
         self.oid = oid
         self.symbol = symbol
         self.name = name
-        self.otype = otype
+        self.synonyms = synonyms
+        self.type = otype
         self.taxon = taxon
         
         self.ext = ext
         self.gp_id = gp_id
         
-        self.synonyms = synonyms
         self.associations = associations
+    
+    def __eq__(self, other):
+        if isinstance(other, self.__class__):
+            return self.__dict__ == other.__dict__
+        else:
+            return False
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
     
     def __repr__(self):
         return "GOAObject(db_object_id = {0})".format(self.oid)
@@ -91,7 +100,7 @@ DB Object Name: {3}
 DB Object Synonyms: {4}
 DB Object Type: {5}
 Taxon: {6}
-""".format(self.db, self.oid, self.symbol, self.name, self.synonyms, self.otype, self.taxon)
+""".format(self.db, self.oid, self.symbol, self.name, self.synonyms, self.type, self.taxon)
         if self.ext != None: # only in gaf 2.0
             b1 += """Annotation Extension: {0}
 Gene Product Form ID: {1}
@@ -107,16 +116,25 @@ class GOAssociation(object):
     Represents one gene ontology association
     """
     
-    def __init__(self, qualifier, go_id, db_ref, evidence, wf, aspect, date, assigned_by):
+    def __init__(self, qualifier, go_id, db_ref, evidence, with_or_from, aspect, date, assigned_by):
         self.qualifier = qualifier
         self.go_id = go_id
         self.db_ref = db_ref
         self.evidence = evidence
-        self.wf = wf
+        self.with_or_from = with_or_from
         self.aspect = aspect
         self.date = date
         self.assigned_by = assigned_by
+    
+    def __eq__(self, other):
+        if isinstance(other, self.__class__):
+            return self.__dict__ == other.__dict__
+        else:
+            return False
 
+    def __ne__(self, other):
+        return not self.__eq__(other)
+    
     def __repr__(self):
         return "GOAssociation(go_id = {0})".format(self.go_id)
     
@@ -131,4 +149,4 @@ class GOAssociation(object):
     Date: {6}
     Assigned by: {7}
     """.format(self.qualifier, self.go_id, self.db_ref,\
-self.evidence, self.wf, self.aspect, self.date, self.assigned_by)
+self.evidence, self.with_or_from, self.aspect, self.date, self.assigned_by)

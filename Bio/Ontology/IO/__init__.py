@@ -18,7 +18,9 @@ _FormatToWriter = {"obo" : OboIO.OboWriter,
                    "gml" : GraphIO.GmlWriter}
 
 _FormatToPrinter = {"gml" : PrettyIO.GmlPrinter,
-                    "png" : PrettyIO.GraphVizPrinter}
+                    "png" : PrettyIO.GraphVizPrinter,
+                    "txt" : PrettyIO.TxtPrinter,
+                    "html": PrettyIO.HtmlPrinter}
 
 def write(data, handle, file_format, version = None):
     """

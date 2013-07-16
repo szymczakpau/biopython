@@ -11,16 +11,22 @@ class EnrichmentEntry(object):
     """
     Represents one result returned by EnrichmentFinder.
     """
-    def __init__(self, oid, name, p_value, study_count, study_n, population_count, population_n):
+    def __init__(self, oid, name, p_value, study_hits, study_count, population_hits, population_count):
         self.oid = oid
         self.name = name
         self.p_value = p_value
+        self.study_hits = study_hits
         self.study_count = study_count
-        self.study_n = study_n
+        self.population_hits = population_hits
         self.population_count = population_count
-        self.population_n = population_n
         self.corrections = []
-        
+    
+    def study_hit_ratio(self):
+        return float(self.study_hits) / self.study_count
+    
+    def population_hit_ratio(self):
+        return float(self.population_hits) / self.population_count
+    
     def __repr__(self):
         return 'EnrichmentEntry([("ID" : {0}), ("name" : {2}), ("p-value" : {1})'.format(self.oid, self.p_value, self.name)
 
@@ -32,8 +38,8 @@ corrected p-values: {7}
 hits in study : {2}
 elements in study : {3}
 hits in population : {4}
-population count : {5}""".format(self.oid, self.p_value, self.study_count, self.study_n,
-           self.population_count, self.population_n, self.name, self.corrections)
+elements in population : {5}""".format(self.oid, self.p_value, self.study_hits, self.study_count,
+           self.population_hits, self.population_count, self.name, self.corrections)
 
 class Enrichment(object):
     """
@@ -44,11 +50,12 @@ class Enrichment(object):
         self.entries = entries
         self.warnings = warnings
         self.method = method
+    
     def __repr__(self):
         return "Enrichment(method = {2}, entries_num = {0} , warnings_num = {1})".format(len(self.entries), len(self.warnings), self.method)
 
     def __str__(self):
-        return "Enrichment using {2} method: {0} entries, {1} warnings.".format(len(self.entries),
+        return "Enrichment found using {2} method: {0} entries, {1} warnings.".format(len(self.entries),
                                                                len(self.warnings), self.method)
 
 _METHOD_PARENT_CHILD = "parent-child"
@@ -102,7 +109,7 @@ class EnrichmentFinder(object):
     which is enriched - and a list of warnings.
     
     >>> print result
-    Enrichment using term_by_term method: 64 entries, 0 warnings.
+    Enrichment found using term_by_term method: 64 entries, 0 warnings.
     >>> print result.entries[0]
     ID : GO:0044707
     name : single-multicellular organism process
@@ -111,7 +118,7 @@ class EnrichmentFinder(object):
     hits in study : 2
     elements in study : 3
     hits in population : 5
-    population count : 9
+    elements in population : 9
     
     You can also specify a method of computing p-values. Default method is
     term by term, but additionaly you can choose method that takes parent-child
@@ -120,7 +127,7 @@ class EnrichmentFinder(object):
     >>> result = ef.find_enrichment(genes_to_study, corrections, "parent-child")
     
     >>> print result
-    Enrichment using parent-child method: 64 entries, 0 warnings.
+    Enrichment found using parent-child method: 64 entries, 0 warnings.
     >>> print result.entries[0]
     ID : GO:0044707
     name : single-multicellular organism process
@@ -129,7 +136,7 @@ class EnrichmentFinder(object):
     hits in study : 2
     elements in study : 2
     hits in population : 5
-    population count : 5
+    elements in population : 5
     
     """
     

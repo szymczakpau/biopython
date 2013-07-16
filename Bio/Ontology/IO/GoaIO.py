@@ -24,51 +24,63 @@ class TsvIterator(object):
 
 class GafIterator(object):
     """
-    Parses GAF files
+    Parses GAF files into list of GOAObject.
+    
+    GAF file is list of tab separated values in the following order:
+        'DB', 'DB Object ID', 'DB Object Symbol', 'Qualifier', 'GO ID',
+        'DB:Reference', 'Evidence Code', 'With (or) From', 'Aspect',
+        'DB Object Name', 'DB Object Synonym', 'DB Object Type',
+        'Taxon', 'Date', 'Assigned By', 'Annotation Extension',
+        'Gene Product Form ID'
     """
-    
-    
-    _GAF_LABELS = ['DB', 'DB Object ID', 'DB Object Symbol', 'Qualifier', 'GO ID',
-                   'DB:Reference', 'Evidence Code', 'With (or) From', 'Aspect',
-                   'DB Object Name', 'DB Object Synonym', 'DB Object Type',
-                   'Taxon', 'Date', 'Assigned By', 'Annotation Extension',
-                   'Gene Product Form ID']
-
-    _LABEL_MAP = { "1.0" : _GAF_LABELS[:15], "2.0" : _GAF_LABELS }
-    
 
     _ID_IDX = 1
-    _AID_IDX = 10
-
-    _OBJ_IDXS = [0, 1, 2, 9, 11, 12, 15, 16]
-    _AS_IDXS = [3, 4, 5, 6, 7, 8, 13, 14]
     
     def __init__(self, file_handle):
-        tsv_iter = TsvIterator(file_handle)
+        self.handle = file_handle
+        self.version = None
+        self.records = None
+    
+    def _split_multi(self, value):
+        if len(value) > 0:
+            return value.split('|')
+        else:
+            return []
+    
+    def _to_goa(self, obj_rows):
+        row = obj_rows[0]
+        obj_params = [row[0], row[1], row[2], row[9], self._split_multi(row[10]),
+                      row[11], self._split_multi(row[12])]
+        
+        if self.version == "1.0":
+            row_len = 15
+            obj_params += [None, None]
+        else:
+            row_len = 17
+            obj_params += [self._split_multi(row[15]), row[16]]
+            
+        assocs = []
+        for row in obj_rows:
+            if len(row) == row_len:
+                assocs.append(GOAssociation(self._split_multi(row[3]), row[4],
+                                            self._split_multi(row[5]), row[6],
+                                            self._split_multi(row[7]), row[8],
+                                            row[13], row[14]))
+            else:
+                raise ValueError("Invalid gaf file: Incorrect row length.")
+        
+        return GOAObject(*obj_params, associations = assocs)
+    
+    def __iter__(self):
+        tsv_iter = TsvIterator(self.handle)
         raw_records = collections.defaultdict(list)
         for row in tsv_iter:
             first = row[0]
             if not first.startswith('!'):
                 raw_records[row[self._ID_IDX]].append(row)
             elif first.startswith('!gaf-version:'):
-                    self.version = first[(first.find(':') + 1):].strip()
+                self.version = first[(first.find(':') + 1):].strip()
+        if self.version is None:
+            raise ValueError("Invalid gaf file: No version specified.")
         self.records = [self._to_goa(v) for v in raw_records.values()]
-        
-    def _to_goa(self, obj_rows):
-        assocs = [GOAssociation(*[row[i] for i in self._AS_IDXS]) for row in obj_rows]
-        if len(row[self._AID_IDX]) > 0:
-            syns = row[self._AID_IDX].split('|')
-        else:
-            syns = []
-        
-        row = obj_rows[0] # TODO sprawdzic czy wszedzie gra
-        
-        if self.version == "1.0":
-            idxs = self._OBJ_IDXS[:-2]
-        else:
-            idxs = self._OBJ_IDXS
-            
-        return GOAObject(*[row[i] for i in idxs], synonyms = syns, associations = assocs)
-    
-    def __iter__(self):
         return iter(self.records)

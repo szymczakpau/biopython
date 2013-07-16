@@ -7,6 +7,7 @@ import unittest, string
 from Bio.Ontology.IO.GraphIO import GmlWriter
 from StringIO import StringIO
 from Bio.Ontology.Graph import DiGraph
+
 class GraphIOTest(unittest.TestCase):
 
     
