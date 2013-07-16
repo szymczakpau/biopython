@@ -14,8 +14,13 @@ class GOGraph(DiGraph):
 
     def __init__(self, terms):
         DiGraph.__init__(self)
+        self.typedefs = {}
+        
+        defined_relations = set()
+        found_relations = set()
+        
         for (term_type, data) in terms:
-            if term_type == "Term": # Add only terms for now
+            if term_type == "Term": # Add only terms and typedefs for now
                 nid = data.pop("id")[0]
                 name = data.pop("name")[0]
                 term = GOTerm(nid, name, data)
@@ -25,11 +30,22 @@ class GOGraph(DiGraph):
                     self.add_node(nid, term)
                 for edge in data["is_a"]:
                     self.add_edge(nid, edge, "is_a")
-                for edge in data["relationship"]: #TODO: parse relationship better 
-                    p = edge.find("part_of")
-                    if p >= 0:
-                        r_edge = edge[p + 7:].strip()
-                        self.add_edge(nid, r_edge, "part_of")
+                for edge in data["relationship"]:
+                    p = edge.split()
+                    if len(p) == 2:
+                        self.add_edge(nid, p[1], p[0])
+                        found_relations.add(p[0])
+                    else:
+                        raise ValueError("Incorrect relationship: " + edge)
+            elif term_type == "Typedef":
+                rid = data["id"][0]
+                self.typedefs[rid] = data
+                defined_relations.add(rid)
+        
+        # validate whether all relationships were defined
+        not_defined = found_relations.difference(defined_relations)
+        if len(not_defined) > 0:
+            raise ValueError("Not defined relationships found: " + str(not_defined))
                         
     def get_term(self, go_id):
         return self.get_node(go_id).data
@@ -54,9 +70,13 @@ class GOTerm(object):
         self.attrs = attrs
         
     def __str__(self):
-        s = self.name + "\n" + "id: " + self.id + "\n"
-        for k, v in self.attrs.items():
-            s += "{0} : {1}\n".format(k, v)
+        s = "[Term]\n"
+        s += "id: " + self.id + "\n"
+        s += "name: " + self.name + "\n"
+        for k, v in self.attrs.iteritems():
+            for vi in v:
+                s+= k + ": " + vi + "\n"
+        return s
             
     def __repr__(self):
         return "GOTerm(id = " + self.id + ", name = " + self.name + ")" 

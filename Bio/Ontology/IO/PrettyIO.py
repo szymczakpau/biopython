@@ -125,7 +125,7 @@ class GraphVizPrinter(object):
         viz_graph = pygraphviz.AGraph()
         viz_graph.graph_attr.update(dpi = str(self.params["dpi"]))
         viz_graph.node_attr.update(shape="box", style="rounded,filled")
-        viz_graph.edge_attr.update(shape="normal", color="black", dir="back", label="is_a")
+        viz_graph.edge_attr.update(shape="normal", color="black", dir="back")
         
         entry_labels = {}
         
@@ -138,7 +138,7 @@ class GraphVizPrinter(object):
         for entry in enrichment.entries:
             u = graph.get_node(entry.oid)
             for edge in u.succ:
-                viz_graph.add_edge(entry_labels[edge.to_node.label], entry_labels[entry.oid])
+                viz_graph.add_edge(entry_labels[edge.to_node.label], entry_labels[entry.oid],  label=edge.data)
                 
         return viz_graph
             

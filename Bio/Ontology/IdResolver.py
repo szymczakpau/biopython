@@ -40,7 +40,7 @@ class FirstOneResolver(object):
         if oid in self.base_keys:
             return oid
         elif oid in self.alter_keys:
-            self.alter_keys[oid][0]
+            return self.alter_keys[oid][0]
 
 class ManualResolver(object):
     """

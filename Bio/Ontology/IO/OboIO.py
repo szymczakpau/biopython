@@ -3,10 +3,10 @@
 # license.  Please see the LICENSE file that should have been included   
 # as part of this package.
 
-START = 0
-STANZA = 1
-READ_STANZA = 2
-EOF = 3
+_START = 0
+_STANZA = 1
+_READ_STANZA = 2
+_EOF = 3
 
 
 import collections
@@ -17,6 +17,8 @@ from Bio.Ontology.GOData import GOTerm
 class OboWriter(object):
     """
     Writes obo files.
+    
+    Writes GOTerms to obo files.
     """
     
     def __init__(self, file_handle):
@@ -44,7 +46,7 @@ class OboIterator(object):
     def __init__(self, file_handle):
         self._handle = file_handle
         self._reg = re.compile("^\[([\w]+)\]$")
-        self._state = START
+        self._state = _START
 
     def __iter__(self):
         return self
@@ -74,30 +76,34 @@ class OboIterator(object):
         return result
     
     def _split_tag(self, line):
-        pos = line.find(':') # TODO add exception here if : not found
+        pos = line.find(':')
+        if pos < 0:
+            raise ValueError(("Invalid obo file: Incorrect tag: ':'"
+                              " expected in line '{0}'.").format(line))
         return (line[0:pos].strip(), line[(pos+1):].strip())
     
     def _read_stanza(self):
-        while self._state != STANZA and self._state != EOF:
+        while self._state != _STANZA and self._state != _EOF:
             line = self._read_line()
             if line is None:
-                self._state = EOF
+                self._state = _EOF
             else:
                 line = line.strip()
                 match = self._reg.match(line)
                 if match != None:
-                    self._state = STANZA
-                    self._stanza_type, = match.groups()
-                elif len(line) > 0 and self._state == READ_STANZA:
+                    self._state = _STANZA
+                    self._found_stanza_type, = match.groups()
+                elif len(line) > 0 and self._state == _READ_STANZA:
                     k, v = self._split_tag(line)
                     self._dict[k].append(v)
 
 
     def next(self):
         self._read_stanza()
-        if self._state == EOF:
+        if self._state == _EOF:
             raise StopIteration
         self._dict = collections.defaultdict(list)
-        self._state = READ_STANZA
+        self._state = _READ_STANZA
+        stanza_type = self._found_stanza_type
         self._read_stanza()
-        return (self._stanza_type, self._dict)
+        return (stanza_type, self._dict)

@@ -97,7 +97,7 @@ class EnrichmentFinder(object):
     To run finder you just need to call find_enrichment method with list
     of genes as an argument:
     
-    >>> genes_to_study = ['FBgn0070057', 'FBgn0004364', 'FBgn0043467']
+    >>> genes_to_study = ['FBgn0070057', '18-wheeler', 'FBgn0043467']
     
     Additionally you can add a list of corrections which should be used
     (by default it's empty):
@@ -109,7 +109,16 @@ class EnrichmentFinder(object):
     which is enriched - and a list of warnings.
     
     >>> print result
-    Enrichment found using term_by_term method: 64 entries, 0 warnings.
+    Enrichment found using term_by_term method: 64 entries, 1 warnings.
+    
+    Notice there is one warning. Let's print the list:
+    >>> print result.warnings
+    ["Unknown id: '18-wheeler' was resolved to: 'FBgn0004364'"]
+    
+    Earlier when specifying list of genes we used non-standardized gene id:
+    '18-wheeler'. Thanks to default resolver (FirstOneResolver)
+    of EnrichmentFinder standard id was inferred.
+    
     >>> print result.entries[0]
     ID : GO:0044707
     name : single-multicellular organism process
@@ -127,7 +136,7 @@ class EnrichmentFinder(object):
     >>> result = ef.find_enrichment(genes_to_study, corrections, "parent-child")
     
     >>> print result
-    Enrichment found using parent-child method: 64 entries, 0 warnings.
+    Enrichment found using parent-child method: 64 entries, 1 warnings.
     >>> print result.entries[0]
     ID : GO:0044707
     name : single-multicellular organism process
@@ -154,6 +163,7 @@ class EnrichmentFinder(object):
         """
         self.o_graph = o_graph
         self.assocs = dict([(v.oid, v) for v in assocs])
+        
         self.resolver = resolver_generator(self.assocs.itervalues())
         if population != None:
             self.population = population
@@ -193,14 +203,21 @@ class EnrichmentFinder(object):
                     Reference: http://bioinformatics.oxfordjournals.org/content/23/22/3024.long
         """
         
-        resolved_list = [self.resolver.resolve(x) for x in gene_list]
+        result = []
+        warnings = []
+        
+        resolved_list = []
+        for x in gene_list:
+            rx = self.resolver.resolve(x)
+            if x != rx:
+                warnings.append("Unknown id: '{0}' was resolved to: '{1}'".format(x, rx))
+            resolved_list.append(rx)
+        
         study_counts = self._count_terms(resolved_list)
         
         population_n = len(self.population)
         study_n = len(resolved_list)
-        
-        result = []
-        
+
         if method == _METHOD_PARENT_CHILD:
             # Calculate enrichment for every term taking parent-child
             # relation into account
@@ -255,7 +272,6 @@ class EnrichmentFinder(object):
             for i in xrange(len(result)):
                 result[i].corrections = [(c_id, pv[i]) for c_id, pv in corr_pvals] #TODO: tests
         
-        warnings = []
         # check for warnings
         if len(self.o_graph.cycles) > 0:
             warnings.append("Graph contains cycles: " + str(self.o_graph.cycles))
