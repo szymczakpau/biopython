@@ -4043,3 +4043,28 @@ is_a: GO:1901991
 alt_id: GO:0031575
 alt_id: GO:0071780
 def: "A cell cycle checkpoint that ensures accurate chromosome replication and segregation by preventing progression through a mitotic cell cycle until conditions are suitable for the cell to proceed to the next stage." [GOC:mtg_cell_cycle]
+
+[Typedef]
+id: negatively_regulates
+name: negatively_regulates
+xref: RO:0002212
+is_a: regulates ! regulates
+
+[Typedef]
+id: part_of
+name: part_of
+xref: BFO:0000050
+xref: OBO_REL:part_of
+is_transitive: true
+
+[Typedef]
+id: positively_regulates
+name: positively_regulates
+xref: RO:0002213
+is_a: regulates ! regulates
+
+[Typedef]
+id: regulates
+name: regulates
+xref: RO:0002211
+transitive_over: part_of ! part_of

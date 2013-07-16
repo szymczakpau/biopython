@@ -12,11 +12,6 @@ class DiGraph(object):
 
     Nodes' labels can be any hashable objects.
 
-    Examples
-    --------
-
-    >>> g = DiGraph()
-
     """
     
     _REACHABLE = "reachable"

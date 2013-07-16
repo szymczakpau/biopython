@@ -28,15 +28,17 @@ class GOGraph(DiGraph):
                     self.update_node(nid, term)
                 else:
                     self.add_node(nid, term)
-                for edge in data["is_a"]:
-                    self.add_edge(nid, edge, "is_a")
-                for edge in data["relationship"]:
-                    p = edge.split()
-                    if len(p) == 2:
-                        self.add_edge(nid, p[1], p[0])
-                        found_relations.add(p[0])
-                    else:
-                        raise ValueError("Incorrect relationship: " + edge)
+                if "is_a" in data:
+                    for edge in data["is_a"]:
+                        self.add_edge(nid, edge, "is_a")
+                if "relationship" in data:
+                    for edge in data["relationship"]:
+                        p = edge.split()
+                        if len(p) == 2:
+                            self.add_edge(nid, p[1], p[0])
+                            found_relations.add(p[0])
+                        else:
+                            raise ValueError("Incorrect relationship: " + edge)
             elif term_type == "Typedef":
                 rid = data["id"][0]
                 self.typedefs[rid] = data
@@ -63,6 +65,9 @@ class GOGraph(DiGraph):
         return res
 
 class GOTerm(object):
+    """
+    Represents gene ontology term.
+    """
     
     def __init__(self, nid, name, attrs):
         self.id = nid
