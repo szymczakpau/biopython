@@ -6,7 +6,7 @@
 import csv
 import collections
 
-from Bio.Ontology.GOData import GOAObject, GOAssociation
+from Bio.Ontology.Data import GeneAnnotation, TermAssociation
 
 
 
@@ -24,7 +24,7 @@ class TsvIterator(object):
 
 class GafIterator(object):
     """
-    Parses GAF files into list of GOAObject.
+    Parses GAF files into list of GeneAnnotation.
     
     GAF file is list of tab separated values in the following order:
         'DB', 'DB Object ID', 'DB Object Symbol', 'Qualifier', 'GO ID',
@@ -62,14 +62,14 @@ class GafIterator(object):
         assocs = []
         for row in obj_rows:
             if len(row) == row_len:
-                assocs.append(GOAssociation(self._split_multi(row[3]), row[4],
+                assocs.append(TermAssociation(self._split_multi(row[3]), row[4],
                                             self._split_multi(row[5]), row[6],
                                             self._split_multi(row[7]), row[8],
                                             row[13], row[14]))
             else:
                 raise ValueError("Invalid gaf file: Incorrect row length.")
         
-        return GOAObject(*obj_params, associations = assocs)
+        return GeneAnnotation(*obj_params, associations = assocs)
     
     def __iter__(self):
         tsv_iter = TsvIterator(self.handle)

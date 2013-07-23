@@ -32,26 +32,26 @@ class GraphIOTest(unittest.TestCase):
   directed 1
   node [
     id 0
-    label 1
+    label "1"
     a 1
     abb "[1, 2]"
     bb 2
   ]
   node [
     id 1
-    label 2
+    label "2"
   ]
   node [
     id 2
-    label 3
+    label "3"
   ]
   node [
     id 3
-    label 4
+    label "4"
   ]
   node [
     id 4
-    label 5
+    label "5"
   ]
   edge [
     source 0

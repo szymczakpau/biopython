@@ -5,7 +5,7 @@
 
 import unittest
 from Bio.Ontology.IO.GoaIO import GafIterator
-from Bio.Ontology.GOData import GOAssociation, GOAObject
+from Bio.Ontology.Data import TermAssociation, GeneAnnotation
 
 class GoaIOTest(unittest.TestCase):
 
@@ -23,15 +23,15 @@ class GoaIOTest(unittest.TestCase):
                 list(it)
 
     def test_read_file(self):
-        to = [GOAObject('FB', 'FBgn0026615', '10-4', '10-4',
+        to = [GeneAnnotation('FB', 'FBgn0026615', '10-4', '10-4',
                        [], 'gene_product', ['taxon:7227'], [], '',
-                       [GOAssociation([], 'GO:0005737', ['FB:FBrf0106275'],
+                       [TermAssociation([], 'GO:0005737', ['FB:FBrf0106275'],
                                       'IDA', [], 'C', '20060803', 'FlyBase' ),
-                        GOAssociation([], 'GO:0045177', ['FB:FBrf0106275'],
+                        TermAssociation([], 'GO:0045177', ['FB:FBrf0106275'],
                                       'IDA', [], 'C', '20060803', 'FlyBase' )]),
-              GOAObject('FB', 'FBgn0043467', '064Ya', '064Ya',
+              GeneAnnotation('FB', 'FBgn0043467', '064Ya', '064Ya',
                        [], 'gene_product', ['taxon:7227'], [], '',
-                       [GOAssociation([], 'GO:0048149',
+                       [TermAssociation([], 'GO:0048149',
                                       ['FB:FBrf0131396','PMID:11086999'],
                                       'IMP', [], 'P', '20060803', 'FlyBase')])]
         with open('Ontology/GoaIO/correct20.fb', 'r') as f:

@@ -178,7 +178,7 @@ class HtmlPrinter(object):
     Prints found enrichments to html file.
     """
     
-    def __init__(self, file_handle, params = None):
+    def __init__(self, file_handle, params = {"go_to_url" : "http://amigo.geneontology.org/cgi-bin/amigo/term_details?term="}):
         self.handle = file_handle
         self.params = params
         self.style = """<style type="text/css">
@@ -263,7 +263,9 @@ tbody tr:hover td
         
         for x in sorted_entries:
             self.open_tag("tr")
-            self.write_tag("td", str(x.oid))
+            self.open_tag("td")
+            self.write_tag("a", str(x.oid), {"href" : self.params["go_to_url"] + str(x.oid)})
+            self.close_tag("td")
             self.write_tag("td", str(x.name))
             self.write_tag("td", str(x.p_value))
             self.write_tag("td", str(x.study_hit_ratio()))

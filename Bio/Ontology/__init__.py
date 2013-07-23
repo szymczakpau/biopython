@@ -82,8 +82,8 @@ class EnrichmentFinder(object):
     Now you've got iterators to files containing both gene ontology graph and
     associations. You need to init the graph. 
     
-    >>> from Bio.Ontology.GOData import GOGraph
-    >>> go_graph = GOGraph(gonodes_iter)
+    >>> from Bio.Ontology.Data import OntologyGraph
+    >>> go_graph = OntologyGraph(gonodes_iter)
     
     Now is the time to create EnrichmentFinder. Besides the arguments
     mentioned before you could specify an id resolver, which basically tries

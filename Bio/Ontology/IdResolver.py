@@ -37,16 +37,7 @@ class FirstOneResolver(object):
         
     
     def resolve(self, oid):
-        if oid in self.base_keys:
+        if oid in self.base_keys or oid not in self.alter_keys:
             return oid
-        elif oid in self.alter_keys:
+        else:
             return self.alter_keys[oid][0]
-
-class ManualResolver(object):
-    """
-    Manual resolver. Asks user for each ambiguous item.
-    """
-    pass
-
-if __name__ == '__main__':
-    pass

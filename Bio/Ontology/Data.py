@@ -7,7 +7,7 @@
 from Bio.Ontology.Graph import DiGraph
 import copy
 
-class GOGraph(DiGraph):
+class OntologyGraph(DiGraph):
     """
     Represents Gene Ontology graph.
     """
@@ -23,7 +23,7 @@ class GOGraph(DiGraph):
             if term_type == "Term": # Add only terms and typedefs for now
                 nid = data.pop("id")[0]
                 name = data.pop("name")[0]
-                term = GOTerm(nid, name, data)
+                term = OntologyTerm(nid, name, data)
                 if self.node_exists(nid):
                     self.update_node(nid, term)
                 else:
@@ -64,7 +64,7 @@ class GOGraph(DiGraph):
             res.add(edge.to_node.label)
         return res
 
-class GOTerm(object):
+class OntologyTerm(object):
     """
     Represents gene ontology term.
     """
@@ -84,11 +84,11 @@ class GOTerm(object):
         return s
             
     def __repr__(self):
-        return "GOTerm(id = " + self.id + ", name = " + self.name + ")" 
+        return "OntologyTerm(id = " + self.id + ", name = " + self.name + ")" 
 
-class GOAObject(object):
+class GeneAnnotation(object):
     """
-    Represents one gene ontology association object
+    Represents one gene ontology annotation object
     """
     
     def __init__(self, db, oid, symbol, name, synonyms, otype, taxon, ext = None, gp_id = None, associations = None):
@@ -115,7 +115,7 @@ class GOAObject(object):
         return not self.__eq__(other)
     
     def __repr__(self):
-        return "GOAObject(db_object_id = {0})".format(self.oid)
+        return "GeneAnnotation(db_object_id = {0})".format(self.oid)
     
     def __str__(self):
         b1 = """DB: {0}
@@ -136,9 +136,9 @@ Gene Product Form ID: {1}
                 b1 += str(a)
         return b1
     
-class GOAssociation(object):
+class TermAssociation(object):
     """
-    Represents one gene ontology association
+    Represents one gene ontology term association
     """
     
     def __init__(self, qualifier, go_id, db_ref, evidence, with_or_from, aspect, date, assigned_by):
@@ -161,7 +161,7 @@ class GOAssociation(object):
         return not self.__eq__(other)
     
     def __repr__(self):
-        return "GOAssociation(go_id = {0})".format(self.go_id)
+        return "TermAssociation(go_id = {0})".format(self.go_id)
     
     def __str__(self):
         return """

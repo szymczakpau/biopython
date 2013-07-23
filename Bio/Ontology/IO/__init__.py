@@ -88,7 +88,7 @@ def pretty_print(enrichment, graph, handle, file_format, params = None):
     
      Parameters:
      - enrichment - result from EnrichmentFinder
-     - graph - GOGraph with containing enriched nodes
+     - graph - OntologyGraph with containing enriched nodes
      - handle - File handle object to read from, or filename as a string,
      - file_format - lower case string describing the file format to write,
          Formats:

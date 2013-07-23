@@ -5,9 +5,9 @@
 
 import unittest
 
-from Bio.Ontology.GOData import GOGraph
+from Bio.Ontology.Data import OntologyGraph
 
-class GOGraphTest(unittest.TestCase):
+class OntologyGraphTest(unittest.TestCase):
 
     def setUp(self):
         
@@ -42,17 +42,17 @@ class GOGraphTest(unittest.TestCase):
                                                    "name" : ["regulates"]})]
 
     def test_get_term(self):
-        g = GOGraph(self.terms_diam)
+        g = OntologyGraph(self.terms_diam)
         self.assertEqual("GO:0045471", g.get_term("GO:0045471").id)
         
     def test_get_parents(self):
-        g = GOGraph(self.terms_diam)
+        g = OntologyGraph(self.terms_diam)
         self.assertEqual(set(), g.get_parents("GO:0050896"))
         self.assertEqual(set(["GO:0030534", "GO:0045471"]),
                          g.get_parents("GO:0048149"))
 
     def test_get_ancestors(self):
-        g = GOGraph(self.terms_diam)
+        g = OntologyGraph(self.terms_diam)
         self.assertEqual(set(["GO:0030534", "GO:0045471", "GO:0050896"]),
                          g.get_ancestors("GO:0048149"))
         
@@ -60,14 +60,14 @@ class GOGraphTest(unittest.TestCase):
     
     def test_bad_rel(self):
         with self.assertRaises(ValueError):
-            GOGraph(self.terms_bad_rel)
+            OntologyGraph(self.terms_bad_rel)
             
     def test_no_typedef(self):
         with self.assertRaises(ValueError):
-            GOGraph(self.terms_cycle_no)
+            OntologyGraph(self.terms_cycle_no)
     
     def test_get_parents_cycle(self):
-        g = GOGraph(self.terms_cycle)
+        g = OntologyGraph(self.terms_cycle)
         self.assertEqual(set(['GO:0030534', 'GO:0050896', 'GO:0005374',
                               'GO:0048149', 'GO:0045471']),
                          g.get_ancestors("GO:0048149"))

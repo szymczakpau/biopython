@@ -12,13 +12,13 @@ _EOF = 3
 import collections
 import re
 
-from Bio.Ontology.GOData import GOTerm
+from Bio.Ontology.Data import OntologyTerm
 
 class OboWriter(object):
     """
     Writes obo files.
     
-    Writes GOTerms to obo files.
+    Writes OntologyTerms to obo files.
     """
     
     def __init__(self, file_handle):
@@ -29,7 +29,7 @@ class OboWriter(object):
         if version != None:
             self.handle.write("format-version:" + version + "\n")
         for term in terms_list:
-            if isinstance(term, GOTerm):
+            if isinstance(term, OntologyTerm):
                 self.handle.write("\n[Term]\n")
                 self.handle.write("id: " + term.id + "\n")
                 self.handle.write("name: " + term.name + "\n")

@@ -6,16 +6,16 @@
 import unittest
 
 from Bio.Ontology.IO.OboIO import OboIterator, OboWriter
-from Bio.Ontology.GOData import GOTerm
+from Bio.Ontology.Data import OntologyTerm
 
 from StringIO import StringIO
 
 class OboWriterTest(unittest.TestCase):
     
     def test_write(self):
-        terms_to_write = [GOTerm("GO:0009628", "response to abiotic stimulus",
+        terms_to_write = [OntologyTerm("GO:0009628", "response to abiotic stimulus",
                                  {"is_a" : ["GO:0050896"]}),
-                          GOTerm("GO:0022627", "cytosolic small ribosomal subunit",
+                          OntologyTerm("GO:0022627", "cytosolic small ribosomal subunit",
                                  {"is_a" : ["GO:0015935", "GO:0044445"]})]
         f = StringIO()
         writer = OboWriter(f)
