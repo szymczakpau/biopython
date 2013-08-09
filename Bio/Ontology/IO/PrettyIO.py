@@ -5,6 +5,7 @@
 
 from Bio.Ontology.IO.GraphIO import GmlWriter
 from Bio.Ontology.Graph import DiGraph
+from Bio.Ontology.Stats import corrections_labels
 
 def rgb_to_triple(rgb):
     """
@@ -59,7 +60,8 @@ class GmlPrinter(object):
     
     def __init__(self, file_handle, params = {"step" : 10,
                                               "color_a" : "#00bd28",
-                                              "color_b" : "#f7ffc8"}):
+                                              "color_b" : "#f7ffc8",
+                                              "color_none" : "#c3c3c3"}):
         self.handle = file_handle
         self.params = params
         self.gradient_step = params["step"]
@@ -72,8 +74,16 @@ class GmlPrinter(object):
                 "graphics" : { "fill" : self.gradient[int(e_entry.p_value * (self.gradient_step - 1))]
                               }
                 }
+    def term_to_printable(self, term):
+        return {"name" : term.name,
+                "graphics" : { "fill" : self.params["color_none"]
+                              }
+                }
     def entry_to_label(self, entry):
         return str(entry.oid)
+    
+    def term_to_label(self, term):
+        return str(term.id)
     
     def to_printable_graph(self, enrichment, graph):
         viz_graph = DiGraph()
@@ -86,17 +96,37 @@ class GmlPrinter(object):
             new_label = self.entry_to_label(entry)
             viz_graph.add_node(new_label, self.to_printable_data(entry))
             entry_labels[entry.oid] = new_label
-            
-        for entry in enrichment.entries:
-            u = graph.get_node(entry.oid)
+        
+        for label, node in graph.nodes.items():
+            if label not in entry_labels:
+                new_label = self.term_to_label(node.data)
+                viz_graph.add_node(new_label, self.term_to_printable(node.data))
+                entry_labels[label] = new_label
+        
+        for label, u in graph.nodes.items():
             for edge in u.succ:
-                viz_graph.add_edge(entry_labels[entry.oid], entry_labels[edge.to_node.label])
+                viz_graph.add_edge(entry_labels[label], entry_labels[edge.to_node.label])
+                
+        
+#         for entry in enrichment.entries:
+#             new_label = self.entry_to_label(entry)
+#             viz_graph.add_node(new_label, self.to_printable_data(entry))
+#             entry_labels[entry.oid] = new_label
+#             
+#         for entry in enrichment.entries:
+#             u = graph.get_node(entry.oid)
+#             for edge in u.succ:
+#                 viz_graph.add_edge(entry_labels[entry.oid], entry_labels[edge.to_node.label])
         
         return viz_graph
     
     def pretty_print(self, enrichment, graph):
-        nodes_list = [x.oid for x in enrichment.entries]
-        g = graph.get_induced_subgraph(nodes_list)
+        nodes_ids = set()
+        for x in enrichment.entries:
+            nodes_ids.add(x.oid)
+            nodes_ids = nodes_ids.union(graph.get_ancestors(x.oid))
+        
+        g = graph.get_induced_subgraph(nodes_ids)
         
         vg = self.to_printable_graph(enrichment, g)
         GmlWriter(self.handle).write_file(vg)
@@ -109,7 +139,8 @@ class GraphVizPrinter(object):
     def __init__(self, file_handle, params = {"dpi" : 96,
                                               "step" : 10,
                                               "color_a" : "#00bd28",
-                                              "color_b" : "#f7ffc8"}):
+                                              "color_b" : "#f7ffc8",
+                                              "color_none" : "#c3c3c3"}):
         self.handle = file_handle
         self.params = params
         self.gradient_step = params["step"]
@@ -119,8 +150,11 @@ class GraphVizPrinter(object):
     def entry_to_label(self, entry):
         return "{0}\n{1}\np:{2}".format(entry.oid, entry.name, entry.p_value)
 
+    def term_to_label(self, term):
+        return "{0}\n{1}".format(term.id, term.name)
+    
     def to_printable_graph(self, enrichment, graph):
-        import pygraphviz
+        import pygraphviz #TODO exception + warning
         
         viz_graph = pygraphviz.AGraph()
         viz_graph.graph_attr.update(dpi = str(self.params["dpi"]))
@@ -134,19 +168,28 @@ class GraphVizPrinter(object):
             col = self.gradient[int(entry.p_value * (self.gradient_step - 1))]
             viz_graph.add_node(new_label, fillcolor = col)
             entry_labels[entry.oid] = new_label
-            
-        for entry in enrichment.entries:
-            u = graph.get_node(entry.oid)
+        
+        col = self.params["color_none"]
+        for label, node in graph.nodes.items():
+            if label not in entry_labels:
+                new_label = self.term_to_label(node.data)
+                viz_graph.add_node(new_label, fillcolor = col)
+                entry_labels[label] = new_label
+        
+        for label, u in graph.nodes.items():
             for edge in u.succ:
-                viz_graph.add_edge(entry_labels[edge.to_node.label], entry_labels[entry.oid],  label=edge.data)
+                viz_graph.add_edge(entry_labels[edge.to_node.label], entry_labels[label],  label=edge.data)
                 
         return viz_graph
             
             
         
     def pretty_print(self, enrichment, graph):
-        nodes_list = [x.oid for x in enrichment.entries]
-        g = graph.get_induced_subgraph(nodes_list)
+        nodes_ids = set()
+        for x in enrichment.entries:
+            nodes_ids.add(x.oid)
+            nodes_ids = nodes_ids.union(graph.get_ancestors(x.oid))
+        g = graph.get_induced_subgraph(nodes_ids)
         
         vg = self.to_printable_graph(enrichment, g)
         vg.draw(self.handle, prog="dot")
@@ -257,7 +300,7 @@ tbody tr:hover td
         self.open_tag("table")
         
         self.open_tag("tr")        
-        for header in ["ID", "name", "p-value", "study hit ratio", "population hit ratio"]:
+        for header in ["ID", "name", "p-value"] + [corrections_labels[x] for x in enrichment.corrections]:
             self.write_tag("th", header)
         self.close_tag("tr")
         
@@ -268,8 +311,8 @@ tbody tr:hover td
             self.close_tag("td")
             self.write_tag("td", str(x.name))
             self.write_tag("td", str(x.p_value))
-            self.write_tag("td", str(x.study_hit_ratio()))
-            self.write_tag("td", str(x.population_hit_ratio()))
+            for _, corr in x.corrections:
+                self.write_tag("td", str(corr))
             self.close_tag("tr")
             
         self.close_tag("table")

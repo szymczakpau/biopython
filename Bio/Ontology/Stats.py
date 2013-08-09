@@ -102,5 +102,8 @@ def bh_fdr_correction(pvals):
 corrections = { "bonferroni" : bonferroni_correction,
                 "bh_fdr" : bh_fdr_correction }
 
+corrections_labels = { "bonferroni" : "Bonferroni correction",
+                       "bh_fdr" : "FDR correction" }
+
 if __name__ == '__main__':
     pass

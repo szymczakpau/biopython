@@ -15,7 +15,8 @@ _FormatToIterator = { "obo" : OboIO.OboIterator,
                       "gaf" : GoaIO.GafIterator }
 
 _FormatToWriter = {"obo" : OboIO.OboWriter,
-                   "gml" : GraphIO.GmlWriter}
+                   "gml" : GraphIO.GmlWriter,
+                   "png" : GraphIO.GraphVisualizer}
 
 _FormatToPrinter = {"gml" : PrettyIO.GmlPrinter,
                     "png" : PrettyIO.GraphVizPrinter,

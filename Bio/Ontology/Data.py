@@ -6,16 +6,17 @@
 
 from Bio.Ontology.Graph import DiGraph
 import copy
+import shlex
 
 class OntologyGraph(DiGraph):
     """
     Represents Gene Ontology graph.
     """
 
-    def __init__(self, terms):
+    def __init__(self, terms = []):
         DiGraph.__init__(self)
         self.typedefs = {}
-        
+        self.synonyms = {}
         defined_relations = set()
         found_relations = set()
         
@@ -31,6 +32,10 @@ class OntologyGraph(DiGraph):
                 if "is_a" in data:
                     for edge in data["is_a"]:
                         self.add_edge(nid, edge, "is_a")
+                if "synonym" in data:
+                    node = self.get_node(nid)
+                    for synonym in data["synonym"]:
+                        self.synonyms[shlex.split(synonym)[0]] = node
                 if "relationship" in data:
                     for edge in data["relationship"]:
                         p = edge.split()
@@ -48,7 +53,17 @@ class OntologyGraph(DiGraph):
         not_defined = found_relations.difference(defined_relations)
         if len(not_defined) > 0:
             raise ValueError("Not defined relationships found: " + str(not_defined))
-                        
+    
+    def get_node(self, u):
+        x = self.nodes.get(u)
+        if x is None:
+            return self.synonyms.get(u)
+        else:
+            return x
+    
+    def node_exists(self, u):
+        return u in self.nodes or u in self.synonyms
+    
     def get_term(self, go_id):
         return self.get_node(go_id).data
     
@@ -63,7 +78,29 @@ class OntologyGraph(DiGraph):
         for edge in node.succ:
             res.add(edge.to_node.label)
         return res
-
+    
+    def trim(self, relation_filter):
+        """
+        Returns graph with only given edges left.
+        """
+        
+        filter_set = set(relation_filter)
+        
+        fgraph = OntologyGraph()
+        
+        for label, node in self.nodes.iteritems():
+            fgraph.update_node(label, node.data)
+            for edge in node.succ:
+                if edge.data in filter_set:
+                    fgraph.add_edge(label, edge.to_node.label, edge.data)
+        
+        fgraph.synonyms = dict(self.synonyms)
+        for rel, typedef in self.typedefs.iteritems():
+            if rel in filter_set:
+                fgraph.typedefs[rel] = typedef
+            
+        return fgraph
+        
 class OntologyTerm(object):
     """
     Represents gene ontology term.

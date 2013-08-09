@@ -68,14 +68,17 @@ class DiGraph(object):
 
     def update_node(self, u, data):
         """
-        Updates node data
+        Updates node data. If node does not exists it is added.
 
         Parameters
         ----------
         u - node to update
         data - node data
         """
-        self.nodes[u].data = data
+        if self.node_exists(u):
+            self.nodes[u].data = data
+        else:
+            self.add_node(u, data)
 
 
     def get_node(self, u):
@@ -109,7 +112,7 @@ class DiGraph(object):
         
         for nid in nodes_ids:
             n = self.nodes[nid]
-            igraph.add_node(nid, n.data)
+            igraph.update_node(nid, n.data)
             for edge in n.succ:
                 if edge.to_node.label in id_set:
                     igraph.add_edge(nid, edge.to_node.label, edge.data)

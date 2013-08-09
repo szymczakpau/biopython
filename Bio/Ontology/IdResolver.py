@@ -14,7 +14,7 @@ class Resolver(object):
     Resolver which simply returns key given for disambiguation.
     """
     
-    def __init__(self, assocs):
+    def __init__(self, annotations):
         pass
     
     def resolve(self, oid):
@@ -26,10 +26,10 @@ class FirstOneResolver(object):
     Resolver which picks first possible key for ambiguous entry.
     """
     
-    def __init__(self, assocs):
+    def __init__(self, annotations):
         self.base_keys = set()
         alter = collections.defaultdict(set)
-        for obj in assocs:
+        for obj in annotations:
             self.base_keys.add(obj.oid)
             for aid in obj.synonyms:
                 alter[aid].add(obj.oid)

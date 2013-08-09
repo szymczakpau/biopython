@@ -119,6 +119,45 @@ class GmlWriter(object):
         import string
         self.handle.write(string.join(self.get_lines(graph), "\n"))
 
+class GraphVisualizer(object):
+    """
+    Stores graph in png format using graphviz library.
+    """
+    
+    def __init__(self, file_handle, params = {"dpi" : 96,
+                                              "color" : "#00bd28"}):
+        self.handle = file_handle
+        self.params = params
+    
+    def term_to_label(self, term):
+        return "{0}\n{1}".format(term.id, term.name)
+
+    def to_printable_graph(self, graph):
+        import pygraphviz #TODO exception + warning
+        
+        viz_graph = pygraphviz.AGraph()
+        viz_graph.graph_attr.update(dpi = str(self.params["dpi"]))
+        viz_graph.node_attr.update(shape="box", style="rounded,filled")
+        viz_graph.edge_attr.update(shape="normal", color="black", dir="back")
+        
+        entry_labels = {}
+        
+        for node in graph.nodes.values():
+            new_label = self.term_to_label(node.data)
+            viz_graph.add_node(new_label, fillcolor = self.params["color"])
+            entry_labels[node.label] = new_label
+            
+        for label, node in graph.nodes.items():
+            for edge in node.succ:
+                viz_graph.add_edge(entry_labels[edge.to_node.label], entry_labels[label],  label=edge.data)
+                
+        return viz_graph
+        
+    def write_file(self, graph, version = None):
+        vg = self.to_printable_graph(graph)
+        vg.draw(self.handle, prog="dot")
+
+
 if __name__ == '__main__':
     from Bio._utils import run_doctest
     run_doctest()
