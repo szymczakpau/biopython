@@ -1,0 +1,5 @@
+!gaf-version: 2.0
+!Test data dervied from FlyBase version fb_2013_03
+FB	FBgn0043467	064Ya		GO:0048149	FB:FBrf0131396|PMID:11086999	IMP		P	064Ya		gene_product	taxon:7227	20060803	FlyBase		
+FB	FBgn0026615	10-4		GO:0005737	FB:FBrf0106275	IDA		C	10-4		gene_product	taxon:7227	20060803	FlyBase		
+FB	FBgn0026615	10-4		GO:0045177	FB:FBrf0106275	IDA		C	10-4		gene_product	taxon:7227	20060803	FlyBase		

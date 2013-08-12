@@ -9,10 +9,13 @@ import OboIO
 import GoaIO
 import GraphIO
 import PrettyIO
+import NexoIO
 
 _FormatToIterator = { "obo" : OboIO.OboIterator,
                       "tsv" : GoaIO.TsvIterator,
                       "gaf" : GoaIO.GafIterator }
+
+_FormatToReader = { "nexo" : NexoIO.NexoReader}
 
 _FormatToWriter = {"obo" : OboIO.OboWriter,
                    "gml" : GraphIO.GmlWriter,
@@ -54,6 +57,30 @@ def write(data, handle, file_format, version = None):
         else:
             raise ValueError("Unknown format '%s'" % file_format)
 
+def read(handle, file_format):
+    """
+    Read file in given format.
+    
+    Parameters:
+     - handle - File handle object to read from, or filename as a string,
+     - file_format - lower case string describing the file format to write,
+         Formats:
+             - nexo
+    """
+
+    if not isinstance(file_format, basestring):
+        raise TypeError("Need a string for the file format (lower case)")
+    if not file_format:
+        raise ValueError("Format required (lower case string)")          
+    if file_format != file_format.lower():
+        raise ValueError("Format string '%s' should be lower case" % format)
+    with as_handle(handle, 'rU') as fp:
+        if file_format in _FormatToReader:
+            reader_generator = _FormatToReader[file_format]
+            return reader_generator(fp).read()
+        else:
+            raise ValueError("Unknown format '%s'" % file_format)
+
 def parse(handle, file_format):
     """
     Iterate over a gene ontology file.
@@ -83,7 +110,7 @@ def parse(handle, file_format):
         else:
             raise ValueError("Unknown format '%s'" % file_format)
 
-def pretty_print(enrichment, graph, handle, file_format, params = None):
+def pretty_print(enrichment, graph, handle, file_format, **params):
     """
     Print results returned by enrichment finder in a specified format.
     
@@ -108,10 +135,7 @@ def pretty_print(enrichment, graph, handle, file_format, params = None):
         #Map the file format to a writer class
         if file_format in _FormatToPrinter:
             writer_class = _FormatToPrinter[file_format]
-            if params == None:
-                writer = writer_class(fp)
-            else:
-                writer = writer_class(fp, params)
+            writer = writer_class(fp, **params)
             writer.pretty_print(enrichment, graph)
         else:
             raise ValueError("Unknown format '%s'" % file_format)

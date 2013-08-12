@@ -20,7 +20,26 @@ class Resolver(object):
     def resolve(self, oid):
         return oid
 
-
+class SetPickerResolver(object):
+    """
+    Resolver which picks the key which belongs to association from given
+    mapping of the keys to synonyms.
+    """
+    def __init__(self, synonyms, annotations):
+        self.base_keys = set()
+        for obj in annotations:
+            self.base_keys.add(obj.oid)
+        self.synonyms = synonyms
+        
+    def resolve(self, oid):
+        if oid in self.base_keys or oid not in self.synonyms.keys():
+            return oid
+        else:
+            for x in self.synonyms[oid]:
+                if x in self.base_keys:
+                    return x
+            return oid
+        
 class FirstOneResolver(object):
     """
     Resolver which picks first possible key for ambiguous entry.
@@ -31,8 +50,9 @@ class FirstOneResolver(object):
         alter = collections.defaultdict(set)
         for obj in annotations:
             self.base_keys.add(obj.oid)
-            for aid in obj.synonyms:
-                alter[aid].add(obj.oid)
+            if obj.synonyms != None: # tempral check TODO
+                for aid in obj.synonyms:
+                    alter[aid].add(obj.oid)
         self.alter_keys = dict([(k,list(v)) for (k, v) in alter.iteritems()])
         
     

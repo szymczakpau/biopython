@@ -1,0 +1,3 @@
+!Test data dervied from FlyBase version fb_2013_03
+FB	FBgn0043467	064Ya		GO:0048149	FB:FBrf0131396|PMID:11086999	IMP		P	064Ya		gene_product	taxon:7227	20060803	FlyBase		
+FB	FBgn0043467	064Ya		GO:0005575	FB:FBrf0159398	ND		C	064Ya		gene_product	taxon:7227	20060803	FlyBase		

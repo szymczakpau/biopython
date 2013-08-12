@@ -98,7 +98,34 @@ def bh_fdr_correction(pvals):
         k += 1
     return cr
         
-
+def kolmogorov_smirnov_rank_test(gene_set, gene_list, gene_corr, p):
+    cval = 0
+    Dn = 0
+    Nr = 0
+    
+    N = len(gene_list)
+    Nh = 0
+    
+    adj_corr = [pow(abs(x), p) for x in gene_corr]
+    for i in xrange(len(gene_list)):
+        if gene_list[i] in gene_set:
+            Nr += adj_corr[i] 
+            Nh += 1
+    
+    miss_pen = float(1) / (N - Nh)
+    
+    stat_plot = []
+    for i in xrange(len(gene_list)):
+        if gene_list[i] in gene_set:
+            cval += adj_corr[i] / Nr
+        else:
+            cval -= miss_pen
+        stat_plot.append(cval)
+        #if abs(cval) > abs(Dn):
+        if cval > Dn:
+            Dn = cval
+    return (Dn, stat_plot)
+    
 corrections = { "bonferroni" : bonferroni_correction,
                 "bh_fdr" : bh_fdr_correction }
 

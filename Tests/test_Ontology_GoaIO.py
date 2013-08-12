@@ -23,15 +23,15 @@ class GoaIOTest(unittest.TestCase):
                 list(it)
 
     def test_read_file(self):
-        to = [GeneAnnotation('FB', 'FBgn0026615', '10-4', '10-4',
+        to = [GeneAnnotation('FBgn0026615', 'FB', '10-4', '10-4',
                        [], 'gene_product', ['taxon:7227'], [], '',
-                       [TermAssociation([], 'GO:0005737', ['FB:FBrf0106275'],
+                       [TermAssociation('GO:0005737', [], ['FB:FBrf0106275'],
                                       'IDA', [], 'C', '20060803', 'FlyBase' ),
-                        TermAssociation([], 'GO:0045177', ['FB:FBrf0106275'],
+                        TermAssociation('GO:0045177', [], ['FB:FBrf0106275'],
                                       'IDA', [], 'C', '20060803', 'FlyBase' )]),
-              GeneAnnotation('FB', 'FBgn0043467', '064Ya', '064Ya',
+              GeneAnnotation('FBgn0043467', 'FB', '064Ya', '064Ya',
                        [], 'gene_product', ['taxon:7227'], [], '',
-                       [TermAssociation([], 'GO:0048149',
+                       [TermAssociation('GO:0048149', [],
                                       ['FB:FBrf0131396','PMID:11086999'],
                                       'IMP', [], 'P', '20060803', 'FlyBase')])]
         with open('Ontology/GoaIO/correct20.fb', 'r') as f:

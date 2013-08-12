@@ -35,6 +35,26 @@ class StatisticalFunctionsTest(unittest.TestCase):
         for i in xrange(len(expected)):
             self.assertEqual(expected[i], computed[i])
     
+    def test_kolmogorov_smirnov_rank_test(self):
+        genes_list = ['YIL152W', 'YDL077C', 'YIL149C', 'YNL110C',
+                      'YBR043C', 'YLR033W', 'YDL096C', 'YNL039W',
+                      'YNL136W', 'YIL160C']
+        gene_corr = [-0.5, -0.4, -0.3, -0.2, -0.1, 0.0, 0.1, 0.2, 0.3, 0.4]
+        genes_set = set([genes_list[i] for i in [1, 2, 4]] + ['YBB0101'])
+        
+        val, plot =  kolmogorov_smirnov_rank_test(genes_set, genes_list, gene_corr, 1)
+        
+        self.assertAlmostEqual(val, 0.7321428571428572, 15)
+        self._almostAssertLists(plot, [-0.14285714285714285, 0.35714285714285726,
+            0.7321428571428572, 0.5892857142857144, 0.7142857142857144,
+            0.5714285714285716, 0.42857142857142877, 0.2857142857142859,
+            0.14285714285714307, 0], 15)
+        
+    def _almostAssertLists(self, la, lb, places):
+        self.assertEqual(len(la), len(lb), msg = "List not equal.")
+        for i in xrange(len(la)):
+            self.assertAlmostEqual(la[i], lb[i], places)
+        
 if __name__ == "__main__":
     runner = unittest.TextTestRunner(verbosity = 2)
     unittest.main(testRunner=runner)

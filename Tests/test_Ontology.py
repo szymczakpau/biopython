@@ -6,7 +6,7 @@
 import unittest
 import Bio.Ontology.IO as OntoIO
 from Bio.Ontology.Data import OntologyGraph
-from Bio.Ontology import EnrichmentFinder
+from Bio.Ontology import EnrichmentFinder, RankedEnrichmentFinder
 
 
 class EnrichmentFinderTest(unittest.TestCase):
@@ -30,6 +30,22 @@ class EnrichmentFinderTest(unittest.TestCase):
     
     def test_term_by_term(self):
         pass
+
+class RankedEnrichmentFinderTest(unittest.TestCase):
+    
+    def setUp(self):
+        gonodes_iter = OntoIO.parse("Ontology/go_test.obo", "obo")
+        assocs_iter = OntoIO.parse("Ontology/ga_test.fb", "gaf")
+        go_graph = OntologyGraph(gonodes_iter)
+        self.ef = RankedEnrichmentFinder(assocs_iter, go_graph)
+    
+    def test_find_enriched_terms(self):
+        expected = set(['GO:1901700', 'GO:0030534', 'GO:0003674', 'GO:0032501',
+                        'GO:0044707', 'GO:0048149', 'GO:0044708', 'GO:0050896',
+                        'GO:0007610', 'GO:0005575', 'GO:0045471', 'GO:0008150',
+                        'GO:0042221', 'GO:0097305', 'GO:0010033', 'GO:0044699'])
+        self.assertEqual(expected, self.ef._find_enriched_terms(['FBgn0043467', 'FBgn0004367']))
+    
     
 if __name__ == "__main__":
     runner = unittest.TextTestRunner(verbosity = 2)

@@ -233,7 +233,6 @@ def: "The chemical reactions and pathways resulting in the formation of organic 
 id: GO:0010972
 name: negative regulation of G2/M transition of mitotic cell cycle
 synonym: "negative regulation of mitotic entry" EXACT [GOC:vw]
-relationship: negatively_regulates GO:0000086
 namespace: biological_process
 is_a: GO:0010389
 is_a: GO:0045930
@@ -1545,7 +1544,6 @@ synonym: "down regulation of mitotic cell cycle phase transition" EXACT [GOC:Ter
 synonym: "down-regulation of mitotic cell cycle phase transition" EXACT [GOC:TermGenie]
 synonym: "downregulation of mitotic cell cycle phase transition" EXACT [GOC:TermGenie]
 synonym: "inhibition of mitotic cell cycle phase transition" NARROW [GOC:TermGenie]
-relationship: negatively_regulates GO:0044772
 namespace: biological_process
 is_a: GO:1901988
 is_a: GO:1901990
@@ -1650,7 +1648,6 @@ def: "Reactions, triggered in response to the presence of a foreign body or the 
 id: GO:1901987
 name: regulation of cell cycle phase transition
 synonym: "regulation of cell cycle transition" EXACT [GOC:TermGenie]
-relationship: regulates GO:0044770
 namespace: biological_process
 is_a: GO:0010564
 def: "Any process that modulates the frequency, rate or extent of cell cycle phase transition." [GOC:mtg_cell_cycle, GOC:TermGenie, PMID:22841721]
@@ -1812,7 +1809,6 @@ synonym: "downregulation of cell cycle transition" EXACT [GOC:TermGenie]
 synonym: "inhibition of cell cycle phase transition" NARROW [GOC:TermGenie]
 synonym: "inhibition of cell cycle transition" EXACT [GOC:TermGenie]
 synonym: "negative regulation of cell cycle transition" EXACT [GOC:TermGenie]
-relationship: negatively_regulates GO:0044770
 namespace: biological_process
 is_a: GO:0010948
 is_a: GO:1901987
@@ -2155,7 +2151,6 @@ def: "Interacting selectively and non-covalently with a purine ribonucleoside tr
 [Term]
 id: GO:0010564
 name: regulation of cell cycle process
-relationship: regulates GO:0022402
 namespace: biological_process
 is_a: GO:0051726
 def: "Any process that modulates a cellular process that is involved in the progression of biochemical and morphological phases and events that occur in a cell during successive cell replication or nuclear replication events." [GOC:dph, GOC:tb]
@@ -2290,7 +2285,6 @@ def: "The entirety of a process in which information is transmitted within a bio
 [Term]
 id: GO:1901990
 name: regulation of mitotic cell cycle phase transition
-relationship: regulates GO:0044772
 namespace: biological_process
 is_a: GO:0007346
 is_a: GO:1901987
@@ -2367,7 +2361,6 @@ synonym: "stimulation of growth" NARROW []
 synonym: "up regulation of growth" EXACT []
 synonym: "up-regulation of growth" EXACT []
 synonym: "upregulation of growth" EXACT []
-relationship: positively_regulates GO:0040007
 namespace: biological_process
 is_a: GO:0040008
 is_a: GO:0048518
@@ -2438,7 +2431,6 @@ def: "Germline specific intercellular bridge. During cyst formation in insects, 
 [Term]
 id: GO:0051783
 name: regulation of nuclear division
-relationship: regulates GO:0000280
 namespace: biological_process
 is_a: GO:0033043
 def: "Any process that modulates the frequency, rate or extent of nuclear division, the partitioning of the nucleus and its genetic information." [GOC:ai]
@@ -2842,7 +2834,6 @@ def: "The multiplication or reproduction of cells, resulting in the expansion of
 [Term]
 id: GO:0007088
 name: regulation of mitosis
-relationship: regulates GO:0007067
 namespace: biological_process
 is_a: GO:0007346
 is_a: GO:0010564
@@ -3197,10 +3188,8 @@ def: "The chemical reactions and pathways involving macromolecules, any molecule
 [Term]
 id: GO:0010948
 name: negative regulation of cell cycle process
-relationship: negatively_regulates GO:0022402
 namespace: biological_process
 is_a: GO:0010564
-is_a: GO:0048523
 def: "Any process that decreases the rate, frequency or extent of a cellular process that is involved in the progression of biochemical and morphological phases and events that occur in a cell during successive cell replication or nuclear replication events." [GOC:dph, GOC:tb]
 
 [Term]
@@ -3349,7 +3338,6 @@ def: "A developmental process, independent of morphogenetic (shape) change, that
 id: GO:0040008
 name: regulation of growth
 subset: gosubset_prok
-relationship: regulates GO:0040007
 namespace: biological_process
 is_a: GO:0050789
 def: "Any process that modulates the frequency, rate or extent of the growth of all or part of an organism so that it occurs at its proper speed, either globally or in a specific part of the organism's development." [GOC:ems, GOC:mah]
@@ -3475,7 +3463,6 @@ subset: gosubset_prok
 xref: Wikipedia:Regulation_of_gene_expression
 synonym: "regulation of gene product expression" RELATED [GOC:curators]
 synonym: "regulation of protein expression" NARROW [GOC:curators]
-relationship: regulates GO:0010467
 namespace: biological_process
 is_a: GO:0060255
 def: "Any process that modulates the frequency, rate or extent of gene expression. Gene expression is the process in which a gene's coding sequence is converted into a mature gene product or products (proteins or RNA). This includes the production of an RNA transcript as well as any processing to produce a mature RNA product or an mRNA (for protein-coding genes) and the translation of that mRNA into protein. Some protein processing events may be included when they are required to form an active form of a product from an inactive precursor form." [GOC:dph, GOC:tb]
@@ -3762,7 +3749,6 @@ def: "Any series of molecular signals in which a small monomeric GTPase relays o
 id: GO:0010389
 name: regulation of G2/M transition of mitotic cell cycle
 synonym: "regulation of mitotic entry" EXACT [GOC:vw]
-relationship: regulates GO:0000086
 namespace: biological_process
 is_a: GO:1901990
 def: "Any process that modulates the rate or extent of progression from G2 phase to M phase of the mitotic cell cycle." [GOC:mtg_cell_cycle, PMID:17329565]

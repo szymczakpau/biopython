@@ -128,7 +128,9 @@ class GeneAnnotation(object):
     Represents one gene ontology annotation object
     """
     
-    def __init__(self, db, oid, symbol, name, synonyms, otype, taxon, ext = None, gp_id = None, associations = None):
+    def __init__(self, oid, db = None, symbol = None, name = None,
+                 synonyms = None, otype = None, taxon = None,
+                 ext = None, gp_id = None, associations = None):
         self.db = db
         self.oid = oid
         self.symbol = symbol
@@ -178,7 +180,8 @@ class TermAssociation(object):
     Represents one gene ontology term association
     """
     
-    def __init__(self, qualifier, go_id, db_ref, evidence, with_or_from, aspect, date, assigned_by):
+    def __init__(self, go_id, qualifier = None, db_ref = None, evidence = None,
+                 with_or_from = None, aspect = None, date = None, assigned_by = None):
         self.qualifier = qualifier
         self.go_id = go_id
         self.db_ref = db_ref

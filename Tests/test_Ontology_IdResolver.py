@@ -11,16 +11,16 @@ class FirstOneResolverTest(unittest.TestCase):
 
 
     def test_resolve(self):
-        assocs = [GeneAnnotation('FB', 'FBgn0004364', 'x', 'x',
+        assocs = [GeneAnnotation('FBgn0004364','FB', 'x', 'x',
                        ['18wheeler', 'CG8896', 'CT25100'],
                        'x', ['x'], [], '',[]),
-                  GeneAnnotation('FB', 'FBgn0043467', 'x', 'x',
+                  GeneAnnotation('FBgn0043467','FB', 'x', 'x',
                        [],
                        'x', ['x'], [], '',[]),
-                  GeneAnnotation('FB', 'FBgn0004907', 'x', 'x',
+                  GeneAnnotation('FBgn0004907','FB', 'x', 'x',
                        ['14-3-3', '14-3-3 zeta', 'x'],
                        'x', ['x'], [], '',[]),
-                  GeneAnnotation('FB', 'FBgn0010339', 'x', 'x',
+                  GeneAnnotation('FBgn0010339','FB', 'x', 'x',
                        ['CG8340', 'GTP-bp', 'X71866', 'x'],
                        'x', ['x'], [], '',[])
                   ]

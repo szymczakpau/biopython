@@ -49,7 +49,7 @@ class GafIterator(object):
     
     def _to_goa(self, obj_rows):
         row = obj_rows[0]
-        obj_params = [row[0], row[1], row[2], row[9], self._split_multi(row[10]),
+        obj_params = [row[1], row[0], row[2], row[9], self._split_multi(row[10]),
                       row[11], self._split_multi(row[12])]
         
         if self.version == "1.0":
@@ -62,7 +62,7 @@ class GafIterator(object):
         assocs = []
         for row in obj_rows:
             if len(row) == row_len:
-                assocs.append(TermAssociation(self._split_multi(row[3]), row[4],
+                assocs.append(TermAssociation(row[4], self._split_multi(row[3]),
                                             self._split_multi(row[5]), row[6],
                                             self._split_multi(row[7]), row[8],
                                             row[13], row[14]))

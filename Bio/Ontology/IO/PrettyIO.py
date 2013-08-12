@@ -58,15 +58,12 @@ class GmlPrinter(object):
     Stores found enrichments as a graph in gml format.
     """
     
-    def __init__(self, file_handle, params = {"step" : 10,
-                                              "color_a" : "#00bd28",
-                                              "color_b" : "#f7ffc8",
-                                              "color_none" : "#c3c3c3"}):
+    def __init__(self, file_handle, gradient_step = 10, color_a = "#00bd28",
+                 color_b = "#f7ffc8", color_none = "#c3c3c3"):
         self.handle = file_handle
-        self.params = params
-        self.gradient_step = params["step"]
-        self.gradient = get_gradient(params["color_a"], params["color_b"],
-                                     self.gradient_step)
+        self.gradient_step = gradient_step
+        self.color_none = color_none
+        self.gradient = get_gradient(color_a, color_b, self.gradient_step)
         
     def to_printable_data(self, e_entry):
         return {"name" : e_entry.name,
@@ -76,7 +73,7 @@ class GmlPrinter(object):
                 }
     def term_to_printable(self, term):
         return {"name" : term.name,
-                "graphics" : { "fill" : self.params["color_none"]
+                "graphics" : { "fill" : self.color_none
                               }
                 }
     def entry_to_label(self, entry):
@@ -106,17 +103,6 @@ class GmlPrinter(object):
         for label, u in graph.nodes.items():
             for edge in u.succ:
                 viz_graph.add_edge(entry_labels[label], entry_labels[edge.to_node.label])
-                
-        
-#         for entry in enrichment.entries:
-#             new_label = self.entry_to_label(entry)
-#             viz_graph.add_node(new_label, self.to_printable_data(entry))
-#             entry_labels[entry.oid] = new_label
-#             
-#         for entry in enrichment.entries:
-#             u = graph.get_node(entry.oid)
-#             for edge in u.succ:
-#                 viz_graph.add_edge(entry_labels[entry.oid], entry_labels[edge.to_node.label])
         
         return viz_graph
     
@@ -136,17 +122,14 @@ class GraphVizPrinter(object):
     Stores found enrichments as visualization in png format using graphviz library.
     """
     
-    def __init__(self, file_handle, params = {"dpi" : 96,
-                                              "step" : 10,
-                                              "color_a" : "#00bd28",
-                                              "color_b" : "#f7ffc8",
-                                              "color_none" : "#c3c3c3"}):
+    def __init__(self, file_handle, gradient_step = 10, color_a = "#00bd28",
+                 color_b = "#f7ffc8", color_none = "#c3c3c3", dpi = 96):
         self.handle = file_handle
-        self.params = params
-        self.gradient_step = params["step"]
-        self.gradient = get_gradient(params["color_a"], params["color_b"],
-                                     self.gradient_step)
-    
+        self.color_none = color_none
+        self.gradient_step = gradient_step
+        self.gradient = get_gradient(color_a, color_b, self.gradient_step)
+        self.dpi = str(dpi)
+        
     def entry_to_label(self, entry):
         return "{0}\n{1}\np:{2}".format(entry.oid, entry.name, entry.p_value)
 
@@ -157,7 +140,7 @@ class GraphVizPrinter(object):
         import pygraphviz #TODO exception + warning
         
         viz_graph = pygraphviz.AGraph()
-        viz_graph.graph_attr.update(dpi = str(self.params["dpi"]))
+        viz_graph.graph_attr.update(dpi = self.dpi)
         viz_graph.node_attr.update(shape="box", style="rounded,filled")
         viz_graph.edge_attr.update(shape="normal", color="black", dir="back")
         
@@ -169,11 +152,10 @@ class GraphVizPrinter(object):
             viz_graph.add_node(new_label, fillcolor = col)
             entry_labels[entry.oid] = new_label
         
-        col = self.params["color_none"]
         for label, node in graph.nodes.items():
             if label not in entry_labels:
                 new_label = self.term_to_label(node.data)
-                viz_graph.add_node(new_label, fillcolor = col)
+                viz_graph.add_node(new_label, fillcolor = self.color_none)
                 entry_labels[label] = new_label
         
         for label, u in graph.nodes.items():
@@ -199,9 +181,8 @@ class TxtPrinter(object):
     Prints found enrichments to txt file.
     """
     
-    def __init__(self, file_handle, params = None):
+    def __init__(self, file_handle):
         self.handle = file_handle
-        self.params = params
         
     def pretty_print(self, enrichment, graph):
         self.handle.write("Enrichments found using {0} method.\n\nEnrichments:\n\n"
@@ -216,14 +197,14 @@ class TxtPrinter(object):
                 self.handle.write(str(x))
 
 
-class HtmlPrinter(object):
+class HtmlPrinter(object): #TODO smarter params givin'
     """
     Prints found enrichments to html file.
     """
     
-    def __init__(self, file_handle, params = {"go_to_url" : "http://amigo.geneontology.org/cgi-bin/amigo/term_details?term="}):
+    def __init__(self, file_handle, go_to_url = "http://amigo.geneontology.org/cgi-bin/amigo/term_details?term="):
         self.handle = file_handle
-        self.params = params
+        self.go_to_url = go_to_url
         self.style = """<style type="text/css">
 .warning
 {
@@ -307,12 +288,12 @@ tbody tr:hover td
         for x in sorted_entries:
             self.open_tag("tr")
             self.open_tag("td")
-            self.write_tag("a", str(x.oid), {"href" : self.params["go_to_url"] + str(x.oid)})
+            self.write_tag("a", str(x.oid), {"href" : self.go_to_url + str(x.oid)})
             self.close_tag("td")
             self.write_tag("td", str(x.name))
             self.write_tag("td", str(x.p_value))
-            for _, corr in x.corrections:
-                self.write_tag("td", str(corr))
+            for cr in enrichment.corrections:
+                self.write_tag("td", str(x.corrections[cr]))
             self.close_tag("tr")
             
         self.close_tag("table")
