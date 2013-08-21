@@ -121,8 +121,8 @@ def kolmogorov_smirnov_rank_test(gene_set, gene_list, gene_corr, p):
         else:
             cval -= miss_pen
         stat_plot.append(cval)
-        #if abs(cval) > abs(Dn):
-        if cval > Dn:
+        if abs(cval) > abs(Dn):
+        #if cval > Dn:
             Dn = cval
     return (Dn, stat_plot)
     

@@ -13,11 +13,10 @@ class OntologyGraph(DiGraph):
     Represents Gene Ontology graph.
     """
 
-    def __init__(self, terms = []):
+    def __init__(self, terms = []): #TODO add is_a to typedefs
         DiGraph.__init__(self)
         self.typedefs = {}
         self.synonyms = {}
-        defined_relations = set()
         found_relations = set()
         
         for (term_type, data) in terms:
@@ -47,13 +46,13 @@ class OntologyGraph(DiGraph):
             elif term_type == "Typedef":
                 rid = data["id"][0]
                 self.typedefs[rid] = data
-                defined_relations.add(rid)
         
         # validate whether all relationships were defined
-        not_defined = found_relations.difference(defined_relations)
+        not_defined = found_relations.difference(self.typedefs.keys())
         if len(not_defined) > 0:
             raise ValueError("Not defined relationships found: " + str(not_defined))
-    
+        
+        
     def get_node(self, u):
         x = self.nodes.get(u)
         if x is None:
@@ -79,6 +78,9 @@ class OntologyGraph(DiGraph):
             res.add(edge.to_node.label)
         return res
     
+    def get_relationship_types(self):
+        return ["is_a"] + list(self.typedefs.keys())
+        
     def trim(self, relation_filter):
         """
         Returns graph with only given edges left.

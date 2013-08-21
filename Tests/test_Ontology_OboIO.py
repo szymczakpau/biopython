@@ -18,8 +18,8 @@ class OboWriterTest(unittest.TestCase):
                           OntologyTerm("GO:0022627", "cytosolic small ribosomal subunit",
                                  {"is_a" : ["GO:0015935", "GO:0044445"]})]
         f = StringIO()
-        writer = OboWriter(f)
-        writer.write_file(terms_to_write, "1.2")
+        writer = OboWriter(f, version = "1.2")
+        writer.write_file(terms_to_write)
         
         print terms_to_write[0]
         

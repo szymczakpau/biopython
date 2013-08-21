@@ -15,20 +15,19 @@ _FormatToIterator = { "obo" : OboIO.OboIterator,
                       "tsv" : GoaIO.TsvIterator,
                       "gaf" : GoaIO.GafIterator }
 
-_FormatToReader = { "nexo" : NexoIO.NexoReader}
+_FormatToReader = { "nexo" : NexoIO.NexoReader,
+                    "obo"  : OboIO.OboReader}
 
-_FormatToWriter = {"obo" : OboIO.OboWriter,
-                   "gml" : GraphIO.GmlWriter,
-                   "png" : GraphIO.GraphVisualizer}
+_FormatToWriter = { "png" : GraphIO.GraphVisualizer}
 
 _FormatToPrinter = {"gml" : PrettyIO.GmlPrinter,
                     "png" : PrettyIO.GraphVizPrinter,
                     "txt" : PrettyIO.TxtPrinter,
                     "html": PrettyIO.HtmlPrinter}
 
-def write(data, handle, file_format, version = None):
+def write(data, handle, file_format, **params):
     """
-    Write an ontology data to file.
+    Writes given data to file.
 
     Parameters:
      - data - data to write to a file,
@@ -36,9 +35,9 @@ def write(data, handle, file_format, version = None):
                    (note older versions of Biopython only took a handle),
      - file_format - lower case string describing the file format to write,
          Formats:
-             - obo
-             - gml
-     - version - file format version .
+             - png - writes picture of graph to png format (this feature needs
+               pygraphviz to be installed)
+     - params - additional parameters
      
     You should close the handle after calling this function.
 
@@ -53,11 +52,11 @@ def write(data, handle, file_format, version = None):
         #Map the file format to a writer class
         if file_format in _FormatToWriter:
             writer_class = _FormatToWriter[file_format]
-            writer_class(fp).write_file(data, version)
+            writer_class(fp, **params).write_file(data)
         else:
             raise ValueError("Unknown format '%s'" % file_format)
 
-def read(handle, file_format):
+def read(handle, file_format, **params):
     """
     Read file in given format.
     
@@ -66,6 +65,10 @@ def read(handle, file_format):
      - file_format - lower case string describing the file format to write,
          Formats:
              - nexo
+             - obo
+     - params - additional parameters
+
+    You should close the handle after calling this function.
     """
 
     if not isinstance(file_format, basestring):
@@ -77,7 +80,7 @@ def read(handle, file_format):
     with as_handle(handle, 'rU') as fp:
         if file_format in _FormatToReader:
             reader_generator = _FormatToReader[file_format]
-            return reader_generator(fp).read()
+            return reader_generator(fp, **params).read()
         else:
             raise ValueError("Unknown format '%s'" % file_format)
 
@@ -92,6 +95,8 @@ def parse(handle, file_format):
              - obo
              - tsv
              - gaf
+             
+    You should close the handle after calling this function.
     """
 
     if not isinstance(file_format, basestring):
@@ -122,7 +127,8 @@ def pretty_print(enrichment, graph, handle, file_format, **params):
          Formats:
              - gml
              - png
-             
+     - params - additional parameters
+     
     You should close the handle after calling this function.
     """
     

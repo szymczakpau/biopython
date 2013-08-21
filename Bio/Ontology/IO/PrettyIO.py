@@ -60,6 +60,7 @@ class GmlPrinter(object):
     
     def __init__(self, file_handle, gradient_step = 10, color_a = "#00bd28",
                  color_b = "#f7ffc8", color_none = "#c3c3c3"):
+        
         self.handle = file_handle
         self.gradient_step = gradient_step
         self.color_none = color_none

@@ -10,9 +10,9 @@ _EOF = 3
 
 
 import collections
-import re
+import re, shlex
 
-from Bio.Ontology.Data import OntologyTerm
+from Bio.Ontology.Data import OntologyTerm, OntologyGraph
 
 class OboWriter(object):
     """
@@ -21,13 +21,13 @@ class OboWriter(object):
     Writes OntologyTerms to obo files.
     """
     
-    def __init__(self, file_handle):
+    def __init__(self, file_handle, version = "1.2"):
         self.handle = file_handle
+        self.version = version
     
-    def write_file(self, terms_list, version):
+    def write_file(self, terms_list):
         # now only terms are valid for writing
-        if version != None:
-            self.handle.write("format-version:" + version + "\n")
+        self.handle.write("format-version:" + self.version + "\n")
         for term in terms_list:
             if isinstance(term, OntologyTerm):
                 self.handle.write("\n[Term]\n")
@@ -36,8 +36,7 @@ class OboWriter(object):
                 for k, v in term.attrs.iteritems():
                     for vi in v:
                         self.handle.write(k + ": " + vi + "\n")
-                
-        
+    
 class OboIterator(object):
     """
     Parses obo files.
@@ -107,3 +106,63 @@ class OboIterator(object):
         stanza_type = self._found_stanza_type
         self._read_stanza()
         return (stanza_type, self._dict)
+
+def terms_to_graph(terms):
+    """
+    Crates OntologyGraph from terms list obtained from OboIterator
+    """
+    
+    g = OntologyGraph()
+    defined_relations = set()
+    found_relations = set()
+    
+    for (term_type, data) in terms:
+        if term_type == "Term": # Add only terms and typedefs for now
+            nid = data.pop("id")[0]
+            name = data.pop("name")[0]
+            term = OntologyTerm(nid, name, data)
+            if g.node_exists(nid):
+                g.update_node(nid, term)
+            else:
+                g.add_node(nid, term)
+            if "is_a" in data:
+                for edge in data["is_a"]:
+                    g.add_edge(nid, edge, "is_a")
+            if "synonym" in data:
+                node = g.get_node(nid)
+                for synonym in data["synonym"]:
+                    g.synonyms[shlex.split(synonym)[0]] = node
+            if "relationship" in data:
+                for edge in data["relationship"]:
+                    p = edge.split()
+                    if len(p) == 2:
+                        g.add_edge(nid, p[1], p[0])
+                        found_relations.add(p[0])
+                    else:
+                        raise ValueError("Incorrect relationship: " + edge)
+        elif term_type == "Typedef":
+            rid = data["id"][0]
+            g.typedefs[rid] = data
+            defined_relations.add(rid)
+    
+    # validate whether all relationships were defined
+    not_defined = found_relations.difference(defined_relations)
+    if len(not_defined) > 0:
+        raise ValueError("Not defined relationships found: " + str(not_defined))
+    
+    return g
+
+class OboReader(object):
+    """
+    Reads obo file to OntologyGraph.
+    """
+
+    def __init__(self, file_handle):
+        self._handle = file_handle
+    
+    
+    def read(self):
+        """
+        Returns obo file representation as OntologyGraph.
+        """
+        return terms_to_graph(OboIterator(self._handle))

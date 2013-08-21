@@ -3,6 +3,8 @@
 # license.  Please see the LICENSE file that should have been included   
 # as part of this package.
 
+import string
+
 _INDENT = "  "
         
 class GmlWriter(object):
@@ -115,8 +117,7 @@ class GmlWriter(object):
         lines.append("]")
         return lines
     
-    def write_file(self, graph, version = None):
-        import string
+    def write_file(self, graph):
         self.handle.write(string.join(self.get_lines(graph), "\n"))
 
 class GraphVisualizer(object):
@@ -124,10 +125,10 @@ class GraphVisualizer(object):
     Stores graph in png format using graphviz library.
     """
     
-    def __init__(self, file_handle, params = {"dpi" : 96,
-                                              "color" : "#00bd28"}):
+    def __init__(self, file_handle, dpi = 96, color = "#00bd28"):
         self.handle = file_handle
-        self.params = params
+        self.dpi = dpi
+        self.color = color
     
     def term_to_label(self, term):
         return "{0}\n{1}".format(term.id, term.name)
@@ -136,7 +137,7 @@ class GraphVisualizer(object):
         import pygraphviz #TODO exception + warning
         
         viz_graph = pygraphviz.AGraph()
-        viz_graph.graph_attr.update(dpi = str(self.params["dpi"]))
+        viz_graph.graph_attr.update(dpi = str(self.dpi))
         viz_graph.node_attr.update(shape="box", style="rounded,filled")
         viz_graph.edge_attr.update(shape="normal", color="black", dir="back")
         
@@ -144,7 +145,7 @@ class GraphVisualizer(object):
         
         for node in graph.nodes.values():
             new_label = self.term_to_label(node.data)
-            viz_graph.add_node(new_label, fillcolor = self.params["color"])
+            viz_graph.add_node(new_label, fillcolor = self.color)
             entry_labels[node.label] = new_label
             
         for label, node in graph.nodes.items():
@@ -153,7 +154,7 @@ class GraphVisualizer(object):
                 
         return viz_graph
         
-    def write_file(self, graph, version = None):
+    def write_file(self, graph):
         vg = self.to_printable_graph(graph)
         vg.draw(self.handle, prog="dot")
 

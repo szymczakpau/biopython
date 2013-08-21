@@ -96,14 +96,8 @@ class EnrichmentFinder(BaseEnrichmentFinder):
     using readers from Bio.Ontology.IO module.
     
     >>> import Bio.Ontology.IO as OntoIO
-    >>> gonodes_iter = OntoIO.parse("Ontology/go_test.obo", "obo")
+    >>> go_graph = OntoIO.read("Ontology/go_test.obo", "obo")
     >>> assocs_iter = OntoIO.parse("Ontology/ga_test.fb", "gaf")
-    
-    Now you've got iterators to files containing both gene ontology graph and
-    associations. You need to init the graph. 
-    
-    >>> from Bio.Ontology.Data import OntologyGraph
-    >>> go_graph = OntologyGraph(gonodes_iter)
     
     Now is the time to create EnrichmentFinder. Besides the arguments
     mentioned before you could specify an id resolver, which basically tries
@@ -384,7 +378,7 @@ class RankedEnrichmentFinder(BaseEnrichmentFinder):
                 results[e.oid].append(e)
         return results
     
-    def find_enrichment_parent_child(self, gene_rank):        
+    def find_enrichment_parent_child(self, gene_rank, side = "+"): #TODO add corrections
         """
         Finds enrichment by applying parent-child analysis to list slices.
         """
@@ -399,14 +393,20 @@ class RankedEnrichmentFinder(BaseEnrichmentFinder):
         ef = EnrichmentFinder(self.annotations.itervalues(), self.o_graph,
                                   resolved_list, IdResolver.Resolver)
         
-        plus_results = self._get_half_results(resolved_list, ef, warnings)
-        minus_results = self._get_half_results(resolved_list[::-1], ef, warnings)
-        
-        for k, v in minus_results.iteritems():
-            plus_results[k] += v
+        if side == "-":
+            all_results = self._get_half_results(resolved_list[::-1], ef, warnings)
+        elif side == "+":
+            all_results = self._get_half_results(resolved_list, ef, warnings)
+        elif side == "+/-":
+            minus_results = self._get_half_results(resolved_list, ef, warnings)
+            all_results = self._get_half_results(resolved_list[::-1], ef, warnings)
+            for k, v in minus_results.iteritems():
+                all_results[k] += v
+        else:
+            raise ValueError('"{0}" is not correct side specification.')
         
         result = []
-        for _, entries in plus_results.iteritems():
+        for _, entries in all_results.iteritems():
             min_pval = 1.0
             for e in entries:
                 if e.p_value < min_pval:
@@ -424,7 +424,7 @@ class RankedEnrichmentFinder(BaseEnrichmentFinder):
             perms.append(list(permutation))
         return perms
     
-    def find_enrichment_from_rank(self, gene_rank, perms_no = 100):
+    def find_enrichment_from_rank(self, gene_rank, perms_no = 100): #TODO fdr for that
         """
         Finds enrichment using GSEA method.
         
@@ -447,7 +447,7 @@ class RankedEnrichmentFinder(BaseEnrichmentFinder):
         
         for term in enriched_terms:
             gene_set = self.terms_to_population_genes[term]
-            orig_dn, _ = Stats.kolmogorov_smirnov_rank_test(gene_set, resolved_list, gene_corr, 1)
+            orig_dn, orig_plot = Stats.kolmogorov_smirnov_rank_test(gene_set, resolved_list, gene_corr, 1)
             
             pcount = 0
             for perm in perms:
@@ -457,8 +457,11 @@ class RankedEnrichmentFinder(BaseEnrichmentFinder):
                 else:
                     pcount += int(orig_dn < perm_dn)
             pval = pcount / float(perms_no)
-            result.append(EnrichmentEntry(term, self.o_graph.get_term(term).name,
-                                    pval))
+            entry = EnrichmentEntry(term, self.o_graph.get_term(term).name,
+                                    pval)
+            entry.attrs["Dn"] = orig_dn
+            entry.attrs["plot"] = orig_plot
+            result.append(entry)
         
         if len(self.o_graph.cycles) > 0:
             warnings.append("Graph contains cycles: " + str(self.o_graph.cycles))

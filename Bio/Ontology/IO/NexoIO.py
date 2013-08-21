@@ -13,8 +13,11 @@ _NODE = 1
 _EDGE = 2
 
 class NexoContentHandler(xml.sax.ContentHandler):
-    def __init__(self):
+    def __init__(self, get_all_attrs, annotation_source):
         xml.sax.ContentHandler.__init__(self)
+        
+        self.get_all_attrs = get_all_attrs
+        self.annotation_source = annotation_source
         
         self.state = _SKIP
         self.old_state = _SKIP
@@ -48,21 +51,26 @@ class NexoContentHandler(xml.sax.ContentHandler):
             self.old_state = self.state
             self.state = _SKIP
             
-        elif name == "att": #TODO add or no rest of the values ?
+        elif name == "att":
             if self.state == _NODE:
                 if attrs["name"] == "Term":
                     val = attrs.get("value")
                     if val != None:
                         self.current_term.name = val
-                elif attrs["name"] == "Assigned Genes":
+                elif (attrs["name"] == "Assigned Genes" and self.annotation_source == "genes")\
+                 or (attrs["name"] == "Assigned Orfs" and self.annotation_source == "orfs"):
                     val = attrs.get("value")
                     if val != None:
                         for gene in self._split_list(val):
                             self.annotations[gene].append(self.current_term.id)
+                elif self.get_all_attrs:
+                    val = attrs.get("value")
+                    if val != None:
+                        self.current_term.attrs[attrs["name"]] = val
             elif self.state == _EDGE:
                 if attrs["name"] == "NeXO relation type":
                     self.current_edge.append(attrs.get("value"))
-                    
+            
     def endElement(self, name):
         if name == "node" or name == "edge":
             self.state = _SKIP
@@ -78,16 +86,17 @@ class NexoReader(object):
     """
 
 
-    def __init__(self, file_handle):
+    def __init__(self, file_handle,  get_all_attrs = False, annotation_source = "genes"):
         self.handle = file_handle
-        
+        self.get_all_attrs = get_all_attrs
+        self.annotation_source = annotation_source
     
     def read(self):
         """
         Returns gene annotation list and ontology graph read from nexo file.
         """
         
-        content_handler = NexoContentHandler()
+        content_handler = NexoContentHandler(self.get_all_attrs, self.annotation_source)
         xml.sax.parse(self.handle, content_handler)
         
         annotations = []
@@ -103,7 +112,7 @@ class NexoReader(object):
         for edge in content_handler.edges:
             source = content_handler.nodes[edge[0]].id
             target = content_handler.nodes[edge[1]].id
-            graph.add_edge(source, target, edge[2])
+            graph.add_edge(target, source, edge[2]) # in our representation it is inverted
         
         return (annotations, graph)
         
