@@ -5,16 +5,14 @@
 
 import unittest
 import Bio.Ontology.IO as OntoIO
-from Bio.Ontology.Data import OntologyGraph
 from Bio.Ontology import EnrichmentFinder, RankedEnrichmentFinder
 
 
 class EnrichmentFinderTest(unittest.TestCase):
 
     def setUp(self):
-        gonodes_iter = OntoIO.parse("Ontology/go_test.obo", "obo")
+        go_graph = OntoIO.read("Ontology/go_test.obo", "obo")
         assocs_iter = OntoIO.parse("Ontology/ga_test.fb", "gaf")
-        go_graph = OntologyGraph(gonodes_iter)
         self.ef = EnrichmentFinder(assocs_iter, go_graph)
     
     def test_find_terms_associations(self):
@@ -34,9 +32,8 @@ class EnrichmentFinderTest(unittest.TestCase):
 class RankedEnrichmentFinderTest(unittest.TestCase):
     
     def setUp(self):
-        gonodes_iter = OntoIO.parse("Ontology/go_test.obo", "obo")
+        go_graph = OntoIO.read("Ontology/go_test.obo", "obo")
         assocs_iter = OntoIO.parse("Ontology/ga_test.fb", "gaf")
-        go_graph = OntologyGraph(gonodes_iter)
         self.ef = RankedEnrichmentFinder(assocs_iter, go_graph)
     
     def test_find_enriched_terms(self):

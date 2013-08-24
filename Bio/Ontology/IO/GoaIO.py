@@ -49,27 +49,37 @@ class GafIterator(object):
     
     def _to_goa(self, obj_rows):
         row = obj_rows[0]
-        obj_params = [row[1], row[0], row[2], row[9], self._split_multi(row[10]),
-                      row[11], self._split_multi(row[12])]
+        
+        obj_id = row[1]
+        obj_attrs = {'DB' : row[0], 'DB Object Symbol' : row[2],
+                      'DB Object Name' : row[9],
+                      'DB Object Synonym' : self._split_multi(row[10]),
+                      'DB Object Type' : row[11],
+                      'Taxon' : self._split_multi(row[12])}
         
         if self.version == "1.0":
             row_len = 15
-            obj_params += [None, None]
         else:
             row_len = 17
-            obj_params += [self._split_multi(row[15]), row[16]]
+            obj_attrs['Annotation Extension'] = self._split_multi(row[15])
+            obj_attrs['Gene Product Form ID'] = row[16]
             
         assocs = []
         for row in obj_rows:
             if len(row) == row_len:
-                assocs.append(TermAssociation(row[4], self._split_multi(row[3]),
-                                            self._split_multi(row[5]), row[6],
-                                            self._split_multi(row[7]), row[8],
-                                            row[13], row[14]))
+                assocs.append(TermAssociation(row[4],
+                                           {'Qualifier' : self._split_multi(row[3]),
+                                            'DB:Reference' : self._split_multi(row[5]),
+                                            'Evidence Code' : row[6],
+                                            'With (or) From' :self._split_multi(row[7]),
+                                            'Aspect' : row[8],
+                                            'Date' : row[13],
+                                            'Assigned By' : row[14]}
+                                              ))
             else:
                 raise ValueError("Invalid gaf file: Incorrect row length.")
         
-        return GeneAnnotation(*obj_params, associations = assocs)
+        return GeneAnnotation(obj_id, assocs, obj_attrs)
     
     def __iter__(self):
         tsv_iter = TsvIterator(self.handle)

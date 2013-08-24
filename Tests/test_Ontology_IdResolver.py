@@ -10,19 +10,14 @@ from Bio.Ontology.IdResolver import FirstOneResolver
 class FirstOneResolverTest(unittest.TestCase):
 
 
-    def test_resolve(self):
-        assocs = [GeneAnnotation('FBgn0004364','FB', 'x', 'x',
-                       ['18wheeler', 'CG8896', 'CT25100'],
-                       'x', ['x'], [], '',[]),
-                  GeneAnnotation('FBgn0043467','FB', 'x', 'x',
-                       [],
-                       'x', ['x'], [], '',[]),
-                  GeneAnnotation('FBgn0004907','FB', 'x', 'x',
-                       ['14-3-3', '14-3-3 zeta', 'x'],
-                       'x', ['x'], [], '',[]),
-                  GeneAnnotation('FBgn0010339','FB', 'x', 'x',
-                       ['CG8340', 'GTP-bp', 'X71866', 'x'],
-                       'x', ['x'], [], '',[])
+    def test_resolve(self): #TODO
+        assocs = [GeneAnnotation('FBgn0004364', attrs = {'DB Object Synonym':
+                                          ['18wheeler', 'CG8896', 'CT25100']}),
+                  GeneAnnotation('FBgn0043467'),
+                  GeneAnnotation('FBgn0004907', attrs = {'DB Object Synonym':
+                                          ['14-3-3', '14-3-3 zeta', 'x']}),
+                  GeneAnnotation('FBgn0010339', attrs = {'DB Object Synonym':
+                                          ['CG8340', 'GTP-bp', 'X71866', 'x']})
                   ]
         resolver = FirstOneResolver(assocs)
         resolved = [resolver.resolve(x) for x in ['FBgn0043467', 'CT25100',

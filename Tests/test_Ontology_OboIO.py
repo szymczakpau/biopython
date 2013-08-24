@@ -21,8 +21,6 @@ class OboWriterTest(unittest.TestCase):
         writer = OboWriter(f, version = "1.2")
         writer.write_file(terms_to_write)
         
-        print terms_to_write[0]
-        
         expected_output = """format-version:1.2
 
 [Term]

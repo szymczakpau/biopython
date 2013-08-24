@@ -14,6 +14,12 @@ import re, shlex
 
 from Bio.Ontology.Data import OntologyTerm, OntologyGraph
 
+_IS_A_TYPE = {"id" : "is_a",
+              "name" : "is_a",
+              "range": "OBO:TERM_OR_TYPE",
+              "domain" : "OBO:TERM_OR_TYPE",
+              "def" : "The basic subclassing relationship [OBO:defs]" }
+
 class OboWriter(object):
     """
     Writes obo files.
@@ -149,6 +155,8 @@ def terms_to_graph(terms):
     not_defined = found_relations.difference(defined_relations)
     if len(not_defined) > 0:
         raise ValueError("Not defined relationships found: " + str(not_defined))
+    
+    g.typedefs["is_a"] = _IS_A_TYPE
     
     return g
 

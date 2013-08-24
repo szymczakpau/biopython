@@ -6,52 +6,16 @@
 
 from Bio.Ontology.Graph import DiGraph
 import copy
-import shlex
 
 class OntologyGraph(DiGraph):
     """
     Represents Gene Ontology graph.
     """
 
-    def __init__(self, terms = []): #TODO add is_a to typedefs
+    def __init__(self): #TODO add is_a to typedefs
         DiGraph.__init__(self)
         self.typedefs = {}
         self.synonyms = {}
-        found_relations = set()
-        
-        for (term_type, data) in terms:
-            if term_type == "Term": # Add only terms and typedefs for now
-                nid = data.pop("id")[0]
-                name = data.pop("name")[0]
-                term = OntologyTerm(nid, name, data)
-                if self.node_exists(nid):
-                    self.update_node(nid, term)
-                else:
-                    self.add_node(nid, term)
-                if "is_a" in data:
-                    for edge in data["is_a"]:
-                        self.add_edge(nid, edge, "is_a")
-                if "synonym" in data:
-                    node = self.get_node(nid)
-                    for synonym in data["synonym"]:
-                        self.synonyms[shlex.split(synonym)[0]] = node
-                if "relationship" in data:
-                    for edge in data["relationship"]:
-                        p = edge.split()
-                        if len(p) == 2:
-                            self.add_edge(nid, p[1], p[0])
-                            found_relations.add(p[0])
-                        else:
-                            raise ValueError("Incorrect relationship: " + edge)
-            elif term_type == "Typedef":
-                rid = data["id"][0]
-                self.typedefs[rid] = data
-        
-        # validate whether all relationships were defined
-        not_defined = found_relations.difference(self.typedefs.keys())
-        if len(not_defined) > 0:
-            raise ValueError("Not defined relationships found: " + str(not_defined))
-        
         
     def get_node(self, u):
         x = self.nodes.get(u)
@@ -102,13 +66,26 @@ class OntologyGraph(DiGraph):
                 fgraph.typedefs[rel] = typedef
             
         return fgraph
+    
+    def get_induced_subgraph(self, nodes_ids):
+        """
+        Returns graph with only given nodes left
+        """
+        idg = super(OntologyGraph, self).get_induced_subgraph(nodes_ids)
+        
+        igraph = OntologyGraph()
+        igraph.nodes = idg.nodes
+        igraph.synonyms = copy.copy(self.synonyms)
+        igraph.typedefs = copy.copy(self.typedefs)
+        
+        return igraph
         
 class OntologyTerm(object):
     """
     Represents gene ontology term.
     """
     
-    def __init__(self, nid, name, attrs):
+    def __init__(self, nid, name, attrs = {}):
         self.id = nid
         self.name = name
         self.attrs = attrs
@@ -126,6 +103,65 @@ class OntologyTerm(object):
         return "OntologyTerm(id = " + self.id + ", name = " + self.name + ")" 
 
 class GeneAnnotation(object):
+    """
+    Represents one generic gene ontology annotation object
+    """
+    
+    def __init__(self, oid, associations = [], attrs = {}):
+        self.oid = oid
+        self.associations = associations
+        self.attrs = attrs
+            
+    def __eq__(self, other):
+        if isinstance(other, self.__class__):
+            return self.__dict__ == other.__dict__
+        else:
+            return False
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
+    
+    def __repr__(self):
+        return "GeneAnnotation(db_object_id = {0})".format(self.oid)
+    
+    def __str__(self):
+        s = "DB Object ID: " + self.oid + "\n"
+        for k, v in self.attrs.iteritems():
+            s += k + ": " + str(v)+ "\n"       
+        if len(self.associations) > 0:
+            s += "\nAssociations:\n"
+            for a in self.associations:
+                s += str(a) + "\n"
+        return s
+    
+class TermAssociation(object):
+    """
+    Represents one gene ontology term association
+    """
+    
+    def __init__(self, go_id, attrs = {}):
+        self.go_id = go_id
+        self.attrs = attrs
+        
+    def __eq__(self, other):
+        if isinstance(other, self.__class__):
+            return self.__dict__ == other.__dict__
+        else:
+            return False
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
+    
+    def __repr__(self):
+        return "TermAssociation(go_id = {0})".format(self.go_id)
+    
+    def __str__(self):
+        s = "GO ID: " + self.go_id + "\n"
+        for k, v in self.attrs.iteritems():
+            s += k + ": " + str(v) + "\n"
+        return s
+
+class GafGeneAnnotation2(object):
     """
     Represents one gene ontology annotation object
     """
@@ -177,7 +213,7 @@ Gene Product Form ID: {1}
                 b1 += str(a)
         return b1
     
-class TermAssociation(object):
+class GafTermAssociation(object):
     """
     Represents one gene ontology term association
     """

@@ -15,7 +15,7 @@ class EnrichmentEntry(object):
         self.oid = oid
         self.name = name
         self.p_value = p_value
-        self.corrections = []
+        self.corrections = {}
         self.attrs = {}
     
     def __repr__(self):
@@ -81,6 +81,20 @@ class BaseEnrichmentFinder(object):
                 for t in enriched_terms:
                     terms_assocs[t].add(gene)
         return terms_assocs
+    
+    def _calculate_corrections(self, result, corrections):
+        """
+        Calculates corrections.
+        """
+        
+        if len(corrections) > 0:
+            pvals = [x.p_value for x in result]
+            corr_pvals = []
+            for c_id in corrections:
+                cfun = Stats.corrections[c_id]
+                corr_pvals.append((c_id, cfun(pvals)))
+            for i in xrange(len(result)):
+                result[i].corrections = dict([(c_id, pv[i]) for c_id, pv in corr_pvals])
     
 class EnrichmentFinder(BaseEnrichmentFinder):
     """
@@ -248,7 +262,7 @@ class EnrichmentFinder(BaseEnrichmentFinder):
         corrections - list of corrections that should be applied to result.
             Possible values are:
                 o "bonferroni" - Bonferroni correction,
-                o "fh_fdr" - Benjamin-Hochberg FDR correction.
+                o "bh_fdr" - Benjamin-Hochberg FDR correction.
         method - method of computing the p-values
             Possible values are:
                 o "term_by_term" - standard method in which each term is
@@ -277,21 +291,12 @@ class EnrichmentFinder(BaseEnrichmentFinder):
                                                         method)
         
         # Calculate chosen corrections
-        if len(corrections) > 0:
-            pvals = [x.p_value for x in result]
-            corr_pvals = []
-            for c_id in corrections:
-                cfun = Stats.corrections[c_id]
-                corr_pvals.append((c_id, cfun(pvals)))
-            for i in xrange(len(result)):
-                result[i].corrections = dict([(c_id, pv[i]) for c_id, pv in corr_pvals])
+        self._calculate_corrections(result, corrections)
         
         # check for warnings
         if len(self.o_graph.cycles) > 0:
             warnings.append("Graph contains cycles: " + str(self.o_graph.cycles))
         return Enrichment(method, result, warnings, corrections)
-    
-    
 
 class RankedEnrichmentFinder(BaseEnrichmentFinder):
     """
@@ -303,10 +308,8 @@ class RankedEnrichmentFinder(BaseEnrichmentFinder):
     associations:
     
     >>> import Bio.Ontology.IO as OntoIO
-    >>> gonodes_iter = OntoIO.parse("Ontology/go_test.obo", "obo")
+    >>> go_graph = OntoIO.read("Ontology/go_test.obo", "obo")
     >>> assocs_iter = OntoIO.parse("Ontology/ga_test.fb", "gaf")
-    >>> from Bio.Ontology.Data import OntologyGraph
-    >>> go_graph = OntologyGraph(gonodes_iter)
     
     Now is the time to create EnrichmentFinder. Besides the arguments
     mentioned before you could specify an id resolver.
@@ -321,7 +324,7 @@ class RankedEnrichmentFinder(BaseEnrichmentFinder):
     
     Additionally you can specify permutations number (more is better, but slower).
     
-    >>> result = ef.find_enrichment_from_rank(genes_rank, 1000)
+    >>> result = ef.find_enrichment_from_rank(genes_rank, perms_no = 1000)
     
     The result contains a list of EnrichmentEntry instances - each for a node in graph
     which is enriched - and a list of warnings.
@@ -378,7 +381,7 @@ class RankedEnrichmentFinder(BaseEnrichmentFinder):
                 results[e.oid].append(e)
         return results
     
-    def find_enrichment_parent_child(self, gene_rank, side = "+"): #TODO add corrections
+    def find_enrichment_parent_child(self, gene_rank, side = "+", corrections = []):
         """
         Finds enrichment by applying parent-child analysis to list slices.
         """
@@ -414,6 +417,11 @@ class RankedEnrichmentFinder(BaseEnrichmentFinder):
             result.append(EnrichmentEntry(entries[0].oid, entries[0].name,
                                           min_pval))
             
+        self._calculate_corrections(result, corrections)
+        
+        if len(self.o_graph.cycles) > 0:
+            warnings.append("Graph contains cycles: " + str(self.o_graph.cycles))
+            
         return Enrichment("ranked parent-child", result, warnings)
         
     def _get_perms(self, gene_list, perms_no):
@@ -424,7 +432,7 @@ class RankedEnrichmentFinder(BaseEnrichmentFinder):
             perms.append(list(permutation))
         return perms
     
-    def find_enrichment_from_rank(self, gene_rank, perms_no = 100): #TODO fdr for that
+    def find_enrichment_from_rank(self, gene_rank, perms_no = 100, corrections = []):
         """
         Finds enrichment using GSEA method.
         
@@ -462,6 +470,8 @@ class RankedEnrichmentFinder(BaseEnrichmentFinder):
             entry.attrs["Dn"] = orig_dn
             entry.attrs["plot"] = orig_plot
             result.append(entry)
+        
+        self._calculate_corrections(result, corrections)
         
         if len(self.o_graph.cycles) > 0:
             warnings.append("Graph contains cycles: " + str(self.o_graph.cycles))

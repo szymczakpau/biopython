@@ -50,8 +50,8 @@ class FirstOneResolver(object):
         alter = collections.defaultdict(set)
         for obj in annotations:
             self.base_keys.add(obj.oid)
-            if obj.synonyms != None: # tempral check TODO
-                for aid in obj.synonyms:
+            if 'DB Object Synonym' in obj.attrs:
+                for aid in obj.attrs['DB Object Synonym']:
                     alter[aid].add(obj.oid)
         self.alter_keys = dict([(k,list(v)) for (k, v) in alter.iteritems()])
         

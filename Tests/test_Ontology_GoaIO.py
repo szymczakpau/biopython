@@ -22,20 +22,52 @@ class GoaIOTest(unittest.TestCase):
             with self.assertRaises(ValueError):
                 list(it)
 
-    def test_read_file(self):
-        to = [GeneAnnotation('FBgn0026615', 'FB', '10-4', '10-4',
-                       [], 'gene_product', ['taxon:7227'], [], '',
-                       [TermAssociation('GO:0005737', [], ['FB:FBrf0106275'],
-                                      'IDA', [], 'C', '20060803', 'FlyBase' ),
-                        TermAssociation('GO:0045177', [], ['FB:FBrf0106275'],
-                                      'IDA', [], 'C', '20060803', 'FlyBase' )]),
-              GeneAnnotation('FBgn0043467', 'FB', '064Ya', '064Ya',
-                       [], 'gene_product', ['taxon:7227'], [], '',
-                       [TermAssociation('GO:0048149', [],
-                                      ['FB:FBrf0131396','PMID:11086999'],
-                                      'IMP', [], 'P', '20060803', 'FlyBase')])]
+    def test_read_file(self): #TODO
+        to = [GeneAnnotation('FBgn0026615',
+                             [TermAssociation('GO:0005737',
+                                              {'Qualifier' : [],
+                                            'DB:Reference' : ['FB:FBrf0106275'],
+                                            'Evidence Code' : 'IDA',
+                                            'With (or) From' : [],
+                                            'Aspect' : 'C',
+                                            'Date' : '20060803',
+                                            'Assigned By' : 'FlyBase'}),
+                              TermAssociation('GO:0045177',
+                                              {'Qualifier' : [],
+                                            'DB:Reference' : ['FB:FBrf0106275'],
+                                            'Evidence Code' : 'IDA',
+                                            'With (or) From' : [],
+                                            'Aspect' : 'C',
+                                            'Date' : '20060803',
+                                            'Assigned By' : 'FlyBase'})],
+                             {'DB' : 'FB', 'DB Object Symbol' : '10-4',
+                              'DB Object Name' : '10-4',
+                              'DB Object Synonym' : [],
+                              'DB Object Type' : 'gene_product',
+                              'Taxon' : ['taxon:7227'],
+                              'Annotation Extension' : [],
+                              'Gene Product Form ID' : ''}),
+              GeneAnnotation('FBgn0043467',
+                             [TermAssociation('GO:0048149',
+                                              {'Qualifier' : [],
+                                            'DB:Reference' : ['FB:FBrf0131396','PMID:11086999'],
+                                            'Evidence Code' : 'IMP',
+                                            'With (or) From' : [],
+                                            'Aspect' : 'P',
+                                            'Date' : '20060803',
+                                            'Assigned By' : 'FlyBase'})],
+                             {'DB' : 'FB',
+                              'DB Object Symbol' : '064Ya',
+                              'DB Object Name' : '064Ya',
+                              'DB Object Synonym' : [],
+                              'DB Object Type' : 'gene_product',
+                              'Taxon' :['taxon:7227'],
+                              'Annotation Extension' : [],
+                              'Gene Product Form ID' : ''})]
         with open('Ontology/GoaIO/correct20.fb', 'r') as f:
             objs = list(GafIterator(f))
+            for x in objs:
+                print x
             objs.sort(key = lambda x : x.oid)
             self.assertEqual(to, objs)
 
