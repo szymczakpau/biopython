@@ -53,23 +53,48 @@ def get_gradient(color_a, color_b, k):
         b1 += b2
     return grad
 
+def get_gradient_index(val, min_val, max_val, steps):
+    """
+    Returns the index in gradient given p-value, minimum value, maximum value
+    and number of steps in gradient.
+    
+    >>> get_gradient_index(0.002, 0.001, 0.0029, 10)
+    5
+    >>> get_gradient_index(0.0011, 0.001, 0.0029, 10)
+    0
+    >>> get_gradient_index(0.002899999, 0.001, 0.0029, 10)
+    9
+    >>> get_gradient_index(0.0029, 0.001, 0.0029, 10)
+    9
+    >>> get_gradient_index(0.001, 0.001, 0.001, 10)
+    0
+    """
+    if max_val == min_val:
+        return 0
+    else:
+        d = (max_val - min_val) / steps
+        r = int((val - min_val) / d)
+        return r if r < steps else r - 1
+
 class GmlPrinter(object):
     """
     Stores found enrichments as a graph in gml format.
     """
     
-    def __init__(self, file_handle, gradient_step = 10, color_a = "#00bd28",
-                 color_b = "#f7ffc8", color_none = "#c3c3c3"):
+    def __init__(self, file_handle, gradient_step = 10, color_a = "#7eff00",
+                 color_b = "#f8ff8d", color_none = "#c3c3c3"):
         
         self.handle = file_handle
         self.gradient_step = gradient_step
         self.color_none = color_none
         self.gradient = get_gradient(color_a, color_b, self.gradient_step)
+        self.min_p = 1.0
+        self.max_p = 0.0
         
     def to_printable_data(self, e_entry):
         return {"name" : e_entry.name,
                 "pvalue" : e_entry.p_value,
-                "graphics" : { "fill" : self.gradient[int(e_entry.p_value * (self.gradient_step - 1))]
+                "graphics" : { "fill" : self.gradient[get_gradient_index(e_entry.p_value, self.min_p, self.max_p, self.gradient_step)]
                               }
                 }
     def term_to_printable(self, term):
@@ -89,6 +114,12 @@ class GmlPrinter(object):
         viz_graph.attrs["label"] = str(enrichment)
         
         entry_labels = {}
+        
+        for entry in enrichment.entries:
+            if entry.p_value < self.min_p:
+                self.min_p = entry.p_value
+            if entry.p_value > self.max_p:
+                self.max_p = entry.p_value
         
         for entry in enrichment.entries:
             new_label = self.entry_to_label(entry)
@@ -123,13 +154,15 @@ class GraphVizPrinter(object):
     Stores found enrichments as visualization in png format using graphviz library.
     """
     
-    def __init__(self, file_handle, gradient_step = 10, color_a = "#00bd28",
-                 color_b = "#f7ffc8", color_none = "#c3c3c3", dpi = 96):
+    def __init__(self, file_handle, gradient_step = 10, color_a = "#7eff00",
+                 color_b = "#f8ff8d", color_none = "#c3c3c3", dpi = 96):
         self.handle = file_handle
         self.color_none = color_none
         self.gradient_step = gradient_step
         self.gradient = get_gradient(color_a, color_b, self.gradient_step)
         self.dpi = str(dpi)
+        self.min_p = 1.0
+        self.max_p = 0.0
         
     def entry_to_label(self, entry):
         return "{0}\n{1}\np:{2}".format(entry.oid, entry.name, entry.p_value)
@@ -148,8 +181,14 @@ class GraphVizPrinter(object):
         entry_labels = {}
         
         for entry in enrichment.entries:
+            if entry.p_value < self.min_p:
+                self.min_p = entry.p_value
+            if entry.p_value > self.max_p:
+                self.max_p = entry.p_value
+        
+        for entry in enrichment.entries:
             new_label = self.entry_to_label(entry)
-            col = self.gradient[int(entry.p_value * (self.gradient_step - 1))]
+            col = self.gradient[get_gradient_index(entry.p_value, self.min_p, self.max_p, self.gradient_step)]
             viz_graph.add_node(new_label, fillcolor = col)
             entry_labels[entry.oid] = new_label
         

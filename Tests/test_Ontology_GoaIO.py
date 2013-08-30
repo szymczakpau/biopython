@@ -66,8 +66,6 @@ class GoaIOTest(unittest.TestCase):
                               'Gene Product Form ID' : ''})]
         with open('Ontology/GoaIO/correct20.fb', 'r') as f:
             objs = list(GafIterator(f))
-            for x in objs:
-                print x
             objs.sort(key = lambda x : x.oid)
             self.assertEqual(to, objs)
 

@@ -50,7 +50,7 @@ def hypergeometric_probability(k, n, K, N):
     return exp(lncombination(K, k) + lncombination(N - K, n - k) - lncombination(N, n))
 
 
-def hypergeometric_test(k, n, K, N):
+def hypergeometric_two_tail_test(k, n, K, N):
     """
     Returns probability of getting k or less probable number of successes in
     hypergeometric probability distribution.
@@ -72,6 +72,20 @@ def hypergeometric_test(k, n, K, N):
 
     two_tail = two_tail if two_tail < 1.0 else 1.0
     return two_tail
+
+def hypergeometric_test(k, n, K, N):
+    """
+    Returns probability of getting k or more successes in
+    hypergeometric probability distribution.
+    """
+    um = min(n, K)
+
+    one_tail = hypergeometric_probability(k, n, K, N)
+    
+    for i in range(k, um + 1):
+        one_tail += hypergeometric_probability(i, n, K, N)
+
+    return one_tail if one_tail < 1.0 else 1.0
 
 def bonferroni_correction(pvals):
     """
