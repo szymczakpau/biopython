@@ -6,6 +6,7 @@
 from Bio.Ontology.IO.GraphIO import GmlWriter
 from Bio.Ontology.Graph import DiGraph
 from Bio.Ontology.Stats import corrections_labels
+import sys
 
 def rgb_to_triple(rgb):
     """
@@ -75,6 +76,36 @@ def get_gradient_index(val, min_val, max_val, steps):
         d = (max_val - min_val) / steps
         r = int((val - min_val) / d)
         return r if r < steps else r - 1
+
+def print_enrichment_chart(file_handle, vals, title):
+    try:
+        import matplotlib.pyplot as plt
+    except ImportError:
+        print >> sys.stderr, "Error while printing. To use this functionality you need to have matplotlib installed."
+    else:
+        fig, ax1 = plt.subplots()
+        
+        xs = list(xrange(len(vals)))
+        ys =  vals
+        
+        ax1.plot(xs, ys)
+        
+        bar_ys = [int(ys[0] > 0)]
+        for i in xrange(1, len(ys)):
+            bar_ys.append(int(ys[i] > ys[i - 1]))
+        bar_ys = [bar_ys]
+        
+        pos = ax1.axes.get_position()
+        
+        ax0 = fig.add_axes([pos.x0, pos.y1, pos.width, 0.1])
+        
+        ax0.imshow(bar_ys, cmap=plt.cm.Blues, interpolation='nearest')
+        ax0.axes.get_yaxis().set_visible(False)
+        ax0.axes.get_xaxis().set_visible(False)
+        ax0.set_title(title)
+        
+        plt.savefig(file_handle, bbox_inches=0)
+        plt.close()
 
 class GmlPrinter(object):
     """
@@ -171,38 +202,41 @@ class GraphVizPrinter(object):
         return "{0}\n{1}".format(term.id, term.name)
     
     def to_printable_graph(self, enrichment, graph):
-        import pygraphviz #TODO exception + warning
-        
-        viz_graph = pygraphviz.AGraph()
-        viz_graph.graph_attr.update(dpi = self.dpi)
-        viz_graph.node_attr.update(shape="box", style="rounded,filled")
-        viz_graph.edge_attr.update(shape="normal", color="black", dir="back")
-        
-        entry_labels = {}
-        
-        for entry in enrichment.entries:
-            if entry.p_value < self.min_p:
-                self.min_p = entry.p_value
-            if entry.p_value > self.max_p:
-                self.max_p = entry.p_value
-        
-        for entry in enrichment.entries:
-            new_label = self.entry_to_label(entry)
-            col = self.gradient[get_gradient_index(entry.p_value, self.min_p, self.max_p, self.gradient_step)]
-            viz_graph.add_node(new_label, fillcolor = col)
-            entry_labels[entry.oid] = new_label
-        
-        for label, node in graph.nodes.items():
-            if label not in entry_labels:
-                new_label = self.term_to_label(node.data)
-                viz_graph.add_node(new_label, fillcolor = self.color_none)
-                entry_labels[label] = new_label
-        
-        for label, u in graph.nodes.items():
-            for edge in u.succ:
-                viz_graph.add_edge(entry_labels[edge.to_node.label], entry_labels[label],  label=edge.data)
-                
-        return viz_graph
+        try:
+            import pygraphviz
+        except ImportError:
+            print >> sys.stderr, "Error while printing. To use this functionality you need to have pygraphviz installed."
+        else:
+            viz_graph = pygraphviz.AGraph()
+            viz_graph.graph_attr.update(dpi = self.dpi)
+            viz_graph.node_attr.update(shape="box", style="rounded,filled")
+            viz_graph.edge_attr.update(shape="normal", color="black", dir="back")
+            
+            entry_labels = {}
+            
+            for entry in enrichment.entries:
+                if entry.p_value < self.min_p:
+                    self.min_p = entry.p_value
+                if entry.p_value > self.max_p:
+                    self.max_p = entry.p_value
+            
+            for entry in enrichment.entries:
+                new_label = self.entry_to_label(entry)
+                col = self.gradient[get_gradient_index(entry.p_value, self.min_p, self.max_p, self.gradient_step)]
+                viz_graph.add_node(new_label, fillcolor = col)
+                entry_labels[entry.oid] = new_label
+            
+            for label, node in graph.nodes.items():
+                if label not in entry_labels:
+                    new_label = self.term_to_label(node.data)
+                    viz_graph.add_node(new_label, fillcolor = self.color_none)
+                    entry_labels[label] = new_label
+            
+            for label, u in graph.nodes.items():
+                for edge in u.succ:
+                    viz_graph.add_edge(entry_labels[edge.to_node.label], entry_labels[label],  label=edge.data)
+                    
+            return viz_graph
             
             
         

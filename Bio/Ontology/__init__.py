@@ -4,8 +4,9 @@
 # as part of this package.
 
 import collections
-import Stats, IdResolver
-import random, math
+import random, math, bisect
+import Bio.Ontology.Stats as Stats
+import Bio.Ontology.IdResolver as IdResolver
 
 class EnrichmentEntry(object):
     """
@@ -137,7 +138,7 @@ class EnrichmentFinder(BaseEnrichmentFinder):
     which is enriched - and a list of warnings.
     
     >>> print result
-    Enrichment found using term_by_term method: 64 entries, 1 warnings.
+    Enrichment found using term_for_term method: 64 entries, 1 warnings.
     
     Notice there is one warning. Let's print the list:
     >>> print result.warnings
@@ -154,7 +155,7 @@ class EnrichmentFinder(BaseEnrichmentFinder):
     corrected p-values: {'bh_fdr': 1.0, 'bonferroni': 1.0}
     
     You can also specify a method of computing p-values. Default method is
-    term by term, but additionaly you can choose method that takes parent-child
+    term for term, but additionaly you can choose method that takes parent-child
     relationship into account:
     
     >>> result = ef.find_enrichment(genes_to_study, corrections, "parent_child_intersection")
@@ -189,10 +190,10 @@ class EnrichmentFinder(BaseEnrichmentFinder):
             self.population = self.annotations.keys()
         self.terms_to_population_genes = self._find_terms_associations(self.population)
     
-    def _find_term_by_term_enrichment(self, terms_to_study_genes, study_size):
+    def _find_term_for_term_enrichment(self, terms_to_study_genes, study_size):
         result = []
         population_size = len(self.population)
-        # Calculate enrichment for every term given the counts (term by term)
+        # Calculate enrichment for every term given the counts (term for term)
         for term, study_set in terms_to_study_genes.items():
             study_hits = len(study_set)
             population_hits = len(self.terms_to_population_genes[term])
@@ -252,7 +253,7 @@ class EnrichmentFinder(BaseEnrichmentFinder):
             resolved_list.append(rx)
         return resolved_list
         
-    def find_enrichment(self, gene_list, corrections = [], method = "term_by_term"):
+    def find_enrichment(self, gene_list, corrections = [], method = "term_for_term"):
         """
         Finds enrichment of specified group of genes.
         
@@ -265,7 +266,7 @@ class EnrichmentFinder(BaseEnrichmentFinder):
                 o "bh_fdr" - Benjamin-Hochberg FDR correction.
         method - method of computing the p-values
             Possible values are:
-                o "term_by_term" - standard method in which each term is
+                o "term_for_term" - standard method in which each term is
                     treated independently,
                 o "parent_child_union", "parent_child_intersection" - methods
                     in which we take the parent-child relationship into account
@@ -283,8 +284,8 @@ class EnrichmentFinder(BaseEnrichmentFinder):
         
         study_size = len(resolved_list)
 
-        if method == "term_by_term":
-            result = self._find_term_by_term_enrichment(terms_to_study_genes,
+        if method == "term_for_term":
+            result = self._find_term_for_term_enrichment(terms_to_study_genes,
                                                         study_size)
         else:
             result = self._find_parent_child_enrichment(terms_to_study_genes,
@@ -375,10 +376,10 @@ class RankedEnrichmentFinder(BaseEnrichmentFinder):
 
         for gene in resolved_list:
             list_slice.append(gene)
-            slice_res = ef.find_enrichment(list_slice, method="parent_child_intersection")
+            slice_res = ef.find_enrichment(list_slice, method="parent_child_union")
             warnings += slice_res.warnings
             for e in slice_res.entries:
-                results[e.oid].append(e)
+                results[e.oid].append(e.p_value)
         return results
     
     def find_enrichment_parent_child(self, gene_rank, side = "+", corrections = []):
@@ -388,10 +389,9 @@ class RankedEnrichmentFinder(BaseEnrichmentFinder):
         
         warnings = []
         
-        sorted_gene_rank = sorted(gene_rank, key = lambda x: x[1])
+        sorted_gene_rank = sorted(gene_rank, key = lambda x: x[1], reverse = True)
         gene_list = [g for g, _ in sorted_gene_rank]
         resolved_list = self._resolve_ids(gene_list, warnings)
-        
         
         ef = EnrichmentFinder(self.annotations.itervalues(), self.o_graph,
                                   resolved_list, IdResolver.Resolver)
@@ -401,21 +401,27 @@ class RankedEnrichmentFinder(BaseEnrichmentFinder):
         elif side == "+":
             all_results = self._get_half_results(resolved_list, ef, warnings)
         elif side == "+/-":
-            minus_results = self._get_half_results(resolved_list, ef, warnings)
-            all_results = self._get_half_results(resolved_list[::-1], ef, warnings)
+            minus_results = self._get_half_results(resolved_list[::-1], ef, warnings)
+            all_results = self._get_half_results(resolved_list, ef, warnings)
             for k, v in minus_results.iteritems():
                 all_results[k] += v
         else:
             raise ValueError('"{0}" is not correct side specification.')
         
         result = []
-        for _, entries in all_results.iteritems():
+        for oid, p_vals in all_results.iteritems():
             min_pval = 1.0
-            for e in entries:
-                if e.p_value < min_pval:
-                    min_pval = e.p_value
-            result.append(EnrichmentEntry(entries[0].oid, entries[0].name,
-                                          min_pval))
+            plot = []
+            for pv in p_vals:
+                if pv < min_pval:
+                    min_pval = pv
+                plot.append(1 - pv)
+            entry = EnrichmentEntry(oid, self.o_graph.get_term(oid).name,
+                                          min_pval)
+            entry.attrs["plot"] = plot
+            entry.attrs["Dn"] = 1 - min_pval
+            
+            result.append(entry)
             
         self._calculate_corrections(result, corrections)
         
@@ -432,14 +438,14 @@ class RankedEnrichmentFinder(BaseEnrichmentFinder):
             perms.append(list(permutation))
         return perms
     
-    def find_enrichment_from_rank(self, gene_rank, perms_no = 100, corrections = []):
+    def find_enrichment_from_rank(self, gene_rank, perms_no = 1000):
         """
         Finds enrichment using GSEA method.
         
         Reference: http://www.pnas.org/content/102/43/15545.full
         """
         
-        sorted_gene_rank = sorted(gene_rank, key = lambda x: x[1])
+        sorted_gene_rank = sorted(gene_rank, key = lambda x: x[1], reverse = True)
         gene_corr = []
         gene_list = []
         
@@ -453,26 +459,85 @@ class RankedEnrichmentFinder(BaseEnrichmentFinder):
         enriched_terms = self._find_enriched_terms(resolved_list)
         perms = self._get_perms(resolved_list, perms_no)
         
+        # Computing both: uncorrected and FDR corrected p-value
+        all_pos_nes_perm = []
+        all_neg_nes_perm = []
+        all_nes = []
+        
         for term in enriched_terms:
             gene_set = self.terms_to_population_genes[term]
-            orig_dn, orig_plot = Stats.kolmogorov_smirnov_rank_test(gene_set, resolved_list, gene_corr, 1)
+            orig_es, orig_plot = Stats.kolmogorov_smirnov_rank_test(gene_set, resolved_list, gene_corr, 1)
             
             pcount = 0
+            pos_nes_perm = []
+            neg_nes_perm = []
+            
             for perm in perms:
-                perm_dn, _ = Stats.kolmogorov_smirnov_rank_test(gene_set, perm, gene_corr, 1)
-                if orig_dn < 0:
-                    pcount += int(orig_dn > perm_dn)
+                perm_es, _ = Stats.kolmogorov_smirnov_rank_test(gene_set, perm, gene_corr, 1)
+                if orig_es < 0:
+                    pcount += int(orig_es >= perm_es)
                 else:
-                    pcount += int(orig_dn < perm_dn)
+                    pcount += int(orig_es <= perm_es)
+                
+                # For FDR
+                if perm_es < 0:
+                    neg_nes_perm.append(perm_es)
+                else:
+                    pos_nes_perm.append(perm_es)
+            
+            # Computing p-value
             pval = pcount / float(perms_no)
             entry = EnrichmentEntry(term, self.o_graph.get_term(term).name,
                                     pval)
-            entry.attrs["Dn"] = orig_dn
+            entry.attrs["Dn"] = orig_es
             entry.attrs["plot"] = orig_plot
             result.append(entry)
+            
+            # Now part of the FDR computation
+            neg_mean = Stats.mean(neg_nes_perm)
+            pos_mean = Stats.mean(pos_nes_perm)
+            
+            if neg_mean != .0:
+                neg_nes_perm = [- x / neg_mean for x in neg_nes_perm]
+                if orig_es < 0:
+                    orig_es = - orig_es / neg_mean
+            if pos_mean != .0:
+                pos_nes_perm = [x / pos_mean for x in pos_nes_perm]
+                if orig_es > 0:
+                    orig_es = orig_es / pos_mean
+            
+            all_nes.append(orig_es)
+            all_neg_nes_perm += neg_nes_perm
+            all_pos_nes_perm += pos_nes_perm
+            
+        # Last stage of FDR computation
+        all_neg_nes = []
+        all_pos_nes = []
+
+        for nes in all_nes:
+            if nes < 0:
+                all_neg_nes.append(nes)
+            else:
+                all_pos_nes.append(nes)
         
-        self._calculate_corrections(result, corrections)
+        all_pos_nes_perm.sort()
+        all_neg_nes_perm.sort()
+        all_pos_nes.sort()
+        all_neg_nes.sort()
         
+        for i in xrange(len(all_nes)):
+            nes = all_nes[i]
+            if nes < 0:
+                a = bisect.bisect_right(all_neg_nes_perm, nes) / float(len(all_neg_nes_perm))
+                b = (bisect.bisect_right(all_neg_nes, nes) - 1) / float(len(all_neg_nes))
+            else:
+                a = 1 - bisect.bisect_left(all_pos_nes_perm, nes) / float(len(all_pos_nes_perm))
+                b = 1 - (bisect.bisect_left(all_pos_nes, nes) + 1) / float(len(all_pos_nes))
+            fdr = a / b if b != .0 else 1.
+            if fdr > 1.:
+                fdr = 1.
+            result[i].corrections['fdr'] = fdr
+            
         if len(self.o_graph.cycles) > 0:
             warnings.append("Graph contains cycles: " + str(self.o_graph.cycles))
         return Enrichment("GSEA", result, warnings)

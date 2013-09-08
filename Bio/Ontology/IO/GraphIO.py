@@ -3,7 +3,7 @@
 # license.  Please see the LICENSE file that should have been included   
 # as part of this package.
 
-import string
+import string, sys
 
 _INDENT = "  "
         
@@ -134,25 +134,28 @@ class GraphVisualizer(object):
         return "{0}\n{1}".format(term.id, term.name)
 
     def to_printable_graph(self, graph):
-        import pygraphviz #TODO exception + warning
-        
-        viz_graph = pygraphviz.AGraph()
-        viz_graph.graph_attr.update(dpi = str(self.dpi))
-        viz_graph.node_attr.update(shape="box", style="rounded,filled")
-        viz_graph.edge_attr.update(shape="normal", color="black", dir="back")
-        
-        entry_labels = {}
-        
-        for node in graph.nodes.values():
-            new_label = self.term_to_label(node.data)
-            viz_graph.add_node(new_label, fillcolor = self.color)
-            entry_labels[node.label] = new_label
+        try:
+            import pygraphviz
+        except ImportError:
+            print >> sys.stderr, "Error while printing. To use this functionality you need to have pygraphviz installed."
+        else:
+            viz_graph = pygraphviz.AGraph()
+            viz_graph.graph_attr.update(dpi = str(self.dpi))
+            viz_graph.node_attr.update(shape="box", style="rounded,filled")
+            viz_graph.edge_attr.update(shape="normal", color="black", dir="back")
             
-        for label, node in graph.nodes.items():
-            for edge in node.succ:
-                viz_graph.add_edge(entry_labels[edge.to_node.label], entry_labels[label],  label=edge.data)
+            entry_labels = {}
+            
+            for node in graph.nodes.values():
+                new_label = self.term_to_label(node.data)
+                viz_graph.add_node(new_label, fillcolor = self.color)
+                entry_labels[node.label] = new_label
                 
-        return viz_graph
+            for label, node in graph.nodes.items():
+                for edge in node.succ:
+                    viz_graph.add_edge(entry_labels[edge.to_node.label], entry_labels[label],  label=edge.data)
+                    
+            return viz_graph
         
     def write_file(self, graph):
         vg = self.to_printable_graph(graph)

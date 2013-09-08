@@ -12,7 +12,7 @@ class OntologyGraph(DiGraph):
     Represents Gene Ontology graph.
     """
 
-    def __init__(self): #TODO add is_a to typedefs
+    def __init__(self):
         DiGraph.__init__(self)
         self.typedefs = {}
         self.synonyms = {}
@@ -160,96 +160,3 @@ class TermAssociation(object):
         for k, v in self.attrs.iteritems():
             s += k + ": " + str(v) + "\n"
         return s
-
-class GafGeneAnnotation2(object):
-    """
-    Represents one gene ontology annotation object
-    """
-    
-    def __init__(self, oid, db = None, symbol = None, name = None,
-                 synonyms = None, otype = None, taxon = None,
-                 ext = None, gp_id = None, associations = None):
-        self.db = db
-        self.oid = oid
-        self.symbol = symbol
-        self.name = name
-        self.synonyms = synonyms
-        self.type = otype
-        self.taxon = taxon
-        
-        self.ext = ext
-        self.gp_id = gp_id
-        
-        self.associations = associations
-    
-    def __eq__(self, other):
-        if isinstance(other, self.__class__):
-            return self.__dict__ == other.__dict__
-        else:
-            return False
-
-    def __ne__(self, other):
-        return not self.__eq__(other)
-    
-    def __repr__(self):
-        return "GeneAnnotation(db_object_id = {0})".format(self.oid)
-    
-    def __str__(self):
-        b1 = """DB: {0}
-DB Object ID: {1}
-DB Object Symbol: {2}
-DB Object Name: {3}
-DB Object Synonyms: {4}
-DB Object Type: {5}
-Taxon: {6}
-""".format(self.db, self.oid, self.symbol, self.name, self.synonyms, self.type, self.taxon)
-        if self.ext != None: # only in gaf 2.0
-            b1 += """Annotation Extension: {0}
-Gene Product Form ID: {1}
-""".format(self.ext, self.gp_id)
-        if self.associations != None:
-            b1 += "Associations:"
-            for a in self.associations:
-                b1 += str(a)
-        return b1
-    
-class GafTermAssociation(object):
-    """
-    Represents one gene ontology term association
-    """
-    
-    def __init__(self, go_id, qualifier = None, db_ref = None, evidence = None,
-                 with_or_from = None, aspect = None, date = None, assigned_by = None):
-        self.qualifier = qualifier
-        self.go_id = go_id
-        self.db_ref = db_ref
-        self.evidence = evidence
-        self.with_or_from = with_or_from
-        self.aspect = aspect
-        self.date = date
-        self.assigned_by = assigned_by
-    
-    def __eq__(self, other):
-        if isinstance(other, self.__class__):
-            return self.__dict__ == other.__dict__
-        else:
-            return False
-
-    def __ne__(self, other):
-        return not self.__eq__(other)
-    
-    def __repr__(self):
-        return "TermAssociation(go_id = {0})".format(self.go_id)
-    
-    def __str__(self):
-        return """
-    Qualifier: {0}
-    GO ID: {1}
-    DB:Reference: {2}
-    Evidence Code: {3}
-    With (or) From: {4}
-    Aspect: {5}
-    Date: {6}
-    Assigned by: {7}
-    """.format(self.qualifier, self.go_id, self.db_ref,\
-self.evidence, self.with_or_from, self.aspect, self.date, self.assigned_by)

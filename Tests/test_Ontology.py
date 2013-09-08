@@ -26,7 +26,7 @@ class EnrichmentFinderTest(unittest.TestCase):
     def test_parent_child_intersection(self):
         pass
     
-    def test_term_by_term(self):
+    def test_term_for_term(self):
         pass
 
 class RankedEnrichmentFinderTest(unittest.TestCase):

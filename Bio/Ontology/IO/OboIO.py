@@ -52,7 +52,9 @@ class OboIterator(object):
         self._handle = file_handle
         self._reg = re.compile("^\[([\w]+)\]$")
         self._state = _START
-
+        self._dict = None
+        self._found_stanza_type = None
+        
     def __iter__(self):
         return self
     

@@ -7,7 +7,7 @@ Module containing functions used for statistical reasoning about the ontology
 data.
 """
 
-from math import *
+from math import log, exp
 
 _g = 7
 _p = [0.99999999999980993, 676.5203681218851, -1259.1392167224028,
@@ -139,7 +139,11 @@ def kolmogorov_smirnov_rank_test(gene_set, gene_list, gene_corr, p):
         #if cval > Dn:
             Dn = cval
     return (Dn, stat_plot)
-    
+
+def mean(arr):
+    l = float(len(arr))
+    return sum(arr) / l if l > .0 else .0
+
 corrections = { "bonferroni" : bonferroni_correction,
                 "bh_fdr" : bh_fdr_correction }
 
