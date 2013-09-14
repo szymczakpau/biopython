@@ -5,8 +5,8 @@
 
 import collections
 import random, math, bisect
-import Bio.Ontology.Stats as Stats
-import Bio.Ontology.IdResolver as IdResolver
+import Stats
+import IdResolver
 
 class EnrichmentEntry(object):
     """
@@ -18,6 +18,15 @@ class EnrichmentEntry(object):
         self.p_value = p_value
         self.corrections = {}
         self.attrs = {}
+    
+    def __eq__(self, other):
+        if isinstance(other, self.__class__):
+            return self.__dict__ == other.__dict__
+        else:
+            return False
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
     
     def __repr__(self):
         return 'EnrichmentEntry(id = {0}, name = {2}, p_value = {1})'.format(self.oid, self.p_value, self.name)
@@ -48,6 +57,15 @@ class Enrichment(object):
         Returns enrichment entries with specified siginificance level.
         """
         return self.filter(lambda x: x.p_value <= p_val)
+    
+    def __eq__(self, other):
+        if isinstance(other, self.__class__):
+            return self.__dict__ == other.__dict__
+        else:
+            return False
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
     
     def __repr__(self):
         return "Enrichment(method = {2}, entries_num = {0} , warnings_num = {1})".format(len(self.entries), len(self.warnings), self.method)
@@ -382,7 +400,8 @@ class RankedEnrichmentFinder(BaseEnrichmentFinder):
                 results[e.oid].append(e.p_value)
         return results
     
-    def find_enrichment_parent_child(self, gene_rank, side = "+", corrections = []):
+    def find_enrichment_parent_child(self, gene_rank, side = "+", corrections = [],
+                                     rank_as_population = False):
         """
         Finds enrichment by applying parent-child analysis to list slices.
         """
@@ -393,8 +412,13 @@ class RankedEnrichmentFinder(BaseEnrichmentFinder):
         gene_list = [g for g, _ in sorted_gene_rank]
         resolved_list = self._resolve_ids(gene_list, warnings)
         
-        ef = EnrichmentFinder(self.annotations.itervalues(), self.o_graph,
+        
+        if rank_as_population:
+            ef = EnrichmentFinder(self.annotations.itervalues(), self.o_graph,
                                   resolved_list, IdResolver.Resolver)
+        else:
+            ef = EnrichmentFinder(self.annotations.itervalues(), self.o_graph,
+                                  resolver_generator = IdResolver.Resolver)
         
         if side == "-":
             all_results = self._get_half_results(resolved_list[::-1], ef, warnings)
@@ -419,7 +443,7 @@ class RankedEnrichmentFinder(BaseEnrichmentFinder):
             entry = EnrichmentEntry(oid, self.o_graph.get_term(oid).name,
                                           min_pval)
             entry.attrs["plot"] = plot
-            entry.attrs["Dn"] = 1 - min_pval
+            entry.attrs["score"] = 1 - min_pval
             
             result.append(entry)
             
@@ -428,17 +452,18 @@ class RankedEnrichmentFinder(BaseEnrichmentFinder):
         if len(self.o_graph.cycles) > 0:
             warnings.append("Graph contains cycles: " + str(self.o_graph.cycles))
             
-        return Enrichment("ranked parent-child", result, warnings)
+        return Enrichment("ranked parent-child", result, warnings, corrections)
         
     def _get_perms(self, gene_list, perms_no):
         perms = []
         permutation = list(gene_list)
-        for i in xrange(perms_no):
+        for _ in xrange(perms_no):
             random.shuffle(permutation)
             perms.append(list(permutation))
         return perms
     
-    def find_enrichment_from_rank(self, gene_rank, perms_no = 1000):
+    def find_enrichment_from_rank(self, gene_rank, perms_no = 1000,
+                                  min_set_rank_intersection = 3,  corr_power = 1.):
         """
         Finds enrichment using GSEA method.
         
@@ -456,24 +481,29 @@ class RankedEnrichmentFinder(BaseEnrichmentFinder):
         warnings = []
         result = []
         resolved_list = self._resolve_ids(gene_list, warnings)
-        enriched_terms = self._find_enriched_terms(resolved_list)
+        enriched_terms = self._find_enriched_terms(resolved_list, min_set_rank_intersection)
         perms = self._get_perms(resolved_list, perms_no)
+        
+        #resolved_set = set(resolved_list)#
+        #term_assocs = self._find_terms_associations(gene_list)#
         
         # Computing both: uncorrected and FDR corrected p-value
         all_pos_nes_perm = []
         all_neg_nes_perm = []
         all_nes = []
         
-        for term in enriched_terms:
-            gene_set = self.terms_to_population_genes[term]
-            orig_es, orig_plot = Stats.kolmogorov_smirnov_rank_test(gene_set, resolved_list, gene_corr, 1)
+        for term, gene_set in enriched_terms.iteritems():
+            #gene_set = self.terms_to_population_genes[term]
+            #print term, len(resolved_set.intersection(gene_set)), len(term_assocs[term]), len(gene_set)
+            
+            orig_es, orig_plot = Stats.kolmogorov_smirnov_rank_test(gene_set, resolved_list, gene_corr, corr_power)
             
             pcount = 0
             pos_nes_perm = []
             neg_nes_perm = []
             
             for perm in perms:
-                perm_es, _ = Stats.kolmogorov_smirnov_rank_test(gene_set, perm, gene_corr, 1)
+                perm_es, _ = Stats.kolmogorov_smirnov_rank_test(gene_set, perm, gene_corr, corr_power)
                 if orig_es < 0:
                     pcount += int(orig_es >= perm_es)
                 else:
@@ -489,7 +519,7 @@ class RankedEnrichmentFinder(BaseEnrichmentFinder):
             pval = pcount / float(perms_no)
             entry = EnrichmentEntry(term, self.o_graph.get_term(term).name,
                                     pval)
-            entry.attrs["Dn"] = orig_es
+            entry.attrs["score"] = orig_es
             entry.attrs["plot"] = orig_plot
             result.append(entry)
             
@@ -540,18 +570,14 @@ class RankedEnrichmentFinder(BaseEnrichmentFinder):
             
         if len(self.o_graph.cycles) > 0:
             warnings.append("Graph contains cycles: " + str(self.o_graph.cycles))
-        return Enrichment("GSEA", result, warnings)
+        return Enrichment("GSEA", result, warnings, ['fdr'])
         
-    def _find_enriched_terms(self, gene_list):
-        enriched_terms = set()
-        for gene in gene_list:
-            if gene in self.annotations:
-                for term in self.annotations[gene].associations:
-                    node = self.o_graph.get_node(term.go_id)
-                    if node != None:
-                        nid = node.data.id # because enrichments may use synonyms instead of ids
-                        enriched_terms.add(nid)
-                        enriched_terms |= self.o_graph.get_ancestors(nid)
+    def _find_enriched_terms(self, gene_list, min_set_size):
+        enriched_terms = {}
+        term_assocs = self._find_terms_associations(gene_list)
+        for k, v in term_assocs.iteritems():
+            if len(v) >= min_set_size:
+                enriched_terms[k] = v
         return enriched_terms
         
 if __name__ == "__main__":

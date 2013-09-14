@@ -111,7 +111,7 @@ def bh_fdr_correction(pvals):
             cr[pos] = mx
         k += 1
     return cr
-        
+
 def kolmogorov_smirnov_rank_test(gene_set, gene_list, gene_corr, p):
     cval = 0
     Dn = 0
@@ -120,25 +120,33 @@ def kolmogorov_smirnov_rank_test(gene_set, gene_list, gene_corr, p):
     N = len(gene_list)
     Nh = 0
     
-    adj_corr = [pow(abs(x), p) for x in gene_corr]
-    for i in xrange(len(gene_list)):
+    if p != 1:
+        adj_corr = [pow(abs(x), p) for x in gene_corr]
+    else:
+        adj_corr = [abs(x) for x in gene_corr]
+    
+    for i in xrange(N):
         if gene_list[i] in gene_set:
             Nr += adj_corr[i] 
             Nh += 1
     
-    miss_pen = float(1) / (N - Nh)
+    if N == Nh:
+        miss_pen = 1.
+    else:
+        miss_pen = float(1) / (N - Nh)
     
-    stat_plot = []
-    for i in xrange(len(gene_list)):
+    stat_plot = N * [None]
+    
+    for i in xrange(N):
         if gene_list[i] in gene_set:
             cval += adj_corr[i] / Nr
         else:
             cval -= miss_pen
-        stat_plot.append(cval)
+        stat_plot[i] = cval
         if abs(cval) > abs(Dn):
-        #if cval > Dn:
             Dn = cval
     return (Dn, stat_plot)
+
 
 def mean(arr):
     l = float(len(arr))
@@ -148,7 +156,8 @@ corrections = { "bonferroni" : bonferroni_correction,
                 "bh_fdr" : bh_fdr_correction }
 
 corrections_labels = { "bonferroni" : "Bonferroni correction",
-                       "bh_fdr" : "FDR correction" }
+                       "bh_fdr" : "FDR correction",
+                       "fdr" : "FDR correction" }
 
 if __name__ == '__main__':
     pass

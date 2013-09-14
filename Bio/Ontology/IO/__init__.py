@@ -10,15 +10,18 @@ import GoaIO
 import GraphIO
 import PrettyIO
 import NexoIO
+import EnrichmentIO
 
 _FormatToIterator = { "obo" : OboIO.OboIterator,
                       "tsv" : GoaIO.TsvIterator,
                       "gaf" : GoaIO.GafIterator }
 
 _FormatToReader = { "nexo" : NexoIO.NexoReader,
-                    "obo"  : OboIO.OboReader}
+                    "obo"  : OboIO.OboReader,
+                    "etsv"  : EnrichmentIO.EnrichmentReader}
 
-_FormatToWriter = { "png" : GraphIO.GraphVisualizer}
+_FormatToWriter = { "png" : GraphIO.GraphVisualizer,
+                    "etsv" : EnrichmentIO.EnrichmentWriter}
 
 _FormatToPrinter = {"gml" : PrettyIO.GmlPrinter,
                     "png" : PrettyIO.GraphVizPrinter,

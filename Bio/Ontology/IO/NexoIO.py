@@ -109,10 +109,15 @@ class NexoReader(object):
         for _, node in content_handler.nodes.iteritems():
             graph.add_node(node.id, node)
         
+        edge_types = set()
         for edge in content_handler.edges:
             source = content_handler.nodes[edge[0]].id
             target = content_handler.nodes[edge[1]].id
             graph.add_edge(target, source, edge[2]) # in our representation it is inverted
-        
+            edge_types.add(edge[2])
+            
+        for edge_type in edge_types:
+            graph.typedefs[edge_type] = {"id" : edge_type}
+            
         return (annotations, graph)
         

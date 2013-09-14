@@ -354,8 +354,14 @@ tbody tr:hover td
         
         self.open_tag("table")
         
-        self.open_tag("tr")        
-        for header in ["ID", "name", "p-value"] + [corrections_labels[x] for x in enrichment.corrections]:
+        self.open_tag("tr")
+        headers = ["ID", "name", "p-value"]
+        for x in enrichment.corrections:
+            if x in corrections_labels:
+                headers.append(corrections_labels[x])
+            else:
+                headers.append(x)
+        for header in headers:
             self.write_tag("th", header)
         self.close_tag("tr")
         
