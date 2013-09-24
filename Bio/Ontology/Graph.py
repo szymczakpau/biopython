@@ -3,6 +3,9 @@
 # license.  Please see the LICENSE file that should have been included   
 # as part of this package.
 
+"""
+Module containing abstract representation of graph.
+"""
 
 from functools import total_ordering
 
@@ -111,10 +114,12 @@ class DiGraph(object):
         id_set = set(nodes_ids)
         
         for nid in nodes_ids:
+            # copying wanted nodes
             n = self.nodes[nid]
             igraph.update_node(nid, n.data)
             for edge in n.succ:
                 if edge.to_node.label in id_set:
+                    # copying edges to wanted nodes
                     igraph.add_edge(nid, edge.to_node.label, edge.data)
         return igraph
     
@@ -143,7 +148,7 @@ class DiGraph(object):
         [[2, 9], [2, 5, 3]]
         """
         if DiGraph._REACHABLE in node.attr:
-            return ([], node.attr[DiGraph._REACHABLE]) # generalnie trzeba wlozyc tutaj label od node'a ktory zaczyna cykl
+            return ([], node.attr[DiGraph._REACHABLE])
         else:
             my_set = set()
             

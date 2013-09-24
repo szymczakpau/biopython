@@ -2,6 +2,7 @@
 # This code is part of the Biopython distribution and governed by its    
 # license.  Please see the LICENSE file that should have been included   
 # as part of this package.
+
 """
 Module containing functions used for statistical reasoning about the ontology
 data.
@@ -18,6 +19,7 @@ _p = [0.99999999999980993, 676.5203681218851, -1259.1392167224028,
 def lngamma(z):
     """
     Lanchos approximation of log((z-1)!)
+    
     Reference: http://en.wikipedia.org/wiki/Lanczos_approximation
     """
     z -= 1
@@ -90,6 +92,7 @@ def hypergeometric_test(k, n, K, N):
 def bonferroni_correction(pvals):
     """
     Bonferroni correction.
+    
     Reference: http://en.wikipedia.org/wiki/Bonferroni_correction
     """
     n = len(pvals)
@@ -113,6 +116,14 @@ def bh_fdr_correction(pvals):
     return cr
 
 def kolmogorov_smirnov_rank_test(gene_set, gene_list, gene_corr, p):
+    """
+    Rank test used in GSEA method. It measures dispersion of genes from
+    gene_set over a gene_list. Every gene from gene_list has its weight
+    specified by gene_corr. p is a parameter changing weights importance.
+    
+    Reference: http://www.pnas.org/content/102/43/15545.full
+    """
+    
     cval = 0
     Dn = 0
     Nr = 0
@@ -120,6 +131,7 @@ def kolmogorov_smirnov_rank_test(gene_set, gene_list, gene_corr, p):
     N = len(gene_list)
     Nh = 0
     
+    # Adjust correlations taking accoriding to p parameter
     if p != 1:
         adj_corr = [pow(abs(x), p) for x in gene_corr]
     else:
@@ -158,6 +170,3 @@ corrections = { "bonferroni" : bonferroni_correction,
 corrections_labels = { "bonferroni" : "Bonferroni correction",
                        "bh_fdr" : "FDR correction",
                        "fdr" : "FDR correction" }
-
-if __name__ == '__main__':
-    pass

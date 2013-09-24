@@ -3,13 +3,16 @@
 # license.  Please see the LICENSE file that should have been included
 # as part of this package.
 
+"""
+Module with classes representating ontologies and annotation data.
+"""
 
 from Bio.Ontology.Graph import DiGraph
 import copy
 
 class OntologyGraph(DiGraph):
     """
-    Represents Gene Ontology graph.
+    Represents ontology graph.
     """
 
     def __init__(self):
@@ -27,40 +30,47 @@ class OntologyGraph(DiGraph):
     def node_exists(self, u):
         return u in self.nodes or u in self.synonyms
     
-    def get_term(self, go_id):
-        return self.get_node(go_id).data
+    def get_term(self, oid):
+        return self.get_node(oid).data
     
-    def get_ancestors(self, go_id):
-        node = self.get_node(go_id)
+    def get_ancestors(self, oid):
+        node = self.get_node(oid)
         _, res = self._get_reachable(node)
         return copy.copy(res) # return copy so user won't disturb cached values
 
-    def get_parents(self, go_id):
-        node = self.get_node(go_id)
+    def get_parents(self, oid):
+        node = self.get_node(oid)
         res = set()
         for edge in node.succ:
             res.add(edge.to_node.label)
         return res
     
     def get_relationship_types(self):
-        return ["is_a"] + list(self.typedefs.keys())
+        return list(self.typedefs.keys())
         
-    def trim(self, relation_filter):
+    def trim(self, kept_edges):
         """
         Returns graph with only given edges left.
+        
+        Params:
+        kept_edges - iterable specyfing edges we want to preserve
         """
         
-        filter_set = set(relation_filter)
+        filter_set = set(kept_edges)
         
         fgraph = OntologyGraph()
         
         for label, node in self.nodes.iteritems():
+            # copying all the nodes
             fgraph.update_node(label, node.data)
             for edge in node.succ:
+                # copying only the wanted edges
                 if edge.data in filter_set:
                     fgraph.add_edge(label, edge.to_node.label, edge.data)
         
         fgraph.synonyms = dict(self.synonyms)
+        
+        # copying wanted relationships definitions
         for rel, typedef in self.typedefs.iteritems():
             if rel in filter_set:
                 fgraph.typedefs[rel] = typedef
@@ -71,6 +81,7 @@ class OntologyGraph(DiGraph):
         """
         Returns graph with only given nodes left
         """
+        
         idg = super(OntologyGraph, self).get_induced_subgraph(nodes_ids)
         
         igraph = OntologyGraph()
@@ -82,7 +93,7 @@ class OntologyGraph(DiGraph):
         
 class OntologyTerm(object):
     """
-    Represents gene ontology term.
+    Represents ontology term.
     """
     
     def __init__(self, nid, name, attrs = {}):
@@ -104,7 +115,7 @@ class OntologyTerm(object):
 
 class GeneAnnotation(object):
     """
-    Represents one generic gene ontology annotation object
+    Represents one generic gene annotation object
     """
     
     def __init__(self, oid, associations = [], attrs = {}):
@@ -136,7 +147,7 @@ class GeneAnnotation(object):
     
 class TermAssociation(object):
     """
-    Represents one gene ontology term association
+    Represents one gene to ontology term association
     """
     
     def __init__(self, go_id, attrs = {}):
@@ -153,10 +164,10 @@ class TermAssociation(object):
         return not self.__eq__(other)
     
     def __repr__(self):
-        return "TermAssociation(go_id = {0})".format(self.go_id)
+        return "TermAssociation(id = {0})".format(self.go_id)
     
     def __str__(self):
-        s = "GO ID: " + self.go_id + "\n"
+        s = "ID: " + self.go_id + "\n"
         for k, v in self.attrs.iteritems():
             s += k + ": " + str(v) + "\n"
         return s

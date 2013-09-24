@@ -3,6 +3,11 @@
 # license.  Please see the LICENSE file that should have been included   
 # as part of this package.
 
+"""
+I/O and visualization operations on graphs.
+"""
+
+
 import string, sys
 
 _INDENT = "  "
@@ -25,7 +30,7 @@ class GmlWriter(object):
 
     Writing the graph:
     >>> writer = GmlWriter(out)
-    >>> writer.write_file(g)
+    >>> writer.write(g)
     
     >>> print out.getvalue()
     graph [
@@ -117,7 +122,7 @@ class GmlWriter(object):
         lines.append("]")
         return lines
     
-    def write_file(self, graph):
+    def write(self, graph):
         self.handle.write(string.join(self.get_lines(graph), "\n"))
 
 class GraphVisualizer(object):
@@ -157,7 +162,7 @@ class GraphVisualizer(object):
                     
             return viz_graph
         
-    def write_file(self, graph):
+    def write(self, graph):
         vg = self.to_printable_graph(graph)
         vg.draw(self.handle, prog="dot")
 

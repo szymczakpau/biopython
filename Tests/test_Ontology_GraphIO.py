@@ -27,7 +27,7 @@ class GraphIOTest(unittest.TestCase):
         output = string.join(lines, "\n")
         self.assertEqual(correct_output, output)
     
-    def test_write_file(self):
+    def test_write(self):
         correct_output = """graph [
   directed 1
   node [
@@ -86,7 +86,7 @@ class GraphIOTest(unittest.TestCase):
         graph.update_node(1, {'a' : 1, 'bb' : 2, 'abb' : [1, 2] })
         graph.add_edge(1, 4, {'x' : 'x'})
         graph.add_edge(5, 2, "zzzz")
-        writer.write_file(graph)
+        writer.write(graph)
         self.assertEqual(correct_output, out.getvalue())
 
 if __name__ == "__main__":

@@ -3,12 +3,13 @@
 # license.  Please see the LICENSE file that should have been included   
 # as part of this package.
 
+"""
+I/O operations for gene annotation files.
+"""
+
 import csv
 import collections
-
 from Bio.Ontology.Data import GeneAnnotation, TermAssociation
-
-
 
 class TsvIterator(object):
     """
@@ -22,9 +23,9 @@ class TsvIterator(object):
         return self._reader
 
 
-class GafIterator(object):
+class GafReader(object):
     """
-    Parses GAF files into list of GeneAnnotation.
+    Reads GAF files into list of GeneAnnotation.
     
     GAF file is list of tab separated values in the following order:
         'DB', 'DB Object ID', 'DB Object Symbol', 'Qualifier', 'GO ID',
@@ -39,7 +40,6 @@ class GafIterator(object):
     def __init__(self, file_handle):
         self.handle = file_handle
         self.version = None
-        self.records = None
     
     def _split_multi(self, value):
         if len(value) > 0:
@@ -81,7 +81,7 @@ class GafIterator(object):
         
         return GeneAnnotation(obj_id, assocs, obj_attrs)
     
-    def __iter__(self):
+    def read(self):
         tsv_iter = TsvIterator(self.handle)
         raw_records = collections.defaultdict(list)
         for row in tsv_iter:
@@ -92,5 +92,4 @@ class GafIterator(object):
                 self.version = first[(first.find(':') + 1):].strip()
         if self.version is None:
             raise ValueError("Invalid gaf file: No version specified.")
-        self.records = [self._to_goa(v) for v in raw_records.values()]
-        return iter(self.records)
+        return [self._to_goa(v) for v in raw_records.values()]

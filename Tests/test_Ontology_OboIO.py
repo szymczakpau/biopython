@@ -19,7 +19,7 @@ class OboWriterTest(unittest.TestCase):
                                  {"is_a" : ["GO:0015935", "GO:0044445"]})]
         f = StringIO()
         writer = OboWriter(f, version = "1.2")
-        writer.write_file(terms_to_write)
+        writer.write(terms_to_write)
         
         expected_output = """format-version:1.2
 

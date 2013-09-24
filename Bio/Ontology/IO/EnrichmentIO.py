@@ -3,8 +3,11 @@
 # license.  Please see the LICENSE file that should have been included   
 # as part of this package.
 
-import csv, string, ast
+"""
+I/O operations for Enrichment.
+"""
 
+import csv, string, ast
 from Bio.Ontology import Enrichment, EnrichmentEntry
 
 def _row_to_entry(row, corr_names, read_attrs):
@@ -65,7 +68,7 @@ class EnrichmentWriter(object):
         self._handle = file_handle
         self._write_attrs = write_attrs
         
-    def write_file(self, enrichment):
+    def write(self, enrichment):
         writer = csv.writer(self._handle, delimiter = '\t')
         writer.writerow(["# " + enrichment.method])
         writer.writerow(["# " + str(len(enrichment.entries)) + " " + str(len(enrichment.warnings))])

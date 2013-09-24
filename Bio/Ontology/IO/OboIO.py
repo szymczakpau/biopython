@@ -3,16 +3,18 @@
 # license.  Please see the LICENSE file that should have been included   
 # as part of this package.
 
+"""
+I/O operations for ontologies.
+"""
+
+import collections
+import re, shlex
+from Bio.Ontology.Data import OntologyTerm, OntologyGraph
+
 _START = 0
 _STANZA = 1
 _READ_STANZA = 2
 _EOF = 3
-
-
-import collections
-import re, shlex
-
-from Bio.Ontology.Data import OntologyTerm, OntologyGraph
 
 _IS_A_TYPE = {"id" : "is_a",
               "name" : "is_a",
@@ -31,7 +33,7 @@ class OboWriter(object):
         self.handle = file_handle
         self.version = version
     
-    def write_file(self, terms_list):
+    def write(self, terms_list):
         # now only terms are valid for writing
         self.handle.write("format-version:" + self.version + "\n")
         for term in terms_list:

@@ -24,7 +24,7 @@ class EnrichmentWriterTest(unittest.TestCase):
         en = Enrichment("ranked parent-child", [e1, e2], ["Cycles found..."], ['bh_fdr', 'bonferroni'])
         
         writer = EnrichmentWriter(result)
-        writer.write_file(en)
+        writer.write(en)
         expected = ("# ranked parent-child\r\n"
                     "# 2 1\r\n"
                     "id\tname\tp-value\tbh_fdr|bonferroni\tattributes\r\n"

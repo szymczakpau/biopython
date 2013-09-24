@@ -178,7 +178,7 @@ class GmlPrinter(object):
         g = graph.get_induced_subgraph(nodes_ids)
         
         vg = self.to_printable_graph(enrichment, g)
-        GmlWriter(self.handle).write_file(vg)
+        GmlWriter(self.handle).write(vg)
 
 class GraphVizPrinter(object):
     """
@@ -270,16 +270,7 @@ class TxtPrinter(object):
             for x in enrichment.warnings:
                 self.handle.write(str(x))
 
-
-class HtmlPrinter(object): #TODO smarter params givin'
-    """
-    Prints found enrichments to html file.
-    """
-    
-    def __init__(self, file_handle, go_to_url = "http://amigo.geneontology.org/cgi-bin/amigo/term_details?term="):
-        self.handle = file_handle
-        self.go_to_url = go_to_url
-        self.style = """<style type="text/css">
+_DEFAULT_STYLE = """<style type="text/css">
 .warning
 {
     color:#D13F31;
@@ -321,7 +312,17 @@ tbody tr:hover td
 }
 </style>
 """
+
+class HtmlPrinter(object):
+    """
+    Prints found enrichments to html file.
+    """
     
+    def __init__(self, file_handle, go_to_url = "#",
+                 style = _DEFAULT_STYLE):
+        self.handle = file_handle
+        self.go_to_url = go_to_url
+        self.style = style
     
     def write_tag(self, tag, text, attrs = None):
         self.open_tag(tag, attrs)

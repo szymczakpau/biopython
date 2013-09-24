@@ -3,6 +3,11 @@
 # license.  Please see the LICENSE file that should have been included   
 # as part of this package.
 
+"""
+Module containing classes for finding functional gene enrichments using
+ontologies.
+"""
+
 import collections
 import random, math, bisect
 import Stats
@@ -130,7 +135,7 @@ class EnrichmentFinder(BaseEnrichmentFinder):
     
     >>> import Bio.Ontology.IO as OntoIO
     >>> go_graph = OntoIO.read("Ontology/go_test.obo", "obo")
-    >>> assocs_iter = OntoIO.parse("Ontology/ga_test.fb", "gaf")
+    >>> assocs = OntoIO.read("Ontology/ga_test.fb", "gaf")
     
     Now is the time to create EnrichmentFinder. Besides the arguments
     mentioned before you could specify an id resolver, which basically tries
@@ -139,7 +144,7 @@ class EnrichmentFinder(BaseEnrichmentFinder):
     is used and all genes from association are used as the population.
     
     >>> from Bio.Ontology import EnrichmentFinder
-    >>> ef = EnrichmentFinder(assocs_iter, go_graph)
+    >>> ef = EnrichmentFinder(assocs, go_graph)
     
     To run finder you just need to call find_enrichment method with list
     of genes as an argument:
@@ -328,13 +333,13 @@ class RankedEnrichmentFinder(BaseEnrichmentFinder):
     
     >>> import Bio.Ontology.IO as OntoIO
     >>> go_graph = OntoIO.read("Ontology/go_test.obo", "obo")
-    >>> assocs_iter = OntoIO.parse("Ontology/ga_test.fb", "gaf")
+    >>> assocs = OntoIO.read("Ontology/ga_test.fb", "gaf")
     
     Now is the time to create EnrichmentFinder. Besides the arguments
     mentioned before you could specify an id resolver.
     
     >>> from Bio.Ontology import RankedEnrichmentFinder
-    >>> ef = RankedEnrichmentFinder(assocs_iter, go_graph)
+    >>> ef = RankedEnrichmentFinder(assocs, go_graph)
     
     To run finder you just need to call find_enrichment_from_rank
     method with gene rank:
@@ -349,7 +354,7 @@ class RankedEnrichmentFinder(BaseEnrichmentFinder):
     which is enriched - and a list of warnings.
     
     >>> print result
-    Enrichment found using GSEA method: 64 entries, 1 warnings.
+    Enrichment found using GSEA method: 12 entries, 1 warnings.
     
     You can also use novell method for finding enrichments - ranked parent-child:
     
@@ -388,20 +393,20 @@ class RankedEnrichmentFinder(BaseEnrichmentFinder):
         return resolved_list
     
     
-    def _get_half_results(self, resolved_list, ef, warnings):
+    def _get_half_results(self, resolved_list, ef, method, warnings):
         list_slice = []
         results = collections.defaultdict(list)
 
         for gene in resolved_list:
             list_slice.append(gene)
-            slice_res = ef.find_enrichment(list_slice, method="parent_child_union")
+            slice_res = ef.find_enrichment(list_slice, method = method)
             warnings += slice_res.warnings
             for e in slice_res.entries:
                 results[e.oid].append(e.p_value)
         return results
     
     def find_enrichment_parent_child(self, gene_rank, side = "+", corrections = [],
-                                     rank_as_population = False):
+                                     rank_as_population = False, method = "parent_child_union"):
         """
         Finds enrichment by applying parent-child analysis to list slices.
         """
@@ -421,12 +426,12 @@ class RankedEnrichmentFinder(BaseEnrichmentFinder):
                                   resolver_generator = IdResolver.Resolver)
         
         if side == "-":
-            all_results = self._get_half_results(resolved_list[::-1], ef, warnings)
+            all_results = self._get_half_results(resolved_list[::-1], ef, method, warnings)
         elif side == "+":
-            all_results = self._get_half_results(resolved_list, ef, warnings)
+            all_results = self._get_half_results(resolved_list, ef, method, warnings)
         elif side == "+/-":
-            minus_results = self._get_half_results(resolved_list[::-1], ef, warnings)
-            all_results = self._get_half_results(resolved_list, ef, warnings)
+            minus_results = self._get_half_results(resolved_list[::-1], ef, method, warnings)
+            all_results = self._get_half_results(resolved_list, ef, method, warnings)
             for k, v in minus_results.iteritems():
                 all_results[k] += v
         else:
@@ -463,7 +468,7 @@ class RankedEnrichmentFinder(BaseEnrichmentFinder):
         return perms
     
     def find_enrichment_from_rank(self, gene_rank, perms_no = 1000,
-                                  min_set_rank_intersection = 3,  corr_power = 1.):
+                                  min_set_rank_intersection = 2,  corr_power = 1.):
         """
         Finds enrichment using GSEA method.
         

@@ -3,6 +3,10 @@
 # license.  Please see the LICENSE file that should have been included   
 # as part of this package.
 
+"""
+I/O operations for NeXO.
+"""
+
 from Bio.Ontology.Data import OntologyGraph, OntologyTerm, TermAssociation, GeneAnnotation
 import xml.sax
 import collections

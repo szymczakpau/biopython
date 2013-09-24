@@ -3,6 +3,11 @@
 # license.  Please see the LICENSE file that should have been included   
 # as part of this package.
 
+"""
+Module giving acces to I/O modules through generic methods.
+"""
+
+
 from Bio.File import as_handle
 
 import OboIO
@@ -13,12 +18,12 @@ import NexoIO
 import EnrichmentIO
 
 _FormatToIterator = { "obo" : OboIO.OboIterator,
-                      "tsv" : GoaIO.TsvIterator,
-                      "gaf" : GoaIO.GafIterator }
+                      "tsv" : GoaIO.TsvIterator}
 
 _FormatToReader = { "nexo" : NexoIO.NexoReader,
                     "obo"  : OboIO.OboReader,
-                    "etsv"  : EnrichmentIO.EnrichmentReader}
+                    "etsv"  : EnrichmentIO.EnrichmentReader,
+                    "gaf" : GoaIO.GafReader }
 
 _FormatToWriter = { "png" : GraphIO.GraphVisualizer,
                     "etsv" : EnrichmentIO.EnrichmentWriter}
@@ -55,7 +60,7 @@ def write(data, handle, file_format, **params):
         #Map the file format to a writer class
         if file_format in _FormatToWriter:
             writer_class = _FormatToWriter[file_format]
-            writer_class(fp, **params).write_file(data)
+            writer_class(fp, **params).write(data)
         else:
             raise ValueError("Unknown format '%s'" % file_format)
 
