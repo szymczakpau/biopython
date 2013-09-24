@@ -4,7 +4,7 @@
 # as part of this package.
 
 import unittest
-from Bio.Ontology.IO.GoaIO import GafIterator
+from Bio.Ontology.IO.GoaIO import GafReader
 from Bio.Ontology.Data import TermAssociation, GeneAnnotation
 
 class GoaIOTest(unittest.TestCase):
@@ -12,15 +12,15 @@ class GoaIOTest(unittest.TestCase):
 
     def test_no_version(self):
         with open('Ontology/GoaIO/no_ver.fb', 'r') as f:
-            it = GafIterator(f)
+            it = GafReader(f)
             with self.assertRaises(ValueError):
-                list(it)
+                it.read()
                 
     def test_incorrect_line_len(self):
         with open('Ontology/GoaIO/bad_line.fb', 'r') as f:
-            it = GafIterator(f)
+            it = GafReader(f)
             with self.assertRaises(ValueError):
-                list(it)
+                it.read()
 
     def test_read_file(self): #TODO
         to = [GeneAnnotation('FBgn0026615',
@@ -65,8 +65,8 @@ class GoaIOTest(unittest.TestCase):
                               'Annotation Extension' : [],
                               'Gene Product Form ID' : ''})]
         with open('Ontology/GoaIO/correct20.fb', 'r') as f:
-            objs = list(GafIterator(f))
-            objs.sort(key = lambda x : x.oid)
+            objs = GafReader(f).read()
+            objs.sort(key = lambda x : x.id)
             self.assertEqual(to, objs)
 
 if __name__ == "__main__":

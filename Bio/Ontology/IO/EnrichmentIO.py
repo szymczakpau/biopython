@@ -20,7 +20,7 @@ def _row_to_entry(row, corr_names, read_attrs):
         corrections[corr_names[i]] = float(corrlist[i])
     entry = EnrichmentEntry(oid, name, p_val)
     entry.corrections = corrections
-    if read_attrs:
+    if read_attrs and row[4]:
         entry.attrs = ast.literal_eval(row[4])
     return entry
 
@@ -57,7 +57,7 @@ class EnrichmentReader(object):
         
 def _entry_to_row(entry, corr_names, write_attrs):
     corr_string = string.join([str(entry.corrections[x]) for x in corr_names], "|")
-    return [entry.oid, entry.name, entry.p_value, corr_string, entry.attrs]
+    return [entry.id, entry.name, entry.p_value, corr_string, entry.attrs]
 
 class EnrichmentWriter(object):
     """

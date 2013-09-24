@@ -17,9 +17,9 @@ class EnrichmentEntry(object):
     """
     Represents one result returned by EnrichmentFinder.
     """
-    def __init__(self, oid, name, p_value):
-        self.oid = oid
-        self.name = name
+    def __init__(self, term_id, term_name, p_value):
+        self.id = term_id
+        self.name = term_name
         self.p_value = p_value
         self.corrections = {}
         self.attrs = {}
@@ -34,13 +34,13 @@ class EnrichmentEntry(object):
         return not self.__eq__(other)
     
     def __repr__(self):
-        return 'EnrichmentEntry(id = {0}, name = {2}, p_value = {1})'.format(self.oid, self.p_value, self.name)
+        return 'EnrichmentEntry(id = {0}, name = {2}, p_value = {1})'.format(self.id, self.p_value, self.name)
 
     def __str__(self):
         return """ID : {0}
 name : {1}
 p-value : {2}
-corrected p-values: {3}""".format(self.oid, self.name, self.p_value, self.corrections)
+corrected p-values: {3}""".format(self.id, self.name, self.p_value, self.corrections)
 
 class Enrichment(object):
     """
@@ -87,7 +87,7 @@ class BaseEnrichmentFinder(object):
         """
         
         self.o_graph = o_graph
-        self.annotations = dict([(v.oid, v) for v in annotations])
+        self.annotations = dict([(v.id, v) for v in annotations])
         
         self.resolver = resolver_generator(self.annotations.itervalues())
         
@@ -97,7 +97,7 @@ class BaseEnrichmentFinder(object):
             if gene in self.annotations:
                 enriched_terms = set()
                 for term in self.annotations[gene].associations:
-                    node = self.o_graph.get_node(term.go_id)
+                    node = self.o_graph.get_node(term.term_id)
                     if node != None:
                         nid = node.data.id # because enrichments may use synonyms instead of ids
                         enriched_terms.add(nid)
@@ -402,7 +402,7 @@ class RankedEnrichmentFinder(BaseEnrichmentFinder):
             slice_res = ef.find_enrichment(list_slice, method = method)
             warnings += slice_res.warnings
             for e in slice_res.entries:
-                results[e.oid].append(e.p_value)
+                results[e.id].append(e.p_value)
         return results
     
     def find_enrichment_parent_child(self, gene_rank, side = "+", corrections = [],

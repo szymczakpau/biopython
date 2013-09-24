@@ -96,9 +96,9 @@ class OntologyTerm(object):
     Represents ontology term.
     """
     
-    def __init__(self, nid, name, attrs = {}):
-        self.id = nid
-        self.name = name
+    def __init__(self, term_id, term_name, attrs = {}):
+        self.id = term_id
+        self.name = term_name
         self.attrs = attrs
         
     def __str__(self):
@@ -118,8 +118,8 @@ class GeneAnnotation(object):
     Represents one generic gene annotation object
     """
     
-    def __init__(self, oid, associations = [], attrs = {}):
-        self.oid = oid
+    def __init__(self, gene_id, associations = [], attrs = {}):
+        self.id = gene_id
         self.associations = associations
         self.attrs = attrs
             
@@ -133,10 +133,10 @@ class GeneAnnotation(object):
         return not self.__eq__(other)
     
     def __repr__(self):
-        return "GeneAnnotation(db_object_id = {0})".format(self.oid)
+        return "GeneAnnotation(db_object_id = {0})".format(self.id)
     
     def __str__(self):
-        s = "DB Object ID: " + self.oid + "\n"
+        s = "DB Object ID: " + self.id + "\n"
         for k, v in self.attrs.iteritems():
             s += k + ": " + str(v)+ "\n"       
         if len(self.associations) > 0:
@@ -150,8 +150,8 @@ class TermAssociation(object):
     Represents one gene to ontology term association
     """
     
-    def __init__(self, go_id, attrs = {}):
-        self.go_id = go_id
+    def __init__(self, term_id, attrs = {}):
+        self.term_id = term_id
         self.attrs = attrs
         
     def __eq__(self, other):
@@ -164,10 +164,10 @@ class TermAssociation(object):
         return not self.__eq__(other)
     
     def __repr__(self):
-        return "TermAssociation(id = {0})".format(self.go_id)
+        return "TermAssociation(id = {0})".format(self.term_id)
     
     def __str__(self):
-        s = "ID: " + self.go_id + "\n"
+        s = "ID: " + self.term_id + "\n"
         for k, v in self.attrs.iteritems():
             s += k + ": " + str(v) + "\n"
         return s

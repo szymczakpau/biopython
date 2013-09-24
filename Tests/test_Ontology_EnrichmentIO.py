@@ -19,7 +19,7 @@ class EnrichmentWriterTest(unittest.TestCase):
         
         e2 = EnrichmentEntry("9916", "polysomal ribosome", 0.025)
         e2.corrections = {'bh_fdr': 1.0, 'bonferroni': 1.0}
-        e2.attrs = {'plot' : [0.1, 0.2, 1.0, 0.1], 'score' : 1.0}
+        e2.attrs = {}
         
         en = Enrichment("ranked parent-child", [e1, e2], ["Cycles found..."], ['bh_fdr', 'bonferroni'])
         
@@ -29,7 +29,7 @@ class EnrichmentWriterTest(unittest.TestCase):
                     "# 2 1\r\n"
                     "id\tname\tp-value\tbh_fdr|bonferroni\tattributes\r\n"
                     "9951\tstructure-specific DNA binding\t0.032301032301\t1.0|1.0\t{'plot': [0.1, 0.2, 1.0, 0.1], 'score': 1.0}\r\n"
-                    "9916\tpolysomal ribosome\t0.025\t1.0|1.0\t{'plot': [0.1, 0.2, 1.0, 0.1], 'score': 1.0}\r\n"
+                    "9916\tpolysomal ribosome\t0.025\t1.0|1.0\t{}\r\n"
                     "!\tCycles found...\r\n")
         self.assertEqual(expected, result.getvalue())
 
@@ -41,7 +41,7 @@ class EnrichmentReaderTest(unittest.TestCase):
                     "# 2 1\r\n"
                     "id\tname\tp-value\tbh_fdr|bonferroni\tattributes\r\n"
                     "9951\tstructure-specific DNA binding\t0.032301032301\t1.0|1.0\t{'plot': [0.1, 0.2, 1.0, 0.1], 'score': 1.0}\r\n"
-                    "9916\tpolysomal ribosome\t0.025\t1.0|1.0\t{'plot': [0.1, 0.2, 1.0, 0.1], 'score': 1.0}\r\n"
+                    "9916\tpolysomal ribosome\t0.025\t1.0|1.0\t\r\n"
                     "!\tCycles found...\r\n")
         test_input = StringIO(inputstr)
 
@@ -51,7 +51,7 @@ class EnrichmentReaderTest(unittest.TestCase):
         
         e2 = EnrichmentEntry("9916", "polysomal ribosome", 0.025)
         e2.corrections = {'bh_fdr': 1.0, 'bonferroni': 1.0}
-        e2.attrs = {'plot' : [0.1, 0.2, 1.0, 0.1], 'score' : 1.0}
+        e2.attrs = {}
         
         expected_en = Enrichment("ranked parent-child", [e1, e2], ["Cycles found..."], ['bh_fdr', 'bonferroni'])
         

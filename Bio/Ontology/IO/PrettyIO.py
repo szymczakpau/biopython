@@ -134,7 +134,7 @@ class GmlPrinter(object):
                               }
                 }
     def entry_to_label(self, entry):
-        return str(entry.oid)
+        return str(entry.id)
     
     def term_to_label(self, term):
         return str(term.id)
@@ -155,7 +155,7 @@ class GmlPrinter(object):
         for entry in enrichment.entries:
             new_label = self.entry_to_label(entry)
             viz_graph.add_node(new_label, self.to_printable_data(entry))
-            entry_labels[entry.oid] = new_label
+            entry_labels[entry.id] = new_label
         
         for label, node in graph.nodes.items():
             if label not in entry_labels:
@@ -172,8 +172,8 @@ class GmlPrinter(object):
     def pretty_print(self, enrichment, graph):
         nodes_ids = set()
         for x in enrichment.entries:
-            nodes_ids.add(x.oid)
-            nodes_ids = nodes_ids.union(graph.get_ancestors(x.oid))
+            nodes_ids.add(x.id)
+            nodes_ids = nodes_ids.union(graph.get_ancestors(x.id))
         
         g = graph.get_induced_subgraph(nodes_ids)
         
@@ -196,7 +196,7 @@ class GraphVizPrinter(object):
         self.max_p = 0.0
         
     def entry_to_label(self, entry):
-        return "{0}\n{1}\np:{2}".format(entry.oid, entry.name, entry.p_value)
+        return "{0}\n{1}\np:{2}".format(entry.id, entry.name, entry.p_value)
 
     def term_to_label(self, term):
         return "{0}\n{1}".format(term.id, term.name)
@@ -224,7 +224,7 @@ class GraphVizPrinter(object):
                 new_label = self.entry_to_label(entry)
                 col = self.gradient[get_gradient_index(entry.p_value, self.min_p, self.max_p, self.gradient_step)]
                 viz_graph.add_node(new_label, fillcolor = col)
-                entry_labels[entry.oid] = new_label
+                entry_labels[entry.id] = new_label
             
             for label, node in graph.nodes.items():
                 if label not in entry_labels:
@@ -243,8 +243,8 @@ class GraphVizPrinter(object):
     def pretty_print(self, enrichment, graph):
         nodes_ids = set()
         for x in enrichment.entries:
-            nodes_ids.add(x.oid)
-            nodes_ids = nodes_ids.union(graph.get_ancestors(x.oid))
+            nodes_ids.add(x.id)
+            nodes_ids = nodes_ids.union(graph.get_ancestors(x.id))
         g = graph.get_induced_subgraph(nodes_ids)
         
         vg = self.to_printable_graph(enrichment, g)
@@ -369,7 +369,7 @@ class HtmlPrinter(object):
         for x in sorted_entries:
             self.open_tag("tr")
             self.open_tag("td")
-            self.write_tag("a", str(x.oid), {"href" : self.go_to_url + str(x.oid)})
+            self.write_tag("a", str(x.id), {"href" : self.go_to_url + str(x.id)})
             self.close_tag("td")
             self.write_tag("td", str(x.name))
             self.write_tag("td", str(x.p_value))
