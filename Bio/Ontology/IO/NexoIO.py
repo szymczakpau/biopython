@@ -7,10 +7,11 @@
 I/O operations for NeXO.
 """
 
-from Bio.Ontology.Data import OntologyGraph, OntologyTerm, TermAssociation, GeneAnnotation
 import xml.sax
 import collections
 import ast
+from Bio.Ontology.Data import OntologyGraph, OntologyTerm, TermAssociation, GeneAnnotation
+from Interfaces import OntoReader
 
 _SKIP = 0
 _NODE = 1
@@ -84,7 +85,7 @@ class NexoContentHandler(xml.sax.ContentHandler):
     def characters(self, content):
         pass
     
-class NexoReader(object):
+class NexoReader(OntoReader):
     """
     Class for reading Nexo xgmml network.
     """

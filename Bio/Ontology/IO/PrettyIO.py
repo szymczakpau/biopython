@@ -47,7 +47,7 @@ def get_gradient(color_a, color_b, k):
     g2 = (g2 - g1) / d
     b2 = (b2 - b1) / d
     grad = []
-    for i in xrange(k):
+    for _ in xrange(k):
         grad.append(triple_to_rgb((int(r1), int(g1), int(b1))))
         r1 += r2
         g1 += g2
@@ -107,7 +107,19 @@ def print_enrichment_chart(file_handle, vals, title):
         plt.savefig(file_handle, bbox_inches=0)
         plt.close()
 
-class GmlPrinter(object):
+class PrettyPrinter(object):
+    """
+    Base class for printers.
+    """
+    
+    def __init__(self, file_handle):
+        self.handle = file_handle
+        
+    def pretty_print(self, enrichment, graph):
+        raise NotImplementedError("pretty_print not implmented yet")
+
+
+class GmlPrinter(PrettyPrinter):
     """
     Stores found enrichments as a graph in gml format.
     """
@@ -180,7 +192,7 @@ class GmlPrinter(object):
         vg = self.to_printable_graph(enrichment, g)
         GmlWriter(self.handle).write(vg)
 
-class GraphVizPrinter(object):
+class GraphVizPrinter(PrettyPrinter):
     """
     Stores found enrichments as visualization in png format using graphviz library.
     """
@@ -250,7 +262,7 @@ class GraphVizPrinter(object):
         vg = self.to_printable_graph(enrichment, g)
         vg.draw(self.handle, prog="dot")
 
-class TxtPrinter(object):
+class TxtPrinter(PrettyPrinter):
     """
     Prints found enrichments to txt file.
     """
@@ -313,7 +325,7 @@ tbody tr:hover td
 </style>
 """
 
-class HtmlPrinter(object):
+class HtmlPrinter(PrettyPrinter):
     """
     Prints found enrichments to html file.
     """

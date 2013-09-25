@@ -9,10 +9,11 @@ I/O and visualization operations on graphs.
 
 
 import string, sys
+from Interfaces import OntoWriter
 
 _INDENT = "  "
         
-class GmlWriter(object):
+class GmlWriter(OntoWriter):
     """
     Writes graph to gml format.
     
@@ -125,7 +126,7 @@ class GmlWriter(object):
     def write(self, graph):
         self.handle.write(string.join(self.get_lines(graph), "\n"))
 
-class GraphVisualizer(object):
+class GraphVisualizer(OntoWriter):
     """
     Stores graph in png format using graphviz library.
     """

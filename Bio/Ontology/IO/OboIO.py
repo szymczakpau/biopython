@@ -10,6 +10,7 @@ I/O operations for ontologies.
 import collections
 import re, shlex
 from Bio.Ontology.Data import OntologyTerm, OntologyGraph
+from Interfaces import OntoIterator, OntoReader, OntoWriter
 
 _START = 0
 _STANZA = 1
@@ -22,7 +23,7 @@ _IS_A_TYPE = {"id" : "is_a",
               "domain" : "OBO:TERM_OR_TYPE",
               "def" : "The basic subclassing relationship [OBO:defs]" }
 
-class OboWriter(object):
+class OboWriter(OntoWriter):
     """
     Writes obo files.
     
@@ -45,7 +46,7 @@ class OboWriter(object):
                     for vi in v:
                         self.handle.write(k + ": " + vi + "\n")
     
-class OboIterator(object):
+class OboIterator(OntoIterator):
     """
     Parses obo files.
     """
@@ -56,9 +57,6 @@ class OboIterator(object):
         self._state = _START
         self._dict = None
         self._found_stanza_type = None
-        
-    def __iter__(self):
-        return self
     
     def _strip_comment(self, line):
         pos = line.find('!')
@@ -164,7 +162,7 @@ def terms_to_graph(terms):
     
     return g
 
-class OboReader(object):
+class OboReader(OntoReader):
     """
     Reads obo file to OntologyGraph.
     """

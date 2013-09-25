@@ -9,6 +9,7 @@ I/O operations for Enrichment.
 
 import csv, string, ast
 from Bio.Ontology import Enrichment, EnrichmentEntry
+from Interfaces import OntoWriter, OntoReader
 
 def _row_to_entry(row, corr_names, read_attrs):
     oid = row[0]
@@ -24,7 +25,7 @@ def _row_to_entry(row, corr_names, read_attrs):
         entry.attrs = ast.literal_eval(row[4])
     return entry
 
-class EnrichmentReader(object):
+class EnrichmentReader(OntoReader):
     """
     Class for reading an enrichment from a file.
     """
@@ -59,7 +60,7 @@ def _entry_to_row(entry, corr_names, write_attrs):
     corr_string = string.join([str(entry.corrections[x]) for x in corr_names], "|")
     return [entry.id, entry.name, entry.p_value, corr_string, entry.attrs]
 
-class EnrichmentWriter(object):
+class EnrichmentWriter(OntoWriter):
     """
     Class for writing an enrichment to a file.
     """

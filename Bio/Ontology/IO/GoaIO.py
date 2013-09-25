@@ -10,8 +10,9 @@ I/O operations for gene annotation files.
 import csv
 import collections
 from Bio.Ontology.Data import GeneAnnotation, TermAssociation
+from Interfaces import OntoIterator, OntoReader
 
-class TsvIterator(object):
+class TsvIterator(OntoIterator):
     """
     Parses TSV files
     """
@@ -23,7 +24,7 @@ class TsvIterator(object):
         return self._reader
 
 
-class GafReader(object):
+class GafReader(OntoReader):
     """
     Reads GAF files into list of GeneAnnotation.
     
