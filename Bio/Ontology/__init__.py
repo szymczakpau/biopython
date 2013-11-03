@@ -15,7 +15,7 @@ import IdResolver
 
 class EnrichmentEntry(object):
     """
-    Represents one result returned by EnrichmentFinder.
+    Represents one result returned by SetEnrichmentFinder.
     """
     def __init__(self, term_id, term_name, p_value):
         self.id = term_id
@@ -44,7 +44,7 @@ corrected p-values: {3}""".format(self.id, self.name, self.p_value, self.correct
 
 class Enrichment(object):
     """
-    Contains all results found by EnrichmentFinder
+    Contains all results found by SetEnrichmentFinder
     """
     
     def __init__(self, method, entries, warnings, corrections = []):
@@ -81,32 +81,36 @@ class Enrichment(object):
         
 class BaseEnrichmentFinder(object):
     
-    def __init__(self, annotations, o_graph, resolver_generator):
+    def __init__(self, annotations, ontology_graph, resolver_generator):
         """
         Initialize base for Enrichment Finder.
         """
         
-        self.o_graph = o_graph
+        self.ontology_graph = ontology_graph
         self.annotations = dict([(v.id, v) for v in annotations])
-        
         self.resolver = resolver_generator(self.annotations.itervalues())
-        
+    
+    def find_enrichment(self, genes, **args):
+        raise NotImplementedError(("find_enrichment not implemented. ", 
+                                   "This is just a base class."))
+    
     def _find_terms_associations(self, gene_list):
         terms_assocs = collections.defaultdict(set)
         for gene in gene_list:
             if gene in self.annotations:
                 enriched_terms = set()
                 for term in self.annotations[gene].associations:
-                    node = self.o_graph.get_node(term.term_id)
+                    node = self.ontology_graph.get_node(term.term_id)
                     if node != None:
                         nid = node.data.id # because enrichments may use synonyms instead of ids
                         enriched_terms.add(nid)
-                        enriched_terms |= self.o_graph.get_ancestors(nid)
+                        enriched_terms |= self.ontology_graph.get_ancestors(nid)
                 for t in enriched_terms:
                     terms_assocs[t].add(gene)
         return terms_assocs
     
-    def _calculate_corrections(self, result, corrections):
+    @staticmethod
+    def _calculate_corrections(result, corrections):
         """
         Calculates corrections.
         """
@@ -120,12 +124,12 @@ class BaseEnrichmentFinder(object):
             for i in xrange(len(result)):
                 result[i].corrections = dict([(c_id, pv[i]) for c_id, pv in corr_pvals])
     
-class EnrichmentFinder(BaseEnrichmentFinder):
+class SetEnrichmentFinder(BaseEnrichmentFinder):
     """
     Utility for finding enriched group of terms given list of genes connected
     to the tested phenotype, ontology graph and associations to this graph.
     
-    EnrichmentFinder could be used for finding enrichment in many cases of
+    SetEnrichmentFinder could be used for finding enrichment in many cases of
     entities but in this example let's focus on finding gene enrichment in
     gene ontology graph.
 
@@ -137,14 +141,14 @@ class EnrichmentFinder(BaseEnrichmentFinder):
     >>> go_graph = OntoIO.read("Ontology/go_test.obo", "obo")
     >>> assocs = OntoIO.read("Ontology/ga_test.fb", "gaf")
     
-    Now is the time to create EnrichmentFinder. Besides the arguments
+    Now is the time to create SetEnrichmentFinder. Besides the arguments
     mentioned before you could specify an id resolver, which basically tries
     to find synonyms for gene ids that finder can understand, and population
     of genes as reference. If none of this is specified default resolver
     is used and all genes from association are used as the population.
     
-    >>> from Bio.Ontology import EnrichmentFinder
-    >>> ef = EnrichmentFinder(assocs, go_graph)
+    >>> from Bio.Ontology import SetEnrichmentFinder
+    >>> ef = SetEnrichmentFinder(assocs, go_graph)
     
     To run finder you just need to call find_enrichment method with list
     of genes as an argument:
@@ -169,7 +173,7 @@ class EnrichmentFinder(BaseEnrichmentFinder):
     
     Earlier when specifying list of genes we used non-standardized gene id:
     '18-wheeler'. Thanks to default resolver (FirstOneResolver)
-    of EnrichmentFinder standard id was inferred.
+    of SetEnrichmentFinder standard id was inferred.
     
     >>> print result.entries[0]
     ID : GO:0044707
@@ -193,7 +197,7 @@ class EnrichmentFinder(BaseEnrichmentFinder):
     
     """
     
-    def __init__(self, annotations, o_graph, population = None,
+    def __init__(self, annotations, ontology_graph, population = None,
                  resolver_generator = IdResolver.FirstOneResolver):
         """
         Initialize Enrichment Finder.
@@ -201,12 +205,12 @@ class EnrichmentFinder(BaseEnrichmentFinder):
         Parameters
         ----------
         annotations - iterable containing annotations
-        o_graph - graph with ontology
+        ontology_graph - graph with ontology
         population - population used as reference to study sample
         resolver_generator - constructor of resolver used to disambiguate ids
         """
-        super(EnrichmentFinder, self).__init__(annotations, o_graph, resolver_generator)
-        
+        super(SetEnrichmentFinder, self).__init__(annotations, ontology_graph, resolver_generator)
+
         if population != None:
             self.population = population
         else:
@@ -223,7 +227,7 @@ class EnrichmentFinder(BaseEnrichmentFinder):
             pval = Stats.hypergeometric_test(study_hits, study_size,
                                              population_hits, population_size)
 
-            entry = EnrichmentEntry(term, self.o_graph.get_term(term).name, pval)
+            entry = EnrichmentEntry(term, self.ontology_graph.get_term(term).name, pval)
 
             result.append(entry)
         
@@ -242,7 +246,7 @@ class EnrichmentFinder(BaseEnrichmentFinder):
             study_set_list = []
             pop_set_list = []
             # calculate sets of genes annotated to parents
-            for parent in self.o_graph.get_parents(term):
+            for parent in self.ontology_graph.get_parents(term):
                 study_set_list.append(terms_to_study_genes[parent])
                 pop_set_list.append(self.terms_to_population_genes[parent])
             
@@ -260,7 +264,7 @@ class EnrichmentFinder(BaseEnrichmentFinder):
                 pval = Stats.hypergeometric_test(study_hits, parents_study_size,
                                              population_hits, population_parents_size)
 
-                entry = EnrichmentEntry(term, self.o_graph.get_term(term).name, pval)
+                entry = EnrichmentEntry(term, self.ontology_graph.get_term(term).name, pval)
                 entry.attrs = {"study_hits" : study_hits, "parents_study_size": parents_study_size,
                             "population_hits" : population_hits, "population_parents_size" : population_parents_size}
                 result.append(entry)
@@ -315,11 +319,11 @@ class EnrichmentFinder(BaseEnrichmentFinder):
                                                         method)
         
         # Calculate chosen corrections
-        self._calculate_corrections(result, corrections)
+        BaseEnrichmentFinder._calculate_corrections(result, corrections)
         
         # check for warnings
-        if len(self.o_graph.cycles) > 0:
-            warnings.append("Graph contains cycles: " + str(self.o_graph.cycles))
+        if len(self.ontology_graph.cycles) > 0:
+            warnings.append("Graph contains cycles: " + str(self.ontology_graph.cycles))
         return Enrichment(method, result, warnings, corrections)
 
 class RankedEnrichmentFinder(BaseEnrichmentFinder):
@@ -327,7 +331,7 @@ class RankedEnrichmentFinder(BaseEnrichmentFinder):
     Utility for finding enriched group of terms given list of genes ranked
     by correlation with given phenotype, ontology graph and associations to this graph.
 
-    The usage of RankedEnrichmentFinder is very similar to EnrichmentFinder.
+    The usage of RankedEnrichmentFinder is very similar to SetEnrichmentFinder.
     You have to initialize the finder with ontology graph and list of
     associations:
     
@@ -335,7 +339,7 @@ class RankedEnrichmentFinder(BaseEnrichmentFinder):
     >>> go_graph = OntoIO.read("Ontology/go_test.obo", "obo")
     >>> assocs = OntoIO.read("Ontology/ga_test.fb", "gaf")
     
-    Now is the time to create EnrichmentFinder. Besides the arguments
+    Now is the time to create SetEnrichmentFinder. Besides the arguments
     mentioned before you could specify an id resolver.
     
     >>> from Bio.Ontology import RankedEnrichmentFinder
@@ -366,7 +370,7 @@ class RankedEnrichmentFinder(BaseEnrichmentFinder):
     
     
     
-    def __init__(self, annotations, o_graph,
+    def __init__(self, annotations, ontology_graph,
                  resolver_generator = IdResolver.FirstOneResolver):
         """
         Initialize Enrichment Finder.
@@ -374,11 +378,11 @@ class RankedEnrichmentFinder(BaseEnrichmentFinder):
         Parameters
         ----------
         annotations - iterable containing annotations
-        o_graph - graph with ontology
+        ontology_graph - graph with ontology
         resolver_generator - constructor of resolver used to disambiguate ids
         """
         
-        super(RankedEnrichmentFinder, self).__init__(annotations, o_graph,
+        super(RankedEnrichmentFinder, self).__init__(annotations, ontology_graph,
                                                      resolver_generator)
         self.population = self.annotations.keys()
         self.terms_to_population_genes = self._find_terms_associations(self.population)
@@ -419,10 +423,10 @@ class RankedEnrichmentFinder(BaseEnrichmentFinder):
         
         
         if rank_as_population:
-            ef = EnrichmentFinder(self.annotations.itervalues(), self.o_graph,
+            ef = SetEnrichmentFinder(self.annotations.itervalues(), self.ontology_graph,
                                   resolved_list, IdResolver.Resolver)
         else:
-            ef = EnrichmentFinder(self.annotations.itervalues(), self.o_graph,
+            ef = SetEnrichmentFinder(self.annotations.itervalues(), self.ontology_graph,
                                   resolver_generator = IdResolver.Resolver)
         
         if side == "-":
@@ -445,17 +449,17 @@ class RankedEnrichmentFinder(BaseEnrichmentFinder):
                 if pv < min_pval:
                     min_pval = pv
                 plot.append(1 - pv)
-            entry = EnrichmentEntry(oid, self.o_graph.get_term(oid).name,
+            entry = EnrichmentEntry(oid, self.ontology_graph.get_term(oid).name,
                                           min_pval)
             entry.attrs["plot"] = plot
             entry.attrs["score"] = 1 - min_pval
             
             result.append(entry)
             
-        self._calculate_corrections(result, corrections)
+        BaseEnrichmentFinder._calculate_corrections(result, corrections)
         
-        if len(self.o_graph.cycles) > 0:
-            warnings.append("Graph contains cycles: " + str(self.o_graph.cycles))
+        if len(self.ontology_graph.cycles) > 0:
+            warnings.append("Graph contains cycles: " + str(self.ontology_graph.cycles))
             
         return Enrichment("ranked parent-child", result, warnings, corrections)
         
@@ -522,7 +526,7 @@ class RankedEnrichmentFinder(BaseEnrichmentFinder):
             
             # Computing p-value
             pval = pcount / float(perms_no)
-            entry = EnrichmentEntry(term, self.o_graph.get_term(term).name,
+            entry = EnrichmentEntry(term, self.ontology_graph.get_term(term).name,
                                     pval)
             entry.attrs["score"] = orig_es
             entry.attrs["plot"] = orig_plot
@@ -573,8 +577,8 @@ class RankedEnrichmentFinder(BaseEnrichmentFinder):
                 fdr = 1.
             result[i].corrections['fdr'] = fdr
             
-        if len(self.o_graph.cycles) > 0:
-            warnings.append("Graph contains cycles: " + str(self.o_graph.cycles))
+        if len(self.ontology_graph.cycles) > 0:
+            warnings.append("Graph contains cycles: " + str(self.ontology_graph.cycles))
         return Enrichment("GSEA", result, warnings, ['fdr'])
         
     def _find_enriched_terms(self, gene_list, min_set_size):

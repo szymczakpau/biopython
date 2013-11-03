@@ -4,19 +4,19 @@
 # as part of this package.
 
 """
-Basic tests for EnrichmentFinder and Ranked EnrichmentFinder.
+Basic tests for SetEnrichmentFinder and Ranked SetEnrichmentFinder.
 """
 
 import unittest
 import Bio.Ontology.IO as OntoIO
-from Bio.Ontology import EnrichmentFinder, RankedEnrichmentFinder
+from Bio.Ontology import SetEnrichmentFinder, RankedEnrichmentFinder
 
 class EnrichmentFinderTest(unittest.TestCase):
 
     def setUp(self):
         go_graph = OntoIO.read("Ontology/go_test.obo", "obo")
         assocs = OntoIO.read("Ontology/ga_test.fb", "gaf")
-        self.ef = EnrichmentFinder(assocs, go_graph)
+        self.ef = SetEnrichmentFinder(assocs, go_graph)
     
     def test_find_terms_associations(self):
         expected = {'GO:0032502': set(['FBgn0010340']),'GO:0005737': set(['FBgn0026615']), 'GO:0045177': set(['FBgn0026615']), 'GO:0032501': set(['FBgn0010340']), 'GO:0044707': set(['FBgn0010340']), 'GO:0044464': set(['FBgn0026615']), 'GO:0005623': set(['FBgn0026615']), 'GO:0005622': set(['FBgn0026615']), 'GO:0005575': set(['FBgn0026615']), 'GO:0008150': set(['FBgn0010340', 'FBgn0026615']), 'GO:0044424': set(['FBgn0026615']), 'GO:0003674': set(['FBgn0026615']), 'GO:0007275': set(['FBgn0010340']), 'GO:0044699': set(['FBgn0010340'])}

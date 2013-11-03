@@ -45,6 +45,7 @@ def write(data, handle, file_format, **params):
          Formats:
              - png - writes picture of graph to png format (this feature needs
                pygraphviz to be installed)
+             - etsv
      - params - additional parameters
      
     You should close the handle after calling this function.
@@ -74,6 +75,8 @@ def read(handle, file_format, **params):
          Formats:
              - nexo
              - obo
+             - etsv
+             - gaf
      - params - additional parameters
 
     You should close the handle after calling this function.
@@ -102,7 +105,6 @@ def parse(handle, file_format):
          Formats:
              - obo
              - tsv
-             - gaf
              
     You should close the handle after calling this function.
     """
@@ -135,6 +137,8 @@ def pretty_print(enrichment, graph, handle, file_format, **params):
          Formats:
              - gml
              - png
+             - txt
+             - html
      - params - additional parameters
      
     You should close the handle after calling this function.
