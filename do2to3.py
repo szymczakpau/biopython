@@ -21,6 +21,8 @@ NOTE - This is intended to be run under Python 3 (not under Python 2), but
 care has been taken to make it run under Python 2 enough to give a clear error
 message. In particular, this meant avoiding with statements etc.
 """
+from __future__ import print_function
+
 import sys
 if sys.version_info[0] < 3:
     sys.stderr.write("Please run this under Python 3\n")
@@ -28,21 +30,30 @@ if sys.version_info[0] < 3:
 
 import shutil
 import os
+import time
 import lib2to3.main
 from io import StringIO
 
+#Dictionary of troublesome files needing 2to3,
+#keys are filenames (with leading ./ prefix),
+#values are a list of 2to3 fixer names (strings):
+troublesome = {
+#e.g.  "./Bio/Seq.py": ["future"],
+}
 
-def run2to3(filenames):
+
+def run2to3(filenames_and_fixers):
     stderr = sys.stderr
     handle = StringIO()
+    times = []
     try:
         #Want to capture stderr (otherwise too noisy)
         sys.stderr = handle
-        while filenames:
-            filename = filenames.pop(0)
+        while filenames_and_fixers:
+            filename, fixers = filenames_and_fixers.pop(0)
             print("Converting %s" % filename)
-            #TODO - Configurable options per file?
-            args = ["--nofix=long", "--no-diffs", "-n", "-w"]
+            start = time.time()
+            args = ["-n", "-w", "--no-diffs", "--fix=future"] + ["--fix=%s" % f for f in fixers]
             e = lib2to3.main.main("lib2to3.fixes", args + [filename])
             if e != 0:
                 sys.stderr = stderr
@@ -58,6 +69,7 @@ def run2to3(filenames):
                 os.remove(filename)  # Don't want a half edited file!
                 raise RuntimeError("Error %i from 2to3 (doctests) on %s"
                                    % (e, filename))
+            times.append((time.time() - start, filename))
     except KeyboardInterrupt:
         sys.stderr = stderr
         sys.stderr.write("Interrupted during %s\n" % filename)
@@ -70,6 +82,11 @@ def run2to3(filenames):
     finally:
         #Restore stderr
         sys.stderr = stderr
+    times.sort()
+    if times[-1][0] > 2.0:
+        print("Note: Slowest files to convert were:")
+        for taken, filename in times[-5:]:
+            print("Converting %s took %0.1fs" % (filename, taken))
 
 
 def do_update(py2folder, py3folder, verbose=False):
@@ -142,17 +159,23 @@ def do_update(py2folder, py3folder, verbose=False):
                    "Modified time not copied! %0.8f vs %0.8f, diff %f" \
                    % (os.stat(old).st_mtime, os.stat(new).st_mtime,
                       abs(os.stat(old).st_mtime - os.stat(new).st_mtime))
-            if f.endswith(".py"):
-                #Also run 2to3 on it
-                to_convert.append(new)
+            if dirpath == "./Bio/_py3k":
+                #Don't convert these!
+                continue
+            f = os.path.join(dirpath, f).replace(os.path.sep, "/")
+            if f in troublesome:
+                to_convert.append((new, troublesome[f]))
                 if verbose:
                     print("Will convert %s" % new)
+            elif f.endswith(".py"):
+                if verbose:
+                    print("Updated %s (does not need 2to3)" % new)
             else:
                 if verbose:
                     print("Updated %s" % new)
     if to_convert:
         print("Have %i python files to convert" % len(to_convert))
-        run2to3(to_convert)
+        run2to3(sorted(to_convert))
 
 
 def main(python2_source, python3_source,

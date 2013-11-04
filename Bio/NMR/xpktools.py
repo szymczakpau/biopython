@@ -8,6 +8,8 @@
 #        provides methods for extracting data by the field name
 #        which is listed in the last line of the peaklist header.
 
+from __future__ import print_function
+
 import sys
 
 # * * * * * INITIALIZATIONS * * * * *
@@ -37,7 +39,7 @@ class XpkEntry(object):
 
         try:
             self.fields["entrynum"] = datlist[0]
-        except IndexError, e:
+        except IndexError as e:
             pass
 
 
@@ -126,8 +128,8 @@ def _try_open_read(fn):
     # Try to open a file for reading.  Exit on IOError
     try:
         infile = open(fn, 'r')
-    except IOError, e:
-        print "file", fn, "could not be opened for reading - quitting."
+    except IOError as e:
+        print("file %s could not be opened for reading - quitting." % fn)
         sys.exit(0)
     return infile
 
@@ -136,8 +138,8 @@ def _try_open_write(fn):
     # Try to open a file for writing.  Exit on IOError
     try:
         infile = open(fn, 'w')
-    except IOError, e:
-        print "file", fn, "could not be opened for writing - quitting."
+    except IOError as e:
+        print("file %s could not be opened for writing - quitting." % fn)
         sys.exit(0)
     return infile
 
@@ -229,12 +231,6 @@ def data_table(fn_list, datalabel, keyatom):
         res = res + 1
 
     return outlist
-
-
-def _sort_keys(dictionary):
-    keys = dictionary.keys()
-    sorted_keys = keys.sort()
-    return sorted_keys
 
 
 def _read_dicts(fn_list, keyatom):

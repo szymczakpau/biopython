@@ -4,8 +4,8 @@
 # as part of this package.
 
 import os.path
-from _paml import Paml
-import _parse_yn00
+from ._paml import Paml
+from . import _parse_yn00
 
 #TODO - Restore use of with statement for closing handles automatically
 #after dropping Python 2.4
@@ -66,7 +66,7 @@ class Yn00(Paml):
             ctl_handle = open(ctl_file)
             for line in ctl_handle:
                 line = line.strip()
-                uncommented = line.split("*",1)[0]
+                uncommented = line.split("*", 1)[0]
                 if uncommented != "":
                     if "=" not in uncommented:
                         ctl_handle.close()
@@ -95,8 +95,8 @@ class Yn00(Paml):
                                 converted_value = value
                         temp_options[option] = converted_value
             ctl_handle.close()
-        for option in self._options.keys():
-            if option in temp_options.keys():
+        for option in self._options:
+            if option in temp_options:
                 self._options[option] = temp_options[option]
             else:
                 self._options[option] = None

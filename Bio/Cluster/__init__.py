@@ -1,3 +1,8 @@
+# This code is part of the Biopython distribution and governed by its
+# license.  Please see the LICENSE file that should have been included
+# as part of this package.
+#
+
 import numpy
 
 from Bio.Cluster.cluster import *
@@ -511,7 +516,7 @@ expclusters=None:  For hierarchical clustering results, expclusters
         aid = 0
         filename = jobname
         postfix = ""
-        if type(geneclusters) == Tree:
+        if isinstance(geneclusters, Tree):
             # This is a hierarchical clustering result.
             geneindex = _savetree(jobname, geneclusters, gorder, 0)
             gid = 1
@@ -524,7 +529,7 @@ expclusters=None:  For hierarchical clustering results, expclusters
             postfix = "_G%d" % k
         else:
             geneindex = numpy.argsort(gorder)
-        if type(expclusters) == Tree:
+        if isinstance(expclusters, Tree):
             # This is a hierarchical clustering result.
             expindex = _savetree(jobname, expclusters, eorder, 1)
             aid = 1

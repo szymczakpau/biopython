@@ -6,10 +6,10 @@
 """Testing Bio.TogoWS online code.
 """
 
-from __future__ import with_statement
+from __future__ import print_function
 
 import unittest
-from StringIO import StringIO
+from Bio._py3k import StringIO
 
 import requires_internet
 requires_internet.check()
@@ -34,16 +34,18 @@ class TogoFields(unittest.TestCase):
     def test_databases(self):
         """Check supported databases"""
         dbs = set(TogoWS._get_entry_dbs())
-        self.assertTrue(dbs.issuperset(['nuccore', 'nucest', 'nucgss',
-                                        'nucleotide', 'protein', 'gene',
-                                        'omim', 'homologene', 'snp',
-                                        'mesh', 'pubmed', 'embl',
-                                        'uniprot', 'uniparc', 'uniref100',
-                                        'uniref90', 'uniref50', 'ddbj',
-                                        'dad', 'pdb', 'compound', 'drug',
-                                        'enzyme', 'genes', 'glycan',
-                                        'orthology', 'reaction', 'module',
-                                        'pathway']), dbs)
+        expected = set(['nuccore', 'nucest', 'nucgss',
+                        'nucleotide', 'protein', 'gene',
+                        'homologene', 'snp',
+                        'mesh', 'pubmed', 'embl',
+                        'uniprot', 'uniparc', 'uniref100',
+                        'uniref90', 'uniref50', 'ddbj',
+                        'dad', 'pdb', 'compound', 'drug',
+                        'enzyme', 'genes', 'glycan',
+                        'orthology', 'reaction', 'module',
+                        'pathway'])
+        self.assertTrue(dbs.issuperset(expected),
+                        "Missing DB: %s" % ", ".join(sorted(expected.difference(dbs))))
 
     def test_pubmed(self):
         """Check supported fields for pubmed database"""
@@ -343,7 +345,7 @@ class TogoEntry(unittest.TestCase):
     def test_uniprot_swiss(self):
         """Bio.TogoWS.entry("uniprot", ["A1AG1_HUMAN","A1AG1_MOUSE"])"""
         #Returns "swiss" format:
-        handle = TogoWS.entry("uniprot", ["A1AG1_HUMAN","A1AG1_MOUSE"])
+        handle = TogoWS.entry("uniprot", ["A1AG1_HUMAN", "A1AG1_MOUSE"])
         record1, record2 = SeqIO.parse(handle, "swiss")
         handle.close()
 
@@ -463,7 +465,7 @@ class TogoSearch(unittest.TestCase):
             raise ValueError("Only %i matches, expected at least %i"
                              % (search_count, len(expected_matches)))
         if search_count > 5000 and not limit:
-            print "%i results, skipping" % search_count
+            print("%i results, skipping" % search_count)
             return
         if limit:
             count = min(search_count, limit)

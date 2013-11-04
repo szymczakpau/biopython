@@ -8,8 +8,9 @@
 import re
 
 from Bio._py3k import _as_bytes, _bytes_to_string
+from Bio._py3k import zip
 
-from _base import _BaseExonerateParser, _BaseExonerateIndexer, _STRAND_MAP
+from ._base import _BaseExonerateParser, _BaseExonerateIndexer, _STRAND_MAP
 
 
 __all__ = ['ExonerateVulgarParser', 'ExonerateVulgarIndexer']
@@ -102,8 +103,8 @@ def parse_vulgar_comp(hsp, vulgar_comp):
                 hstarts, hends = hends, hstarts
 
     # set start and end ranges
-    hsp['query_ranges'] = zip(qstarts, qends)
-    hsp['hit_ranges'] = zip(hstarts, hends)
+    hsp['query_ranges'] = list(zip(qstarts, qends))
+    hsp['hit_ranges'] = list(zip(hstarts, hends))
     return hsp
 
 

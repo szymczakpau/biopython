@@ -11,6 +11,8 @@ See also the Bio.Sequencing.Ace module which offers more than just accessing
 the contig consensus sequences in an ACE file as SeqRecord objects.
 """
 
+from __future__ import print_function
+
 from Bio.Seq import Seq
 from Bio.SeqRecord import SeqRecord
 from Bio.Alphabet import generic_nucleotide, generic_dna, generic_rna, Gapped
@@ -32,8 +34,8 @@ def AceIterator(handle):
     >>> from Bio import SeqIO
     >>> handle = open("Ace/consed_sample.ace", "rU")
     >>> for record in SeqIO.parse(handle, "ace"):
-    ...     print record.id, record.seq[:10]+"...", len(record)
-    ...     print max(record.letter_annotations["phred_quality"])
+    ...     print("%s %s... %i" % (record.id, record.seq[:10], len(record)))
+    ...     print(max(record.letter_annotations["phred_quality"]))
     Contig1 agccccgggc... 1475
     90
 
@@ -47,9 +49,9 @@ def AceIterator(handle):
     >>> from Bio import SeqIO
     >>> handle = open("Ace/contig1.ace", "rU")
     >>> for record in SeqIO.parse(handle, "ace"):
-    ...     print record.id, "..." + record.seq[85:95]+"..."
-    ...     print record.letter_annotations["phred_quality"][85:95]
-    ...     print max(record.letter_annotations["phred_quality"])
+    ...     print("%s ...%s..." % (record.id, record.seq[85:95]))
+    ...     print(record.letter_annotations["phred_quality"][85:95])
+    ...     print(max(record.letter_annotations["phred_quality"]))
     Contig1 ...AGAGG-ATGC...
     [57, 57, 54, 57, 57, 0, 57, 72, 72, 72]
     90
@@ -113,3 +115,4 @@ def AceIterator(handle):
 if __name__ == "__main__":
     from Bio._utils import run_doctest
     run_doctest()
+

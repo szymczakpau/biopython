@@ -1,3 +1,8 @@
+# Copyright 2008-2010 by Michiel de Hoon.  All rights reserved.
+# Revisions copyright 2009-2013 by Peter Cock. All rights reserved.
+# This code is part of the Biopython distribution and governed by its
+# license.  Please see the LICENSE file that should have been included
+# as part of this package.
 '''Testing code for Bio.Entrez parsers.
 '''
 
@@ -4735,7 +4740,7 @@ class EFetchTest(unittest.TestCase):
         handle.close()
         handle = open('GenBank/NT_019265.gb', "rb")
         iterator = Entrez.parse(handle)
-        self.assertRaises(Parser.NotXMLError, iterator.next)
+        self.assertRaises(Parser.NotXMLError, next, iterator)
         handle.close()
 
     def test_fasta(self):
@@ -4747,7 +4752,7 @@ class EFetchTest(unittest.TestCase):
         handle.close()
         handle = open('Fasta/wisteria.nu', "rb")
         iterator = Entrez.parse(handle)
-        self.assertRaises(Parser.NotXMLError, iterator.next)
+        self.assertRaises(Parser.NotXMLError, next, iterator)
         handle.close()
 
     def test_pubmed_html(self):
@@ -4762,7 +4767,7 @@ class EFetchTest(unittest.TestCase):
         # Test if the error is also raised with Entrez.parse
         handle = open('Entrez/pubmed3.html', "rb")
         records = Entrez.parse(handle)
-        self.assertRaises(Parser.NotXMLError, records.next)
+        self.assertRaises(Parser.NotXMLError, next, records)
         handle.close()
 
     def test_xml_without_declaration(self):
@@ -4777,7 +4782,7 @@ class EFetchTest(unittest.TestCase):
         # Test if the error is also raised with Entrez.parse
         handle = open('Entrez/journals.xml', "rb")
         records = Entrez.parse(handle)
-        self.assertRaises(Parser.NotXMLError, records.next)
+        self.assertRaises(Parser.NotXMLError, next, records)
         handle.close()
 
 

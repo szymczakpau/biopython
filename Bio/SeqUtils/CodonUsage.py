@@ -1,5 +1,12 @@
+# This code is part of the Biopython distribution and governed by its
+# license.  Please see the LICENSE file that should have been included
+# as part of this package.
+#
+
+from __future__ import print_function
+
 import math
-from CodonUsageIndices import SharpEcoliIndex
+from .CodonUsageIndices import SharpEcoliIndex
 from Bio import SeqIO # To parse a FASTA file
 
 
@@ -152,4 +159,4 @@ class CodonAdaptationIndex(object):
     def print_index(self):
         """Prints out the index used."""
         for i in sorted(self.index):
-            print "%s\t%.3f" % (i, self.index[i])
+            print("%s\t%.3f" % (i, self.index[i]))

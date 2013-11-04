@@ -36,10 +36,13 @@ be used directly.
 
 
 import os.path
-import urlparse
-import urllib
 import warnings
 from xml.parsers import expat
+
+#Importing these functions with leading underscore as not intended for reuse
+from Bio._py3k import urlopen as _urlopen
+from Bio._py3k import urlparse as _urlparse
+from Bio._py3k import unicode
 
 # The following four classes are used to add a member .attributes to integers,
 # strings, lists, and dictionaries, respectively.
@@ -182,7 +185,7 @@ class DataHandler(object):
             raise IOError("Can't parse a closed handle")
         try:
             self.parser.ParseFile(handle)
-        except expat.ExpatError, e:
+        except expat.ExpatError as e:
             if self.parser.StartElementHandler:
                 # We saw the initial <!xml declaration, so we can be sure that
                 # we are parsing XML data. Most likely, the XML file is
@@ -235,7 +238,7 @@ class DataHandler(object):
 
             try:
                 self.parser.Parse(text, False)
-            except expat.ExpatError, e:
+            except expat.ExpatError as e:
                 if self.parser.StartElementHandler:
                     # We saw the initial <!xml declaration, so we can be sure
                     # that we are parsing XML data. Most likely, the XML file
@@ -460,7 +463,7 @@ class DataHandler(object):
         DTD results in much faster parsing. If the DTD is not found locally,
         we try to download it. If new DTDs become available from NCBI,
         putting them in Bio/Entrez/DTDs will allow the parser to see them."""
-        urlinfo = urlparse.urlparse(systemId)
+        urlinfo = _urlparse(systemId)
         #Following attribute requires Python 2.5+
         #if urlinfo.scheme=='http':
         if urlinfo[0]=='http':
@@ -513,7 +516,7 @@ Alternatively, you can save %s in the directory
 Bio/Entrez/DTDs in the Biopython distribution, and reinstall Biopython.
 
 Please also inform the Biopython developers about this missing DTD, by
-reporting a bug on http://redmine.open-bio.org/projects/biopython or sign
+reporting a bug on https://github.com/biopython/biopython/issues or sign
 up to our mailing list and emailing us, so that we can include it with the
 next release of Biopython.
 
@@ -521,7 +524,7 @@ Proceeding to access the DTD file through the internet...
 """ % (filename, filename, url, self.global_dtd_dir, self.local_dtd_dir, filename)
             warnings.warn(message)
             try:
-                handle = urllib.urlopen(url)
+                handle = _urlopen(url)
             except IOError:
                 raise RuntimeException("Failed to access %s at %s" % (filename, url))
 

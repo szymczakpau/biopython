@@ -24,7 +24,7 @@ except ImportError:
     from xml.etree import ElementTree as ElementTree
 
 
-from Bio._py3k import _as_bytes, _bytes_to_string
+from Bio._py3k import _as_bytes, _bytes_to_string, unicode
 _empty_bytes_string = _as_bytes("")
 
 from Bio.Alphabet import generic_dna, generic_protein
@@ -303,7 +303,7 @@ class BlastXmlParser(object):
                         hit_list.append(hit)
 
                 # create qresult and assign its attributes
-                qresult = QueryResult(query_id, hits=hit_list)
+                qresult = QueryResult(hit_list, query_id)
                 qresult.description = query_desc
                 qresult.seq_len = int(query_len)
                 qresult._blast_id = blast_query_id
@@ -568,7 +568,7 @@ class BlastXmlIndexer(SearchIndexer):
         generator = self._parser(handle, **self._kwargs)
         generator._meta = self._meta
         generator._fallback = self._fallback
-        return iter(generator).next()
+        return next(iter(generator))
 
     def get_raw(self, offset):
         qend_mark = self.qend_mark
@@ -689,7 +689,7 @@ class BlastXmlWriter(object):
             self.frag_counter = 0, 0, 0, 0
 
         # get the first qresult, since the preamble requires its attr values
-        first_qresult = qresults.next()
+        first_qresult = next(qresults)
         # start the XML document, set the root element, and create the preamble
         xml.startDocument()
         xml.startParent('BlastOutput')
@@ -843,7 +843,7 @@ class BlastXmlWriter(object):
         """Adjusts output to mimic native BLAST+ XML as much as possible."""
 
         # adjust coordinates
-        if attr in ('query_start' ,'query_end' ,'hit_start', 'hit_end',
+        if attr in ('query_start', 'query_end', 'hit_start', 'hit_end',
                 'pattern_start', 'pattern_end'):
             content = getattr(hsp, attr) + 1
             if '_start' in attr:

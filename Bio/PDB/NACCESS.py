@@ -5,6 +5,8 @@
 
 # NACCESS interface adapted from Bio/PDB/DSSP.py
 
+from __future__ import print_function
+
 import os
 import tempfile
 from Bio.PDB.PDBIO import PDBIO
@@ -185,4 +187,4 @@ if __name__=="__main__":
 
     n = NACCESS(model, sys.argv[1])
     for e in n.get_iterator():
-        print e
+        print(e)

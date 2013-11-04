@@ -10,7 +10,7 @@ Returns a BlastTableRec instance
 
 
 class BlastTableEntry(object):
-    def __init__(self,in_rec):
+    def __init__(self, in_rec):
         bt_fields = in_rec.split()
         self.qid = bt_fields[0].split('|')
         self.sid = bt_fields[1].split('|')
@@ -55,7 +55,7 @@ class BlastTableReader(object):
         self._n = 0
         self._in_header = 1
 
-    def next(self):
+    def __next__(self):
         self.table_record = BlastTableRec()
         self._n += 1
         inline = self._lookahead
@@ -76,6 +76,16 @@ class BlastTableReader(object):
         self._in_header = 1
         return self.table_record
 
+    if sys.version_info[0] < 3:
+        def next(self):
+            """Deprecated Python 2 style alias for Python 3 style __next__ method."""
+            import warnings
+            from Bio import BiopythonDeprecationWarning
+            warnings.warn("Please use next(my_iterator) instead of my_iterator.next(), "
+                          "the .next() method is deprecated and will be removed in a "
+                          "future release of Biopython.", BiopythonDeprecationWarning)
+            return self.__next__()
+
     def _consume_entry(self, inline):
         current_entry = BlastTableEntry(inline)
         self.table_record.add_entry(current_entry)
@@ -83,7 +93,7 @@ class BlastTableReader(object):
     def _consume_header(self, inline):
         for keyword in reader_keywords:
             if keyword in inline:
-                in_header = self._Parse('_parse_%s' % reader_keywords[keyword],inline)
+                in_header = self._Parse('_parse_%s' % reader_keywords[keyword], inline)
                 break
         return in_header
 
@@ -110,4 +120,4 @@ class BlastTableReader(object):
         return 0
 
     def _Parse(self, method_name, inline):
-        return getattr(self,method_name)(inline)
+        return getattr(self, method_name)(inline)

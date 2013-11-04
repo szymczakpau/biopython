@@ -15,7 +15,7 @@ the solvent accessible surface.
 Residue Depth:
 
     >>> rd = ResidueDepth(model, pdb_file)
-    >>> print rd[(chain_id, res_id)]
+    >>> print(rd[(chain_id, res_id)])
 
 Direct MSMS interface:
 
@@ -39,6 +39,8 @@ Direct MSMS interface:
         >>> rd = residue_depth(residue, surface)
 """
 
+from __future__ import print_function
+
 import os
 import tempfile
 
@@ -60,7 +62,7 @@ def _read_vertex_array(filename):
         if not len(sl)==9:
             # skip header
             continue
-        vl=map(float, sl[0:3])
+        vl = [float(x) for x in sl[0:3]]
         vertex_list.append(vl)
     fp.close()
     return numpy.array(vertex_list)
@@ -173,4 +175,4 @@ if __name__=="__main__":
     rd=ResidueDepth(model, sys.argv[1])
 
     for item in rd:
-        print item
+        print(item)

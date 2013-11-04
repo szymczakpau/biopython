@@ -3,8 +3,11 @@
 # license.  Please see the LICENSE file that should have been included
 # as part of this package.
 
+from __future__ import print_function
+
 from os import sep
 import re
+from functools import reduce
 
 from Bio.PopGen.SimCoal import builtin_tpl_dir
 
@@ -37,7 +40,7 @@ def process_para(in_string, out_file_prefix, para_list, curr_values):
         f = open(f_name + '.par', 'w')
         #executed_template = template
         executed_template = exec_template(template)
-        clean_template = executed_template.replace('\r\n','\n').replace('\n\n','\n')
+        clean_template = executed_template.replace('\r\n', '\n').replace('\n\n', '\n')
         f.write(clean_template)
         f.close()
         return [f_name]
@@ -173,8 +176,7 @@ def _gen_loci(stream, loci):
     stream.write('//Per Block: Data type, No. of loci, Recombination rate to the right-side locus, plus optional parameters\n')
     for locus in loci:
         stream.write(' '.join([locus[0]] +
-            map(lambda x: str(x), list(locus[1])
-        )) + '\n')
+            [str(x) for x in list(locus[1])]) + '\n')
 
 
 def get_chr_template(stream, chrs):

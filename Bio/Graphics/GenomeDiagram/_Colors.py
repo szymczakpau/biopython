@@ -21,6 +21,9 @@
 """
 
 # ReportLab imports
+from __future__ import print_function
+from Bio._py3k import basestring
+
 from reportlab.lib import colors
 
 
@@ -145,7 +148,7 @@ class ColorTranslator(object):
             value = int(value)
         except ValueError:
             if value.count('.'):                           # dot-delimited
-                value = int(artemis_color.split('.',1)[0]) # Use only first integer
+                value = int(artemis_color.split('.', 1)[0]) # Use only first integer
             else:
                 raise
         if value in self._artemis_colorscheme:
@@ -209,12 +212,12 @@ if __name__ == '__main__':
 
     # Test code
     gdct = ColorTranslator()
-    print gdct.float1_color((0.5, 0.5, 0.5))
-    print gdct.int255_color((1, 75, 240))
-    print gdct.artemis_color(7)
-    print gdct.scheme_color(2)
+    print(gdct.float1_color((0.5, 0.5, 0.5)))
+    print(gdct.int255_color((1, 75, 240)))
+    print(gdct.artemis_color(7))
+    print(gdct.scheme_color(2))
 
-    print gdct.translate((0.5, 0.5, 0.5))
-    print gdct.translate((1, 75, 240))
-    print gdct.translate(7)
-    print gdct.translate(2)
+    print(gdct.translate((0.5, 0.5, 0.5)))
+    print(gdct.translate((1, 75, 240)))
+    print(gdct.translate(7))
+    print(gdct.translate(2))

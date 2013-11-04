@@ -30,6 +30,8 @@ The library files can be found in directory 'fragment_data'.
     >>> fragment = fm[residue]
 """
 
+from __future__ import print_function
+
 import numpy
 
 from Bio.SVDSuperimposer import SVDSuperimposer
@@ -79,7 +81,7 @@ def _read_fragments(size, length, dir="."):
             fid+=1
             continue
         # Add CA coord to Fragment
-        coord=numpy.array(map(float, sl[0:3]))
+        coord = numpy.array([float(x) for x in sl[0:3]])
         # XXX= dummy residue name
         f.add_residue("XXX", coord)
     fp.close()
@@ -284,7 +286,7 @@ class FragmentMapper(object):
                         index=i-self.edge
                         assert(index>=0)
                         fd[res]=mflist[index]
-            except PDBException, why:
+            except PDBException as why:
                 if why == 'CHAINBREAK':
                     # Funny polypeptide - skip
                     pass
@@ -323,16 +325,12 @@ if __name__=="__main__":
 
     import sys
 
-    p=PDBParser()
-    s=p.get_structure("X", sys.argv[1])
-
-    m=s[0]
-    fm=FragmentMapper(m, 10, 5, "levitt_data")
+    p = PDBParser()
+    s = p.get_structure("X", sys.argv[1])
+    m = s[0]
+    fm = FragmentMapper(m, 10, 5, "levitt_data")
 
     for r in Selection.unfold_entities(m, "R"):
-
-        print r,
+        print("%s:" % r)
         if r in fm:
-            print fm[r]
-        else:
-            print
+            print(fm[r])
