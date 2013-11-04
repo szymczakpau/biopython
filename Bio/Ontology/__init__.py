@@ -92,7 +92,7 @@ class BaseEnrichmentFinder(EnrichmentFinder):
         """
         
         self.ontology_graph = ontology_graph
-        self.annotations = dict([(v.id, v) for v in annotations])
+        self.annotations = annotations
         self.resolver = resolver_generator(self.annotations.itervalues())
     
 
@@ -572,7 +572,7 @@ class RankedParentChildEnrichmentFinder(BaseEnrichmentFinder):
         
         Parameters
         ----------
-        annotations - iterable containing annotations
+        annotations - dictionary containing annotations
         ontology_graph - graph with ontology
         resolver_generator - constructor of resolver used to disambiguate ids
         """
@@ -606,10 +606,10 @@ class RankedParentChildEnrichmentFinder(BaseEnrichmentFinder):
         
         
         if rank_as_population:
-            ef = ParentChildEnrichmentFinder(self.annotations.itervalues(), self.ontology_graph,
+            ef = ParentChildEnrichmentFinder(self.annotations, self.ontology_graph,
                                   resolved_list, IdResolver.Resolver)
         else:
-            ef = ParentChildEnrichmentFinder(self.annotations.itervalues(), self.ontology_graph,
+            ef = ParentChildEnrichmentFinder(self.annotations, self.ontology_graph,
                                   resolver_generator = IdResolver.Resolver)
         
         if side == "-":

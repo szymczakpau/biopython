@@ -93,4 +93,4 @@ class GafReader(OntoReader):
                 self.version = first[(first.find(':') + 1):].strip()
         if self.version is None:
             raise ValueError("Invalid gaf file: No version specified.")
-        return [self._to_goa(v) for v in raw_records.values()]
+        return dict([(k, self._to_goa(v)) for k, v in raw_records.iteritems()])
