@@ -260,9 +260,11 @@ class TermForTermEnrichmentFinder(BaseEnrichmentFinder):
 
 class ParentChildEnrichmentFinder(BaseEnrichmentFinder):
     """
-    Another method for computing p-values is parent-child method. I takes
-    relationships between the nodes into account. You can use it exactly like
-    the term for term method:
+    Finder implementing different method for finding enrichment called
+    parent-child.
+    
+    Parent-child method takes relationships between the nodes into account.
+    You can use it exactly like the term for term method:
     
     >>> import Bio.Ontology.IO as OntoIO
     >>> go_graph = OntoIO.read("Ontology/go_test.obo", "obo")
@@ -385,10 +387,6 @@ class GseaEnrichmentFinder(BaseEnrichmentFinder):
     >>> import Bio.Ontology.IO as OntoIO
     >>> go_graph = OntoIO.read("Ontology/go_test.obo", "obo")
     >>> assocs = OntoIO.read("Ontology/ga_test.fb", "gaf")
-    
-    Now is the time to create TermForTermEnrichmentFinder. Besides the arguments
-    mentioned before you could specify an id resolver.
-    
     >>> from Bio.Ontology import GseaEnrichmentFinder
     >>> ef = GseaEnrichmentFinder(assocs, go_graph)
     
@@ -437,6 +435,15 @@ class GseaEnrichmentFinder(BaseEnrichmentFinder):
         Finds enrichment using GSEA method.
         
         Reference: http://www.pnas.org/content/102/43/15545.full
+        
+        Parameters
+        ----------
+        - gene_rank
+        - perms_no - number of permutations used to compute p-value
+        - min_set_rank_intersection - minimal number of genes common to
+          the set and rank to take the set into account
+        - corr_power - weight of correlation when computing enrichment score
+        
         """
         
         sorted_gene_rank = sorted(gene_rank, key = lambda x: x[1], reverse = True)
@@ -554,7 +561,6 @@ class RankedParentChildEnrichmentFinder(BaseEnrichmentFinder):
     >>> import Bio.Ontology.IO as OntoIO
     >>> go_graph = OntoIO.read("Ontology/go_test.obo", "obo")
     >>> assocs = OntoIO.read("Ontology/ga_test.fb", "gaf")
-
     >>> from Bio.Ontology import RankedParentChildEnrichmentFinder
     >>> ef = RankedParentChildEnrichmentFinder(assocs, go_graph)
     
@@ -596,6 +602,20 @@ class RankedParentChildEnrichmentFinder(BaseEnrichmentFinder):
                                      rank_as_population = False, method = "union"):
         """
         Finds enrichment by applying parent-child analysis to list slices.
+        
+        Parameters
+        ----------
+        - gene_rank
+        - side - states which side of the rank (by correlation) we are interested
+          o "+" - highest correlation
+          o "-" - lowest correlation
+          o "+/-" - both
+        - corrections - corrections that shuld be applied
+        - rank_as_population - are genes in rank the population
+        - method - method of parent-child to use
+          o "union"
+          o "intersection"
+          
         """
         
         warnings = []

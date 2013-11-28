@@ -123,9 +123,10 @@ class GafReader(OntoReader):
     def __init__(self, file_handle, assoc_format = "dict"):
         """
         Parameters:
-        assoc_format - states format of returned association:
-         o "dict" - as a dictionary (faster ?)
-         o "in_mem_sql" - as dict-like object with underlying in-memory database
+        ----------
+        - assoc_format - states format of returned association:
+          o "dict" - as a dictionary (faster)
+          o "in_mem_sql" - as dict-like object with underlying in-memory database
                          (more memory efficient)
          
         """
@@ -173,6 +174,17 @@ class InSqlAssoc(object):
     """
     
     def __init__(self, fields, index, selection_to_obj_fun, db_path = ":memory:"):
+        """
+        Parameters:
+        ----------
+        - fields - name of the columns in db representation
+        - index - pair of fields indexing associations: (gene_id, ontology_term_id)
+        - selection_to_obj_fun - function transforming list of rows into
+          GeneAssociation
+        - db_path - path to database file, special value ":memory:" creates
+          database in memory
+         
+        """
         import sqlite3
         
         self.fields = fields
