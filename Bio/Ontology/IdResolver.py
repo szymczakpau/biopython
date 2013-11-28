@@ -8,6 +8,7 @@ Module containing resolvers for ambigious entities ids.
 """
 
 import collections
+from Bio.Ontology.IO.GoaIO import GAF20FIELDS
 
 class Resolver(object):
     """
@@ -50,8 +51,8 @@ class FirstOneResolver(Resolver):
         alter = collections.defaultdict(set)
         for obj in annotations:
             self.base_keys.add(obj.id)
-            if 'DB Object Synonym' in obj.attrs:
-                for aid in obj.attrs['DB Object Synonym']:
+            if GAF20FIELDS[10] in obj.attrs:
+                for aid in obj.attrs[GAF20FIELDS[10]]:
                     alter[aid].add(obj.id)
         self.alter_keys = dict([(k,list(v)) for (k, v) in alter.iteritems()])
         
