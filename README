@@ -50,17 +50,11 @@ Biopython under Python 3.3 as well.
 
 Biopython is currently supported and tested on the following Python verions:
 
-- Python 2.6, 2.7 -- see http://www.python.org
+- Python 2.6, 2.7, 3.3 -- see http://www.python.org
 
   This is the currently the primary development platform for Biopython.
 
-- Python 3.3 -- see http://www.python.org
-
-  Under Python 3 our setup.py script calls the 2to3 library automatically
-  to convert our Python 2 code into Python 3 code. Most of the Biopython
-  modules are available under Python 3 (but not yet all).
-
-- PyPy 1.9, 2.0, 2.1 -- see http://www.pypy.org
+- PyPy 1.9, 2.0, 2.1, 2.2 -- see http://www.pypy.org
 
   Aside from modules with C code or dependent of NumPy, everything should
   work. PyPy's NumPy reimplementation NumPyPy is still in progress.
@@ -81,7 +75,7 @@ Depending on which parts of Biopython you plan to use, there are a
 number of other optional Python dependencies - which can in general
 be installed after Biopython.
 
-- NumPy, see http://numpy.scipy.org (optional, but strongly recommended)
+- NumPy, see http://www.numpy.org (optional, but strongly recommended)
   This package is only used in the computationally-oriented modules.
   It is required for Bio.Cluster, Bio.PDB and a few other modules.  If you
   think you might need these modules, then please install NumPy first BEFORE

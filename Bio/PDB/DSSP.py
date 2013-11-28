@@ -6,7 +6,7 @@
 """Use the DSSP program to calculate secondary structure and accessibility.
 
 You need to have a working version of DSSP (and a license, free for academic
-use) in order to use this. For DSSP, see U{http://www.cmbi.kun.nl/gv/dssp/}.
+use) in order to use this. For DSSP, see U{http://swift.cmbi.ru.nl/gv/dssp/}.
 
 The DSSP codes for secondary structure used here are:
 
@@ -21,6 +21,8 @@ The DSSP codes for secondary structure used here are:
 """
 
 from __future__ import print_function
+
+__docformat__ = "epytext en"
 
 import re
 from Bio._py3k import StringIO
@@ -114,7 +116,6 @@ def make_dssp_dict(filename):
     @param filename: the DSSP output file
     @type filename: string
     """
-    handle = open(filename, "r")
     with open(filename, "r") as handle:
         return _make_dssp_dict(handle)
 
@@ -123,8 +124,8 @@ def _make_dssp_dict(handle):
     Return a DSSP dictionary that maps (chainid, resid) to
     aa, ss and accessibility, from an open DSSP file object.
 
-    @param filename: the open DSSP output file
-    @type filename: file
+    @param handle: the open DSSP output file handle
+    @type handle: file
     """
     dssp = {}
     start = 0
@@ -335,4 +336,4 @@ if __name__ == "__main__":
         print(d[('A', 1)])
         print(s[0]['A'][1].xtra)
     # Secondary structure
-    print(''.join(d[key][1] for key in d))
+    print(''.join(item[1] for item in d))

@@ -6,7 +6,7 @@
 #Nice link:
 # http://www.ebi.ac.uk/help/formats_frame.html
 
-"""Sequence input/output as SeqRecord objects.
+r"""Sequence input/output as SeqRecord objects.
 
 Bio.SeqIO is also documented at U{http://biopython.org/wiki/SeqIO} and by
 a whole chapter in our tutorial:
@@ -138,6 +138,42 @@ wrapping. Also note that under Python 3, the get_raw method will return a
 bytes string, hence the use of decode to turn it into a (unicode) string.
 This is uncessary on Python 2.
 
+Also note that the get_raw method will preserve the newline endings. This
+example FASTQ file uses Unix style endings (b"\n" only),
+
+    >>> from Bio import SeqIO
+    >>> fastq_dict = SeqIO.index("Quality/example.fastq", "fastq")
+    >>> len(fastq_dict)
+    3
+    >>> raw = fastq_dict.get_raw("EAS54_6_R1_2_1_540_792")
+    >>> raw.count(b"\n")
+    4
+    >>> raw.count(b"\r\n")
+    0
+    >>> b"\r" in raw
+    False
+    >>> len(raw)
+    78
+
+Here is the same file but using DOS/Windows new lines (b"\r\n" instead),
+
+    >>> from Bio import SeqIO
+    >>> fastq_dict = SeqIO.index("Quality/example_dos.fastq", "fastq")
+    >>> len(fastq_dict)
+    3
+    >>> raw = fastq_dict.get_raw("EAS54_6_R1_2_1_540_792")
+    >>> raw.count(b"\n")
+    4
+    >>> raw.count(b"\r\n")
+    4
+    >>> b"\r\n" in raw
+    True
+    >>> len(raw)
+    82
+
+Because this uses two bytes for each new line, the file is longer than
+the Unix equivalent with only one byte.
+
 
 Input - Alignments
 ==================
@@ -154,6 +190,7 @@ you a SeqRecord for each row of each alignment:
     gi|13990994|dbj|BAA33523.2| 447
     gi|56122354|gb|AAV74328.1| 447
 
+
 Output
 ======
 Use the function Bio.SeqIO.write(...), which takes a complete set of
@@ -169,9 +206,8 @@ Or, using a handle::
 
     from Bio import SeqIO
     records = ...
-    handle = open("example.faa", "w")
-    SeqIO.write(records, handle, "fasta")
-    handle.close()
+    with open("example.faa", "w") as handle:
+        SeqIO.write(records, handle, "fasta")
 
 You are expected to call this function once (with all your records) and if
 using a handle, make sure you close it to flush the data to the hard disk.
