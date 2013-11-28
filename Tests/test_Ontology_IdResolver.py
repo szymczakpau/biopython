@@ -11,18 +11,20 @@ class FirstOneResolverTest(unittest.TestCase):
 
 
     def test_resolve(self): #TODO
-        assocs = [GeneAnnotation('FBgn0004364', attrs = {'DB Object Synonym':
+        assocs = [GeneAnnotation('FBgn0004364', attrs = {'Synonym':
                                           ['18wheeler', 'CG8896', 'CT25100']}),
                   GeneAnnotation('FBgn0043467'),
-                  GeneAnnotation('FBgn0004907', attrs = {'DB Object Synonym':
+                  GeneAnnotation('FBgn0004907', attrs = {'Synonym':
                                           ['14-3-3', '14-3-3 zeta', 'x']}),
-                  GeneAnnotation('FBgn0010339', attrs = {'DB Object Synonym':
+                  GeneAnnotation('FBgn0010339', attrs = {'Synonym':
                                           ['CG8340', 'GTP-bp', 'X71866', 'x']})
                   ]
         resolver = FirstOneResolver(assocs)
         resolved = [resolver.resolve(x) for x in ['FBgn0043467', 'CT25100',
                                                   'x', 'FBgn0010340']]
+        print "dupa", resolved
         expected = ['FBgn0043467', 'FBgn0004364', 'FBgn0004907', 'FBgn0010340']
+ 
         self.assertEqual(expected, resolved)
         
 if __name__ == "__main__":
