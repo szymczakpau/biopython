@@ -58,6 +58,15 @@ class OntologyGraphTest(unittest.TestCase):
         
         self.assertEqual(set(["GO:0050896"]), g.get_ancestors("GO:0030534"))
     
+    
+    def test_to_networkx(self):
+        g = terms_to_graph(self.terms_diam)
+        na = g.to_networkx({"GO:0050896" : ["X1", "X2"]})
+        self.assertEqual(["GO:0030534", "GO:0045471"], na.successors("GO:0048149"))
+        self.assertEqual(["GO:0050896"], na.successors("GO:0030534"))
+        self.assertEqual(["GO:0050896"], na.successors("GO:0045471"))
+        self.assertEqual(["X1", "X2"], na.node["GO:0050896"]["annotated_genes"])
+        
     def test_bad_rel(self):
         with self.assertRaises(ValueError):
             terms_to_graph(self.terms_bad_rel)

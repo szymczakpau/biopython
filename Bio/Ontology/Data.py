@@ -9,6 +9,7 @@ Module with classes representating ontologies and annotation data.
 
 from Bio.Ontology.Graph import DiGraph
 import copy
+import sys
 
 class OntologyGraph(DiGraph):
     """
@@ -90,7 +91,40 @@ class OntologyGraph(DiGraph):
         igraph.typedefs = copy.copy(self.typedefs)
         
         return igraph
+    
+    def to_networkx(self, annotations = None):
+        """
+        Exports OntologyGraph to networkx DiGraph object
         
+        Parameters:
+        - annotations - (optional) annotations from term to list of genes in
+            form of a dictionary {"term_id" : ['gene_a', ...]}
+        """
+        
+        try:
+            import networkx as nx
+        except ImportError:
+            print >> sys.stderr, "Error while exporting. To use this functionality you need to have networkx installed."
+        else:
+            # Copy the graph structure
+            nxgraph = nx.classes.DiGraph()
+            for v in self.nodes.itervalues():
+                attrs = dict(v.data.attrs)
+                attrs['name'] = v.data.name
+                nxgraph.add_node(v.label, **attrs)
+                for edge in v.succ:
+                    nxgraph.add_edge(v.label, edge.to_node.label, relation = edge.data)
+            # Add annotations
+            if annotations != None:
+                for k, v in annotations.iteritems():
+                    if k in nxgraph.node:
+                        nxgraph.node[k]['annotated_genes'] = v
+            # Add rest of the data
+            nxgraph.graph['typedefs'] = self.typedefs
+            nxgraph.graph['synonyms'] = self.synonyms
+            
+            return nxgraph
+            
 class OntologyTerm(object):
     """
     Represents ontology term.
