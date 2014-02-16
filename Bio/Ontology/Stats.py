@@ -7,6 +7,7 @@
 Module containing functions used for statistical reasoning about the ontology
 data.
 """
+from Bio._py3k import range
 
 from math import log, exp
 
@@ -137,7 +138,7 @@ def kolmogorov_smirnov_rank_test(gene_set, gene_list, gene_corr, p):
     else:
         adj_corr = [abs(x) for x in gene_corr]
     
-    for i in xrange(N):
+    for i in range(N):
         if gene_list[i] in gene_set:
             Nr += adj_corr[i] 
             Nh += 1
@@ -149,7 +150,7 @@ def kolmogorov_smirnov_rank_test(gene_set, gene_list, gene_corr, p):
     
     stat_plot = N * [None]
     
-    for i in xrange(N):
+    for i in range(N):
         if gene_list[i] in gene_set:
             cval += adj_corr[i] / Nr
         else:

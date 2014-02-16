@@ -32,7 +32,7 @@ class SetPickerResolver(Resolver):
         self.synonyms = synonyms
         
     def resolve(self, oid):
-        if oid in self.base_keys or oid not in self.synonyms.keys():
+        if oid in self.base_keys or oid not in self.synonyms:
             return oid
         else:
             for x in self.synonyms[oid]:
@@ -53,7 +53,7 @@ class FirstOneResolver(Resolver):
             if 'Synonym' in obj.attrs:
                 for aid in obj.attrs['Synonym']:
                     alter[aid].add(obj.id)
-        self.alter_keys = dict([(k,list(v)) for (k, v) in alter.iteritems()])
+        self.alter_keys = dict([(k,list(v)) for (k, v) in alter.items()])
         
     
     def resolve(self, oid):

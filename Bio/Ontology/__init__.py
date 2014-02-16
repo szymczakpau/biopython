@@ -7,11 +7,14 @@
 Module containing classes for finding functional gene enrichments using
 ontologies.
 """
+from __future__ import print_function
+from Bio._py3k import range, filter
+
 
 import collections
 import random, math, bisect
-import Stats
-import IdResolver
+from . import Stats
+from . import IdResolver
 
 class EnrichmentEntry(object):
     """
@@ -54,8 +57,9 @@ class Enrichment(object):
         self.corrections = corrections
     
     def filter(self, filter_fun):
-        return Enrichment(self.method, filter(filter_fun, self.entries),
-                          list(self.warnings), list(self.corrections))
+        return Enrichment(self.method, 
+            list(filter(filter_fun, self.entries)),
+            list(self.warnings), list(self.corrections))
         
     def filter_p_val(self, p_val):
         """
@@ -93,7 +97,7 @@ class BaseEnrichmentFinder(EnrichmentFinder):
         
         self.ontology_graph = ontology_graph
         self.annotations = annotations
-        self.resolver = resolver_generator(self.annotations.itervalues())
+        self.resolver = resolver_generator(iter(self.annotations.values()))
     
 
     def _find_terms_associations(self, gene_list):
@@ -132,7 +136,7 @@ class BaseEnrichmentFinder(EnrichmentFinder):
             for c_id in corrections:
                 cfun = Stats.corrections[c_id]
                 corr_pvals.append((c_id, cfun(pvals)))
-            for i in xrange(len(result)):
+            for i in range(len(result)):
                 result[i].corrections = dict([(c_id, pv[i]) for c_id, pv in corr_pvals])
     
 class TermForTermEnrichmentFinder(BaseEnrichmentFinder):
@@ -175,18 +179,18 @@ class TermForTermEnrichmentFinder(BaseEnrichmentFinder):
     The result contains a list of EnrichmentEntry instances - each for a node in graph
     which is enriched - and a list of warnings.
     
-    >>> print result
+    >>> print(result)
     Enrichment found using term_for_term method: 64 entries, 1 warnings.
     
     Notice there is one warning. Let's print the list:
-    >>> print result.warnings
+    >>> print(result.warnings)
     ["Unknown id: '18-wheeler' was resolved to: 'FBgn0004364'"]
     
     Earlier when specifying list of genes we used non-standardized gene id:
     '18-wheeler'. Thanks to default resolver (FirstOneResolver)
     of TermForTermEnrichmentFinder standard id was inferred.
     
-    >>> print result.entries[0]
+    >>> print(result.entries[0])
     ID : GO:0044707
     name : single-multicellular organism process
     p-value : 1.0
@@ -211,7 +215,7 @@ class TermForTermEnrichmentFinder(BaseEnrichmentFinder):
         if population != None:
             self.population = population
         else:
-            self.population = self.annotations.keys()
+            self.population = list(self.annotations.keys())
         self.terms_to_population_genes = self._find_terms_associations(self.population)
 
         
@@ -278,9 +282,9 @@ class ParentChildEnrichmentFinder(BaseEnrichmentFinder):
     >>> result = ef.find_enrichment(genes_to_study, corrections, "intersection")
 
     
-    >>> print result
+    >>> print(result)
     Enrichment found using parent_child_intersection method: 61 entries, 1 warnings.
-    >>> print result.entries[0]
+    >>> print(result.entries[0])
     ID : GO:0044707
     name : single-multicellular organism process
     p-value : 1.0
@@ -304,7 +308,7 @@ class ParentChildEnrichmentFinder(BaseEnrichmentFinder):
         if population != None:
             self.population = population
         else:
-            self.population = self.annotations.keys()
+            self.population = list(self.annotations.keys())
         self.terms_to_population_genes = self._find_terms_associations(self.population)
 
     
@@ -402,7 +406,7 @@ class GseaEnrichmentFinder(BaseEnrichmentFinder):
     The result contains a list of EnrichmentEntry instances - each for a node in graph
     which is enriched - and a list of warnings.
     
-    >>> print result
+    >>> print(result)
     Enrichment found using GSEA method: 12 entries, 1 warnings.
     
     """
@@ -424,7 +428,7 @@ class GseaEnrichmentFinder(BaseEnrichmentFinder):
     def _get_perms(self, gene_list, perms_no):
         perms = []
         permutation = list(gene_list)
-        for _ in xrange(perms_no):
+        for _ in range(perms_no):
             random.shuffle(permutation)
             perms.append(list(permutation))
         return perms
@@ -465,7 +469,7 @@ class GseaEnrichmentFinder(BaseEnrichmentFinder):
         all_neg_nes_perm = []
         all_nes = []
         
-        for term, gene_set in enriched_terms.iteritems():
+        for term, gene_set in enriched_terms.items():
             
             orig_es, orig_plot = Stats.kolmogorov_smirnov_rank_test(gene_set, resolved_list, gene_corr, corr_power)
             
@@ -526,7 +530,7 @@ class GseaEnrichmentFinder(BaseEnrichmentFinder):
         all_pos_nes.sort()
         all_neg_nes.sort()
         
-        for i in xrange(len(all_nes)):
+        for i in range(len(all_nes)):
             nes = all_nes[i]
             if nes < 0:
                 a = bisect.bisect_right(all_neg_nes_perm, nes) / float(len(all_neg_nes_perm))
@@ -546,7 +550,7 @@ class GseaEnrichmentFinder(BaseEnrichmentFinder):
     def _find_enriched_terms(self, gene_list, min_set_size):
         enriched_terms = {}
         term_assocs = self._find_terms_associations(gene_list)
-        for k, v in term_assocs.iteritems():
+        for k, v in term_assocs.items():
             if len(v) >= min_set_size:
                 enriched_terms[k] = v
         return enriched_terms
@@ -567,7 +571,7 @@ class RankedParentChildEnrichmentFinder(BaseEnrichmentFinder):
     >>> genes_rank = [('FBgn0070057', 0.8), ('18-wheeler', 0.6), ('FBgn0043467', 0.2), ('FBgn0004222', -0.5)]
 
     >>> result = ef.find_enrichment(genes_rank)
-    >>> print result
+    >>> print(result)
     Enrichment found using ranked parent-child method: 61 entries, 1 warnings.
     
     """
@@ -639,13 +643,13 @@ class RankedParentChildEnrichmentFinder(BaseEnrichmentFinder):
         elif side == "+/-":
             minus_results = self._get_half_results(resolved_list[::-1], ef, method, warnings)
             all_results = self._get_half_results(resolved_list, ef, method, warnings)
-            for k, v in minus_results.iteritems():
+            for k, v in minus_results.items():
                 all_results[k] += v
         else:
             raise ValueError('"{0}" is not correct side specification.'.format(side))
         
         result = []
-        for oid, p_vals in all_results.iteritems():
+        for oid, p_vals in all_results.items():
             min_pval = 1.0
             plot = []
             for pv in p_vals:
@@ -669,3 +673,4 @@ class RankedParentChildEnrichmentFinder(BaseEnrichmentFinder):
 if __name__ == "__main__":
     from Bio._utils import run_doctest
     run_doctest()
+

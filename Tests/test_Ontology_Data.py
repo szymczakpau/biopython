@@ -3,7 +3,9 @@
 # license.  Please see the LICENSE file that should have been included   
 # as part of this package.
 
-import unittest
+from __future__ import print_function
+
+import unittest, sys
 
 from Bio.Ontology.IO.OboIO import terms_to_graph
 
@@ -60,12 +62,17 @@ class OntologyGraphTest(unittest.TestCase):
     
     
     def test_to_networkx(self):
-        g = terms_to_graph(self.terms_diam)
-        na = g.to_networkx({"GO:0050896" : ["X1", "X2"]})
-        self.assertEqual(["GO:0030534", "GO:0045471"], na.successors("GO:0048149"))
-        self.assertEqual(["GO:0050896"], na.successors("GO:0030534"))
-        self.assertEqual(["GO:0050896"], na.successors("GO:0045471"))
-        self.assertEqual(["X1", "X2"], na.node["GO:0050896"]["annotated_genes"])
+        try:
+            import networkx as nx
+        except ImportError:
+            print("Skipping test. To use this functionality you need to have networkx installed.", file=sys.stderr)
+        else:
+            g = terms_to_graph(self.terms_diam)
+            na = g.to_networkx({"GO:0050896" : ["X1", "X2"]})
+            self.assertEqual(["GO:0030534", "GO:0045471"], na.successors("GO:0048149"))
+            self.assertEqual(["GO:0050896"], na.successors("GO:0030534"))
+            self.assertEqual(["GO:0050896"], na.successors("GO:0045471"))
+            self.assertEqual(["X1", "X2"], na.node["GO:0050896"]["annotated_genes"])
         
     def test_bad_rel(self):
         with self.assertRaises(ValueError):

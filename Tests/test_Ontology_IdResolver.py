@@ -17,12 +17,11 @@ class FirstOneResolverTest(unittest.TestCase):
                   GeneAnnotation('FBgn0004907', attrs = {'Synonym':
                                           ['14-3-3', '14-3-3 zeta', 'x']}),
                   GeneAnnotation('FBgn0010339', attrs = {'Synonym':
-                                          ['CG8340', 'GTP-bp', 'X71866', 'x']})
+                                          ['CG8340', 'GTP-bp', 'X71866']})
                   ]
         resolver = FirstOneResolver(assocs)
         resolved = [resolver.resolve(x) for x in ['FBgn0043467', 'CT25100',
                                                   'x', 'FBgn0010340']]
-        print "dupa", resolved
         expected = ['FBgn0043467', 'FBgn0004364', 'FBgn0004907', 'FBgn0010340']
  
         self.assertEqual(expected, resolved)

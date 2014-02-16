@@ -3,6 +3,9 @@
 # license.  Please see the LICENSE file that should have been included   
 # as part of this package.
 
+from __future__ import print_function
+from Bio._py3k import range
+
 from Bio.Ontology.IO.GraphIO import GmlWriter
 from Bio.Ontology.Graph import DiGraph
 from Bio.Ontology.Stats import corrections_labels
@@ -47,7 +50,7 @@ def get_gradient(color_a, color_b, k):
     g2 = (g2 - g1) / d
     b2 = (b2 - b1) / d
     grad = []
-    for _ in xrange(k):
+    for _ in range(k):
         grad.append(triple_to_rgb((int(r1), int(g1), int(b1))))
         r1 += r2
         g1 += g2
@@ -81,17 +84,17 @@ def print_enrichment_chart(file_handle, vals, title):
     try:
         import matplotlib.pyplot as plt
     except ImportError:
-        print >> sys.stderr, "Error while printing. To use this functionality you need to have matplotlib installed."
+        print("Error while printing. To use this functionality you need to have matplotlib installed.", file=sys.stderr)
     else:
         fig, ax1 = plt.subplots()
         
-        xs = list(xrange(len(vals)))
+        xs = list(range(len(vals)))
         ys =  vals
         
         ax1.plot(xs, ys)
         
         bar_ys = [int(ys[0] > 0)]
-        for i in xrange(1, len(ys)):
+        for i in range(1, len(ys)):
             bar_ys.append(int(ys[i] > ys[i - 1]))
         bar_ys = [bar_ys]
         
@@ -217,7 +220,7 @@ class GraphVizPrinter(PrettyPrinter):
         try:
             import pygraphviz
         except ImportError:
-            print >> sys.stderr, "Error while printing. To use this functionality you need to have pygraphviz installed."
+            print("Error while printing. To use this functionality you need to have pygraphviz installed.", file=sys.stderr)
         else:
             viz_graph = pygraphviz.AGraph()
             viz_graph.graph_attr.update(dpi = self.dpi)

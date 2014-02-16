@@ -103,10 +103,10 @@ class DiGraph(object):
         nodes_ids - list of nodes labels
         
         >>> g = DiGraph([(1,2), (2,3), (3,4), (3,5), (5,2), (5,6), (6,8), (6,7), (2,9), (9,2)])
-        >>> print g
-        DiGraph(nodes = [1, 2, 3, 4, 5, 6, 7, 8, 9], edges = [1->2, 2->9, 2->3, 3->4, 3->5, 5->6, 5->2, 6->8, 6->7, 9->2])
+        >>> print(g)
+        DiGraph(nodes = [1, 2, 3, 4, 5, 6, 7, 8, 9], edges = [1->2, 2->9, 2->3, 3->4, 3->5, 5->2, 5->6, 6->8, 6->7, 9->2])
         >>> ig = g.get_induced_subgraph([2, 3, 4, 5, 8, 9])
-        >>> print ig
+        >>> print(ig)
         DiGraph(nodes = [2, 3, 4, 5, 8, 9], edges = [2->9, 2->3, 3->4, 3->5, 5->2, 9->2])
         """
         
@@ -130,22 +130,6 @@ class DiGraph(object):
         Parameters
         ----------
         node - node which descendants we want to obtain.
-        
-        >>> g = DiGraph([(1,2), (2,3), (3,4), (3,5), (5,2), (5,6), (6,8), (6,7), (2,9), (9,2)])
-        
-        Get all nodes reachable from 2.
-        
-        >>> n1 = g.get_node(2)
-        >>> g._get_reachable(n1)
-        ([], set([2, 3, 4, 5, 6, 7, 8, 9]))
-        >>> n2 = g.get_node(6)
-        >>> g._get_reachable(n2)
-        ([], set([8, 7]))
-        
-        Let's see cycles that we found:
-        
-        >>> g.cycles
-        [[2, 9], [2, 5, 3]]
         """
         if DiGraph._REACHABLE in node.attr:
             return ([], node.attr[DiGraph._REACHABLE])
@@ -178,7 +162,7 @@ class DiGraph(object):
     
     def __repr__(self):
         first = True
-        result = "DiGraph(nodes = " + str(self.nodes.keys()) + ", edges = ["
+        result = "DiGraph(nodes = " + str(list(self.nodes.keys())) + ", edges = ["
         for n in self.nodes.values():
             for e in n.succ:
                 if not first:
@@ -212,8 +196,7 @@ class DiEdge(object):
 
     def __repr__(self):
         return str(self.to_node) + "(" + str(self.data) + ")"
-    
-@total_ordering
+
 class DiNode(object):
     """
     Class containing information about graph structure. Only used
@@ -223,7 +206,7 @@ class DiNode(object):
     
     >>> a = DiNode(1)
     >>> b = DiNode(1)
-    >>> a >= b
+    >>> a == b
     True
     >>> a
     DiNode(label = 1)
@@ -244,11 +227,11 @@ class DiNode(object):
         self.succ = set()
         self.attr = {}
 
-    def __lt__(self, other):
-        return self.label< other.label
-
     def __eq__(self, other):
-        return self.label == other.label
+        if other is None:
+            return False
+        else:
+            return self.label == other.label
 
     def __hash__(self):
         return hash(self.label)
@@ -262,3 +245,4 @@ class DiNode(object):
 if __name__ == "__main__":
     from Bio._utils import run_doctest
     run_doctest()
+

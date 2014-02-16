@@ -11,7 +11,7 @@ import xml.sax
 import collections
 import ast
 from Bio.Ontology.Data import OntologyGraph, OntologyTerm, TermAssociation, GeneAnnotation
-from Interfaces import OntoReader
+from .Interfaces import OntoReader
 
 _SKIP = 0
 _NODE = 1
@@ -105,13 +105,13 @@ class NexoReader(OntoReader):
         xml.sax.parse(self.handle, content_handler)
         
         annotations = []
-        for obj, assocs in content_handler.annotations.iteritems():
+        for obj, assocs in content_handler.annotations.items():
             annotations.append(GeneAnnotation(obj,
                         associations = [TermAssociation(x) for x in assocs]))
         
         graph = OntologyGraph()
 
-        for _, node in content_handler.nodes.iteritems():
+        for _, node in content_handler.nodes.items():
             graph.add_node(node.id, node)
         
         edge_types = set()

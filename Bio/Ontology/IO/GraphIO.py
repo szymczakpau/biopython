@@ -6,10 +6,11 @@
 """
 I/O and visualization operations on graphs.
 """
+from __future__ import print_function
+from Bio._py3k import basestring
 
-
-import string, sys
-from Interfaces import OntoWriter
+import sys
+from .Interfaces import OntoWriter
 
 _INDENT = "  "
         
@@ -22,7 +23,7 @@ class GmlWriter(OntoWriter):
     is stored only if it is instance of dict class.
 
     >>> from Bio.Ontology.Graph import DiGraph
-    >>> from StringIO import StringIO
+    >>> from Bio._py3k import StringIO
     >>> out = StringIO()
     
     Constructing the graph:
@@ -33,7 +34,7 @@ class GmlWriter(OntoWriter):
     >>> writer = GmlWriter(out)
     >>> writer.write(g)
     
-    >>> print out.getvalue()
+    >>> print(out.getvalue())
     graph [
       directed 1
       node [
@@ -124,7 +125,7 @@ class GmlWriter(OntoWriter):
         return lines
     
     def write(self, graph):
-        self.handle.write(string.join(self.get_lines(graph), "\n"))
+        self.handle.write("\n".join(self.get_lines(graph)))
 
 class GraphVisualizer(OntoWriter):
     """
@@ -143,7 +144,7 @@ class GraphVisualizer(OntoWriter):
         try:
             import pygraphviz
         except ImportError:
-            print >> sys.stderr, "Error while printing. To use this functionality you need to have pygraphviz installed."
+            print("Error while printing. To use this functionality you need to have pygraphviz installed.", file=sys.stderr)
         else:
             viz_graph = pygraphviz.AGraph()
             viz_graph.graph_attr.update(dpi = str(self.dpi))
@@ -171,3 +172,4 @@ class GraphVisualizer(OntoWriter):
 if __name__ == '__main__':
     from Bio._utils import run_doctest
     run_doctest()
+

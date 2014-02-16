@@ -10,7 +10,7 @@ I/O operations for ontologies.
 import collections
 import re, shlex
 from Bio.Ontology.Data import OntologyTerm, OntologyGraph
-from Interfaces import OntoIterator, OntoReader, OntoWriter
+from .Interfaces import OntoIterator, OntoReader, OntoWriter
 
 _START = 0
 _STANZA = 1
@@ -42,7 +42,7 @@ class OboWriter(OntoWriter):
                 self.handle.write("\n[Term]\n")
                 self.handle.write("id: " + term.id + "\n")
                 self.handle.write("name: " + term.name + "\n")
-                for k, v in term.attrs.iteritems():
+                for k, v in term.attrs.items():
                     for vi in v:
                         self.handle.write(k + ": " + vi + "\n")
     
@@ -104,6 +104,9 @@ class OboIterator(OntoIterator):
                     k, v = self._split_tag(line)
                     self._dict[k].append(v)
 
+
+    def __next__(self):
+        return self.next()
 
     def next(self):
         self._read_stanza()

@@ -6,6 +6,7 @@
 """
 Module with classes representating ontologies and annotation data.
 """
+from __future__ import print_function
 
 from Bio.Ontology.Graph import DiGraph
 import copy
@@ -61,7 +62,7 @@ class OntologyGraph(DiGraph):
         
         fgraph = OntologyGraph()
         
-        for label, node in self.nodes.iteritems():
+        for label, node in self.nodes.items():
             # copying all the nodes
             fgraph.update_node(label, node.data)
             for edge in node.succ:
@@ -72,7 +73,7 @@ class OntologyGraph(DiGraph):
         fgraph.synonyms = dict(self.synonyms)
         
         # copying wanted relationships definitions
-        for rel, typedef in self.typedefs.iteritems():
+        for rel, typedef in self.typedefs.items():
             if rel in filter_set:
                 fgraph.typedefs[rel] = typedef
             
@@ -104,11 +105,11 @@ class OntologyGraph(DiGraph):
         try:
             import networkx as nx
         except ImportError:
-            print >> sys.stderr, "Error while exporting. To use this functionality you need to have networkx installed."
+            print("Error while exporting. To use this functionality you need to have networkx installed.", file=sys.stderr)
         else:
             # Copy the graph structure
             nxgraph = nx.classes.DiGraph()
-            for v in self.nodes.itervalues():
+            for v in self.nodes.values():
                 attrs = dict(v.data.attrs)
                 attrs['name'] = v.data.name
                 nxgraph.add_node(v.label, **attrs)
@@ -116,7 +117,7 @@ class OntologyGraph(DiGraph):
                     nxgraph.add_edge(v.label, edge.to_node.label, relation = edge.data)
             # Add annotations
             if annotations != None:
-                for k, v in annotations.iteritems():
+                for k, v in annotations.items():
                     if k in nxgraph.node:
                         nxgraph.node[k]['annotated_genes'] = v
             # Add rest of the data
@@ -139,7 +140,7 @@ class OntologyTerm(object):
         s = "[Term]\n"
         s += "id: " + self.id + "\n"
         s += "name: " + self.name + "\n"
-        for k, v in self.attrs.iteritems():
+        for k, v in self.attrs.items():
             for vi in v:
                 s+= k + ": " + vi + "\n"
         return s
@@ -171,7 +172,7 @@ class GeneAnnotation(object):
     
     def __str__(self):
         s = "DB Object ID: " + self.id + "\n"
-        for k, v in self.attrs.iteritems():
+        for k, v in self.attrs.items():
             s += k + ": " + str(v)+ "\n"       
         if len(self.associations) > 0:
             s += "\nAssociations:\n"
@@ -202,6 +203,6 @@ class TermAssociation(object):
     
     def __str__(self):
         s = "ID: " + self.term_id + "\n"
-        for k, v in self.attrs.iteritems():
+        for k, v in self.attrs.items():
             s += k + ": " + str(v) + "\n"
         return s

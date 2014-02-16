@@ -41,5 +41,8 @@ class OntoIterator(object):
     def __iter__(self):
         return self
     
+    def __next__(self):
+        raise NotImplementedError("next not implmented yet")
+
     def next(self):
         raise NotImplementedError("next not implmented yet")

@@ -6,11 +6,13 @@
 """
 I/O operations for gene annotation files.
 """
+from __future__ import print_function
+
 import sys
 import csv
 import collections
 from Bio.Ontology.Data import GeneAnnotation, TermAssociation
-from Interfaces import OntoIterator, OntoReader
+from .Interfaces import OntoIterator, OntoReader
 
 class TsvIterator(OntoIterator):
     """
@@ -23,9 +25,12 @@ class TsvIterator(OntoIterator):
     def __iter__(self):
         return self._reader
 
-    def next(self):
-        return self._reader.next()
+    def __next__(self):
+        return next(self._reader)
     
+    def next(self):
+        return next(self._reader)
+
 # GAF version 2.0
 GAF20FIELDS = ['DB',
         'DB_Object_ID',
@@ -150,12 +155,12 @@ class GafReader(OntoReader):
                 first = row[0]
                 if not first.startswith('!'):
                     raw_records[row[self._ID_IDX]].append(row)
-            return dict([(k, _to_goa(v, version)) for k, v in raw_records.iteritems()])
+            return dict([(k, _to_goa(v, version)) for k, v in raw_records.items()]) # Possible py2 slow down
         elif self.assoc_format == "in_mem_sql":
             try:
                 sqla = InSqlAssoc(GAF_VERSION[version], [1,4], lambda x:  _to_goa(x, version))
             except ImportError:
-                print >> sys.stderr, "Error: To use in_mem_sql association you need to have sqlite3 bindings installed."
+                print("Error: To use in_mem_sql association you need to have sqlite3 bindings installed.", file=sys.stderr)
             else:
                 for row in tsv_iter:
                     if not row[0].startswith('!'):
@@ -252,7 +257,7 @@ class InSqlAssoc(object):
             yield k
             
     def keys(self):
-        return list(self.iterkeys())
+        return self.keys()
     
     def values(self):
-        return list(self.itervalues())
+        return self.values()

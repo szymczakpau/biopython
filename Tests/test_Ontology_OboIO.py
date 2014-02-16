@@ -3,12 +3,12 @@
 # license.  Please see the LICENSE file that should have been included
 # as part of this package.  
 
+from Bio._py3k import StringIO
+
 import unittest
 
 from Bio.Ontology.IO.OboIO import OboIterator, OboWriter
 from Bio.Ontology.Data import OntologyTerm
-
-from StringIO import StringIO
 
 class OboWriterTest(unittest.TestCase):
     

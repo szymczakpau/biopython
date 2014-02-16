@@ -9,13 +9,14 @@ Module giving acces to I/O modules through generic methods.
 
 
 from Bio.File import as_handle
+from Bio._py3k import basestring
 
-import OboIO
-import GoaIO
-import GraphIO
-import PrettyIO
-import NexoIO
-import EnrichmentIO
+from . import OboIO
+from . import GoaIO
+from . import GraphIO
+from . import PrettyIO
+from . import NexoIO
+from . import EnrichmentIO
 
 _FormatToIterator = { "obo" : OboIO.OboIterator,
                       "tsv" : GoaIO.TsvIterator}
