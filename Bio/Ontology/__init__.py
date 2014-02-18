@@ -394,7 +394,7 @@ class GseaEnrichmentFinder(BaseEnrichmentFinder):
     >>> from Bio.Ontology import GseaEnrichmentFinder
     >>> ef = GseaEnrichmentFinder(assocs, go_graph)
     
-    To run finder you just need to call find_enrichment_from_rank
+    To run finder you just need to call find_enrichment
     method with gene rank:
     
     >>> genes_rank = [('FBgn0070057', 0.8), ('18-wheeler', 0.6), ('FBgn0043467', 0.2), ('FBgn0004222', -0.5)]
@@ -610,12 +610,13 @@ class RankedParentChildEnrichmentFinder(BaseEnrichmentFinder):
         Parameters
         ----------
         - gene_rank
-        - side - states which side of the rank (by correlation) we are interested
+        - side - states which side of the rank (ordered by correlation) we are interested in
           o "+" - highest correlation
           o "-" - lowest correlation
           o "+/-" - both
         - corrections - corrections that shuld be applied
-        - rank_as_population - are genes in rank the population
+        - rank_as_population - if set to True only the genes in the rank will be set as
+            the population,
         - method - method of parent-child to use
           o "union"
           o "intersection"
