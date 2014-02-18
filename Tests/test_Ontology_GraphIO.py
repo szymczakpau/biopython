@@ -13,83 +13,69 @@ class GraphIOTest(unittest.TestCase):
 
     
     def test_data_to_gml(self):
-        return
         correct_output = """  l1 [
-    l2a 2
     l2b [
-      l3b [
-        l4 4
-      ]
       l3c "[1, 2, 3]"
-      l3a 3
     ]
   ]"""
         writer = GmlWriter(None)
-        lines = writer.data_to_gml("l1", {"l2a" : 2, "l2b" : { "l3a" : 3, "l3b" : {"l4" : 4}, "l3c" : [1, 2, 3]}}, 1)
+        lines = writer.data_to_gml("l1", {"l2b" : { "l3c" : [1, 2, 3]}}, 1)
         output = "\n".join(lines)
         self.assertEqual(correct_output, output)
     
     def test_write(self):
-        return
-        correct_output = """graph [
+        correct_output_a = """graph [
   directed 1
   node [
     id 0
     label "1"
     a 1
-    bb "[1, 2]"
   ]
   node [
     id 1
     label "2"
   ]
-  node [
-    id 2
-    label "3"
-  ]
-  node [
-    id 3
-    label "4"
-  ]
-  node [
-    id 4
-    label "5"
-  ]
   edge [
     source 0
     target 1
-  ]
-  edge [
-    source 0
-    target 3
     x "x"
   ]
   edge [
     source 1
-    target 2
+    target 0
+    label "zzzz"
+  ]
+]"""
+        correct_output_b =  """graph [
+  directed 1
+  node [
+    id 0
+    label "2"
+  ]
+  node [
+    id 1
+    label "1"
+    a 1
   ]
   edge [
-    source 2
-    target 3
+    source 1
+    target 0
+    x "x"
   ]
   edge [
-    source 2
-    target 4
-  ]
-  edge [
-    source 4
+    source 0
     target 1
     label "zzzz"
   ]
 ]"""
         out = StringIO()
         writer = GmlWriter(out)
-        graph = DiGraph([(1,2), (2,3), (3,4), (3,5)])
-        graph.update_node(1, {'a' : 1, 'bb' : [1, 2]  })
-        graph.add_edge(1, 4, {'x' : 'x'})
-        graph.add_edge(5, 2, "zzzz")
+        graph = DiGraph()
+        graph.add_node(1, {'a' : 1 })
+        graph.add_edge(1, 2, {'x' : 'x'})
+        graph.add_edge(2, 1, "zzzz")
         writer.write(graph)
-        self.assertEqual(correct_output, out.getvalue())
+        self.assertIn(out.getvalue(), set([correct_output_a, correct_output_b]))
 
 if __name__ == "__main__":
     runner = unittest.TextTestRunner(verbosity = 2)
