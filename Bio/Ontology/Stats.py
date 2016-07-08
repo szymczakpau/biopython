@@ -16,6 +16,7 @@ _p = [0.99999999999980993, 676.5203681218851, -1259.1392167224028,
      771.32342877765313, -176.61502916214059, 12.507343278686905,
      -0.13857109526572012, 9.9843695780195716e-6, 1.5056327351493116e-7]
 
+_lnf = {}
 
 def lngamma(z):
     """
@@ -34,7 +35,15 @@ def lnfactorial(n):
     """
     Returns logarithm of factorial of n.
     """
-    return 0 if n < 1 else lngamma(n + 1)
+    if n < 1: 
+        return 0 
+    
+    try:
+        return _lnf[n]
+    except KeyError:
+        r =  lngamma(n + 1)
+        _lnf[n] = r
+        return r
 
 
 def lncombination(n, k):
@@ -116,11 +125,16 @@ def bh_fdr_correction(pvals):
         k += 1
     return cr
 
-def kolmogorov_smirnov_rank_test(gene_set, gene_list, gene_corr, p):
+
+def kolmogorov_smirnov_rank_test(gene_set, gene_list, adj_corr, plot=False):
     """
     Rank test used in GSEA method. It measures dispersion of genes from
     gene_set over a gene_list. Every gene from gene_list has its weight
-    specified by gene_corr. p is a parameter changing weights importance.
+    specified by adj_corr, where adj_corr are gene weights (correlation 
+    with fenotype) already raised to the power of parameter p, changing 
+    weights importance. Plot define if method should return list of ES 
+    for each position in ranking, if plot=False (default) second 
+    returned object is None.
     
     Reference: http://www.pnas.org/content/102/43/15545.full
     """
@@ -131,12 +145,6 @@ def kolmogorov_smirnov_rank_test(gene_set, gene_list, gene_corr, p):
     
     N = len(gene_list)
     Nh = 0
-    
-    # Adjust correlations taking accoriding to p parameter
-    if p != 1:
-        adj_corr = [pow(abs(x), p) for x in gene_corr]
-    else:
-        adj_corr = [abs(x) for x in gene_corr]
     
     for i in range(N):
         if gene_list[i] in gene_set:
@@ -150,15 +158,26 @@ def kolmogorov_smirnov_rank_test(gene_set, gene_list, gene_corr, p):
     
     stat_plot = N * [None]
     
+    if plot:
+        stat_plot = N * [None]
+    else:
+        stat_plot = None
     for i in range(N):
         if gene_list[i] in gene_set:
             cval += adj_corr[i] / Nr
         else:
             cval -= miss_pen
-        stat_plot[i] = cval
+        if plot:
+            stat_plot[i] = cval
+
         if abs(cval) > abs(Dn):
             Dn = cval
+        #if cval > Dn > 0: Dn = cval
+        #elif cval < Dn <= 0: Dn = cval
     return (Dn, stat_plot)
+
+
+
 
 
 def mean(arr):

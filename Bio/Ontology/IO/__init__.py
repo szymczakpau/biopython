@@ -32,7 +32,8 @@ _FormatToWriter = { "png" : GraphIO.GraphVisualizer,
 _FormatToPrinter = {"gml" : PrettyIO.GmlPrinter,
                     "png" : PrettyIO.GraphVizPrinter,
                     "txt" : PrettyIO.TxtPrinter,
-                    "html": PrettyIO.HtmlPrinter}
+                    "html": PrettyIO.HtmlPrinter,
+                    "tabular": PrettyIO.TabularPrinter}
 
 def write(data, handle, file_format, **params):
     """
@@ -140,6 +141,7 @@ def pretty_print(enrichment, graph, handle, file_format, **params):
              - png
              - txt
              - html
+             - tabular
      - params - additional parameters
      
     You should close the handle after calling this function.

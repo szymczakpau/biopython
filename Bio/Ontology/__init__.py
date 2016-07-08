@@ -337,6 +337,13 @@ class ParentChildEnrichmentFinder(BaseEnrichmentFinder):
         result = []
         warnings = []
         
+        if method == "union":
+                set_op = set.union
+        elif method == "intersection":
+                set_op = set.intersection
+        else:
+                raise ValueError("{0} is not correct method type.".format(method))
+            
         resolved_list = self._resolve_ids(gene_list, warnings)
             
         terms_to_study_genes = self._find_terms_associations(resolved_list)
@@ -351,12 +358,6 @@ class ParentChildEnrichmentFinder(BaseEnrichmentFinder):
                 study_set_list.append(terms_to_study_genes[parent])
                 pop_set_list.append(self.terms_to_population_genes[parent])
             
-            if method == "union":
-                set_op = set.union
-            elif method == "intersection":
-                set_op = set.intersection
-            else:
-                raise ValueError("{0} is not correct method type.".format(method))
             
             parents_study_size = self._count_op_items(study_set_list, set_op)
             population_parents_size = self._count_op_items(pop_set_list, set_op)
@@ -377,7 +378,97 @@ class ParentChildEnrichmentFinder(BaseEnrichmentFinder):
         if len(self.ontology_graph.cycles) > 0:
             warnings.append("Graph contains cycles: " + str(self.ontology_graph.cycles))
         return Enrichment("parent_child_" + method, result, warnings, corrections)
+    
+    
+    def _parent_sizes(self, gene_list, method = "union"):
+        result = []
+        warnings = []
+        
+        if method == "union":
+                set_op = set.union
+        elif method == "intersection":
+                set_op = set.intersection
+        else:
+                raise ValueError("{0} is not correct method type.".format(method))
+            
 
+        sizes_dict = {}
+        
+            
+        terms_to_study_genes = self._find_terms_associations(gene_list)
+
+        for term, _ in terms_to_study_genes.items():
+            population_hits = len(self.terms_to_population_genes[term])
+            pop_set_list = []
+            # calculate sets of genes annotated to parents
+            for parent in self.ontology_graph.get_parents(term):
+                pop_set_list.append(self.terms_to_population_genes[parent])
+            population_parents_size = self._count_op_items(pop_set_list, set_op)
+            sizes_dict[term] = population_parents_size
+        return sizes_dict
+    
+    
+    def _find_ranked_enrichment(self, gene_list, population_parents_sizes, corrections = [], method = "union"):
+        """
+        Finds enrichment of specified group of genes. Method takes
+        the parent-child relationship into account when computing p-value.
+        Reference: http://bioinformatics.oxfordjournals.org/content/23/22/3024.long
+        
+        Parameters
+        ----------
+        gene_list - list of genes to study
+        corrections - list of corrections that should be applied to result.
+            Possible values are:
+                o "bonferroni" - Bonferroni correction,
+                o "bh_fdr" - Benjamin-Hochberg FDR correction.
+        method - method of computing the p-values
+            Possible values are:
+                o "union",
+                o "intersection"
+        """
+        
+        result = []
+        warnings = []
+        
+        if method == "union":
+                set_op = set.union
+        elif method == "intersection":
+                set_op = set.intersection
+        else:
+                raise ValueError("{0} is not correct method type.".format(method))
+            
+        resolved_list = self._resolve_ids(gene_list, warnings)
+            
+        terms_to_study_genes = self._find_terms_associations(resolved_list)
+
+        for term, study_set in terms_to_study_genes.items():
+            study_hits = len(study_set)
+            population_hits = len(self.terms_to_population_genes[term])
+            study_set_list = []
+            # calculate sets of genes annotated to parents
+            for parent in self.ontology_graph.get_parents(term):
+                study_set_list.append(terms_to_study_genes[parent])
+            
+            
+            parents_study_size = self._count_op_items(study_set_list, set_op)
+            population_parents_size = population_parents_sizes[term]
+            
+            if study_hits <= parents_study_size and population_hits <= population_parents_size:
+                pval = Stats.hypergeometric_test(study_hits, parents_study_size,
+                                             population_hits, population_parents_size)
+
+                entry = EnrichmentEntry(term, self.ontology_graph.get_term(term).name, pval)
+                entry.attrs = {"study_hits" : study_hits, "parents_study_size": parents_study_size,
+                            "population_hits" : population_hits, "population_parents_size" : population_parents_size}
+                result.append(entry)
+        
+        # Calculate chosen corrections
+        BaseEnrichmentFinder._calculate_corrections(result, corrections)
+        
+        # check for warnings
+        if len(self.ontology_graph.cycles) > 0:
+            warnings.append("Graph contains cycles: " + str(self.ontology_graph.cycles))
+        return Enrichment("parent_child_" + method, result, warnings, corrections)
 
 class GseaEnrichmentFinder(BaseEnrichmentFinder):
     """
@@ -410,7 +501,6 @@ class GseaEnrichmentFinder(BaseEnrichmentFinder):
     Enrichment found using GSEA method: 12 entries, 1 warnings.
     
     """
-    
     def __init__(self, annotations, ontology_graph,
                  resolver_generator = IdResolver.FirstOneResolver):
         """
@@ -432,9 +522,9 @@ class GseaEnrichmentFinder(BaseEnrichmentFinder):
             random.shuffle(permutation)
             perms.append(list(permutation))
         return perms
-    
+
     def find_enrichment(self, gene_rank, perms_no = 1000,
-                        min_set_rank_intersection = 2,  corr_power = 1.):
+                        min_set_rank_intersection = 2,  corr_power = 1., plot=False):
         """
         Finds enrichment using GSEA method.
         
@@ -447,6 +537,7 @@ class GseaEnrichmentFinder(BaseEnrichmentFinder):
         - min_set_rank_intersection - minimal number of genes common to
           the set and rank to take the set into account
         - corr_power - weight of correlation when computing enrichment score
+        - plot - generate plot of ES depending on ranking
         
         """
         
@@ -469,16 +560,23 @@ class GseaEnrichmentFinder(BaseEnrichmentFinder):
         all_neg_nes_perm = []
         all_nes = []
         
+
+        # Adjust correlations taking accoriding to p parameter
+        if corr_power != 1:
+            adj_corr = [pow(abs(x), corr_power) for x in gene_corr]
+        else:
+            adj_corr = [abs(x) for x in gene_corr]
+
         for term, gene_set in enriched_terms.items():
-            
-            orig_es, orig_plot = Stats.kolmogorov_smirnov_rank_test(gene_set, resolved_list, gene_corr, corr_power)
+            orig_es, orig_plot = Stats.kolmogorov_smirnov_rank_test(gene_set, resolved_list, adj_corr, plot)
             
             pcount = 0
             pos_nes_perm = []
             neg_nes_perm = []
             
-            for perm in perms:
-                perm_es, _ = Stats.kolmogorov_smirnov_rank_test(gene_set, perm, gene_corr, corr_power)
+            for perm in perms: 
+                
+                perm_es, orig_plot2 = Stats.kolmogorov_smirnov_rank_test(gene_set, perm, adj_corr, plot)
                 if orig_es < 0:
                     pcount += int(orig_es >= perm_es)
                 else:
@@ -594,9 +692,11 @@ class RankedParentChildEnrichmentFinder(BaseEnrichmentFinder):
         list_slice = []
         results = collections.defaultdict(list)
 
+        parent_sizes = ef._parent_sizes(resolved_list, method = method)
         for gene in resolved_list:
             list_slice.append(gene)
-            slice_res = ef.find_enrichment(list_slice, method = method)
+            #slice_res = ef.find_enrichment(list_slice, method = method)
+            slice_res = ef._find_ranked_enrichment(list_slice, parent_sizes, method = method)
             warnings += slice_res.warnings
             for e in slice_res.entries:
                 results[e.id].append(e.p_value)
