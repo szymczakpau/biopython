@@ -5,9 +5,9 @@
   <description>Find enriched GO terms from gene list</description>
   <command interpreter="python"> 
         #if $params.method == "gsea"
-            ../run_ranked_enrichment.py    GSEA            -p $params.perms -n $params.minset -c $params.corrpower 
+            run_ranked_enrichment.py    GSEA            -p $params.perms -n $params.minset -c $params.corrpower 
 	#elif $params.method == "rpc"
-            ../run_ranked_enrichment.py    parent-child    -s "$params.side" -m $params.rmethod 
+            run_ranked_enrichment.py    parent-child    -s "$params.side" -m $params.rmethod 
             #if $params.rank
                 -r
             #end if
@@ -15,12 +15,12 @@
                 -c $params.corrections  
             #end if
         #elif $params.method == "pc"
-            ../run_enrichment.py           parent-child    -m "$params.pcmethod" 
+            run_enrichment.py           parent-child    -m "$params.pcmethod" 
             #if $params.corrections
                 -c $params.corrections  
             #end if
         #elif $params.method == "tt"
-            ../run_enrichment.py           term-for-term  
+            run_enrichment.py           term-for-term  
             #if $params.corrections
                 -c $params.corrections  
             #end if
