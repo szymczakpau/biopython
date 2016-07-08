@@ -25,10 +25,11 @@ def read_deseq_output(filename, column):
             content = line.split('\t') 
             if len(content) <= column:
                 continue
-            out.append( (content[0], content[column]))
+            out.append( ("_".join(content[0].split('_')[1:-1]), content[column]))
             if not remove_inf and not "Inf" in content[column]:
                 maxval = max(maxval, float(content[column]))
                 minval = min(minval, float(content[column]))
+            
     if remove_inf:
             return [(x[0], float(x[1])) for x in out if "Inf" not in x[1] ]
     else:
@@ -88,7 +89,7 @@ def main():
     
     
     required = parser.add_argument_group('required named arguments')
-    required.add_argument('-o', '--out', type=str, required=True,
+    required.add_argument('-o', '--out', type=str, required=True, nargs = '+',
                    help='output file')
     
     required.add_argument('-i', '--inp', type=str, required=True,
@@ -99,8 +100,8 @@ def main():
                    help='input GO graph file (.obo)')
     
     
-    parser.add_argument('-f', '--outputformat', choices=["html","txt", "gml", "png"],  
-                   help='output file format', default = "html")
+    parser.add_argument('-f', '--outputformat', choices=["html","txt", "gml", "png", "tabular"],  nargs = '+',
+                   help='output file format', default = ["html"])
     
     parser1 = subparsers.add_parser("GSEA", parents=[parser])
     parser2 = subparsers.add_parser("parent-child", parents=[parser])
@@ -132,10 +133,13 @@ def main():
         sys.exit(1)
         
     args = main_parser.parse_args()
+    if len(args.out) != len(args.outputformat):
+        main_parser.error("Number of output files doesn't match numer of formats!")
     check_file(main_parser, args.inp, 'r')
     check_file(main_parser, args.assoc, 'r')
     check_file(main_parser, args.gograph, 'r')
-    check_file(main_parser, args.out, 'w+')
+    for f in args.out:
+        check_file(main_parser, f, 'w+')
     
     if args.which == "parent-child":
         cors = []
@@ -172,10 +176,14 @@ def main():
 
 
     print result
-    with open(args.out, 'w+') as outfile:
-        assert result!= None,  "An error occured while computing result"
-        OntoIO.pretty_print(result, go_graph, outfile, args.outputformat, go_to_url="http://amigo.geneontology.org/amigo/term/")
-
+    assert result!= None,  "An error occured while computing result"
+    for outfilename, outputformat in zip(args.out, args.outputformat):
+        with open(outfilename, 'w+') as outfile:
+            if outputformat == 'html':
+                OntoIO.pretty_print(result, go_graph, outfile, outputformat, go_to_url="http://amigo.geneontology.org/amigo/term/")
+            else:
+                OntoIO.pretty_print(result, go_graph, outfile, outputformat)
+                
         
         
         

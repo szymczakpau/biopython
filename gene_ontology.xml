@@ -28,80 +28,54 @@
         
 
             -i ${input.file_name} -a ${assoc.file_name} 
-            <!--#if $go_graph.source == "user"
-                -g ${go_graph.go_file.file_name}
-            #else
-                -g $go_graph.go_cashed
-            #end if-->
             -g ${go_graph.file_name}
-            -f html -o ${output.file_name} 
+            -f html tabular -o ${output.file_name} ${output2.file_name} 
 </command>
-  <inputs>
-      <param name="input" label="DESeq results" format="tabular" type="data" />
+ <inputs>
+      <param name="input" label="Gene table or list" format="txt" type="data" />
       <!-- change to format="gaf" after adding GAF type --> 
       <param name="assoc" label="Association (GAF file)" format="tabular" type="data" />
       
       
       
       <param name="go_graph" label="GO annotation (OBO file)" format="obo" type="data" />
-      <!-- <conditional name="go_graph">
-        <param name="source" type="select" label="Gene Ontology Source">
-             <option value="cached" selected="true">Locally Cached Alignments</option>
-             <option value="user">Gene Ontology in Your History (in obo format)</option>
-           </param>
-          <when value="user">
-              <param name="go_file" type="data" format="obo" label="GO annotation" />
-          </when>
-        <when value="cached">
-            <param name="go_cashed" type="select" label="GO annotation" >
-                <options from_file="go_index.loc">
-                    <column name="name" index="0"/>
-                    <column name="value" index="1"/>
-                </options>
-            </param>
-        </when>
-      </conditional>
-      -->
-      
 
       <conditional name="params">
-	<param name="method" type="select" label="Enrichment analysis method">
+        <param name="method" type="select" label="Enrichment analysis method">
+          <option value="tt">Term for term</option>
+          <option value="pc">Parent-child</option>
           <option value="gsea">GSEA (uses ranking)</option>
           <option value="rpc">Ranked Parent-child (uses ranking)</option>
-          <option value="pc">Parent-child</option>
-	  <option value="tt">Term for term</option>
-	</param>
-	
-	<when value="gsea">
-	  <!-- <param name="perms" label="Number of permitations (for computing p-value)" type="integer" value="1000" min="10" max="10000" />-->
-	  <param name="perms" label="Number of permitations (for computing p-value)" type="select" multiple="false" >
-		<option value="10">10</option>
-		<option value="100"  selected="True">100</option>
-		<option value="1000">1000</option>
-		<option value="10000">10000</option>
-	  </param>
-	  <param name="minset" label="Minimal intersection between set of genes in rank and in studied set" type="integer" value="1" min="1" max="100" />
-	  <param name="corrpower" label="How strong correlation will affect enrichment" type="float" value="1" min="0" max="1" />
-	</when>
+        </param>
+        
+        <when value="gsea">
+          <param name="perms" label="Number of permutations (for computing p-value)" type="select" multiple="false" >
+                <option value="10">10</option>
+                <option value="100"  selected="True">100</option>
+                <option value="1000">1000</option>
+                <option value="10000">10000</option>
+          </param>
+          <param name="minset" label="Minimal intersection between set of genes in rank and in studied set" type="integer" value="1" min="1" max="100" />
+          <param name="corrpower" label="How strong correlation will affect enrichment" type="float" value="1" min="0" max="1" />
+        </when>
 
-	<when value="rpc">
-	  <!-- <param name="perms" label="Number of permitations (for computing p-value)" type="integer" value="1000" min="10" max="10000" />-->
-	  <param name="side" label="from which side (highest or lowest) to start computation" type="select" multiple="false" >
-		<option value="+" selected="true" >highest (default)</option>
-		<option value="-">lowest</option>
-		<option value="+/-">both</option>
-	  </param>
-	  <param name="corrections" label="multiple hypothesis testing corrections" type="select" multiple="true"  display="checkboxes">
-		<option value="bonferroni">Bonferroni</option>
-		<option value="bh_fdr">Benjamini-Hochberg FDR</option>
-	  </param>
-	  <param name="rank" label="only the rank should be used as population" type="boolean" value="false" />
-	  <param name="rmethod" label="method used to compute probabilities" type="select" multiple="false" required="true" >
-		<option value="union" selected="True">parent_child_union (default)</option>
-		<option value="intersection">parent_child_intersection</option>
-		<option value="term">Term for term</option>
-	  </param>
-	</when>
+        <when value="rpc">
+          <param name="side" label="from which side (highest or lowest) to start computation" type="select" multiple="false" >
+                <option value="+" selected="true" >highest (default)</option>
+                <option value="-">lowest</option>
+                <option value="+/-">both</option>
+          </param>
+          <param name="corrections" label="multiple hypothesis testing corrections" type="select" multiple="true"  display="checkboxes">
+                <option value="bonferroni">Bonferroni</option>
+                <option value="bh_fdr">Benjamini-Hochberg FDR</option>
+          </param>
+          <param name="rank" label="only the rank should be used as population" type="boolean" value="false" />
+          <param name="rmethod" label="method used to compute probabilities" type="select" multiple="false" required="true" >
+                <option value="union" selected="True">parent_child_union (default)</option>
+                <option value="intersection">parent_child_intersection</option>
+                <option value="term">Term for term</option>
+          </param>
+        </when>
 
         <when value="pc">   
           <param name="corrections" label="multiple hypothesis testing corrections" type="select" multiple="true" display="checkboxes">
@@ -128,7 +102,8 @@
 
   </inputs>
   <outputs>
-        <data format="html" name="output" label="${tool.name} on ${on_string}"/>
+        <data format="html" name="output" label="${tool.name} on ${on_string} (HTML)"/>
+        <data format="tabular" name="output2" label="${tool.name} on ${on_string} (table)"/>
   </outputs>
 
   <tests>
