@@ -285,6 +285,40 @@ class TxtPrinter(PrettyPrinter):
             for x in enrichment.warnings:
                 self.handle.write(str(x))
 
+
+class TabularPrinter(PrettyPrinter):
+    """
+    Prints found enrichments to tabular file using '#' as comment character
+    """
+    
+    def __init__(self, file_handle):
+        self.handle = file_handle
+        
+    def pretty_print(self, enrichment, graph):
+        self.handle.write("#Enrichments found using {0} method.\n\n"
+                          .format(enrichment.method))
+        sorted_entries = sorted(enrichment.entries, key = lambda x: x.p_value)
+        
+        headers = ["ID", "name", "p-value"]
+        for x in enrichment.corrections:
+            if x in corrections_labels:
+                headers.append(corrections_labels[x])
+            else:
+                headers.append(x)
+        self.handle.write("\t".join(headers) + "\n")
+        
+        for x in sorted_entries:
+            self.handle.write("\t".join([str(x.id), str(x.name), str(x.p_value)]))
+            for cr in enrichment.corrections:
+                self.handle.write("\t%s"% str(x.corrections[cr]))
+            self.handle.write("\n")
+            
+        if (len(enrichment.warnings) > 0):
+            self.handle.write("#Warnings:\n")
+            for x in enrichment.warnings:
+                self.handle.write("#"+str(x)+"\n")
+
+
 _DEFAULT_STYLE = """<style type="text/css">
 .warning
 {
