@@ -21,7 +21,7 @@ class Gaf( Tabular ):
     #MetadataElement( name="columns", default=17, desc="Number of columns", readonly=True )
     #MetadataElement( name="comment_lines", default=0, desc="Number of comment lines", readonly=False, optional=True, no_value=0 )
 
-    MetadataElement( name="version", default="2.0", desc="GAF version", readonly=True )
+    #MetadataElement( name="version", default="2.0", desc="GAF version", readonly=True )
     
     def __init__(self, **kwd):
         Tabular.__init__(self, **kwd)
@@ -45,7 +45,7 @@ class Gaf( Tabular ):
             if len( hdr ) > 1 and hdr[0]:
                 if hdr[0].startswith( '!' ):
                     comment_lines += 1
-                    if hdr[0].startswith('!gaf-version:'): dataset.metadata.version = hdr[0][len('!gaf-version:'):].strip()
+                    #if hdr[0].startswith('!gaf-version:'): dataset.metadata.version = hdr[0][len('!gaf-version:'):].strip()
                 else:
                     columns = max(columns, len(hdr))
                         

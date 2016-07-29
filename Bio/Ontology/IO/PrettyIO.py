@@ -299,7 +299,10 @@ class TabularPrinter(PrettyPrinter):
                           .format(enrichment.method))
         sorted_entries = sorted(enrichment.entries, key = lambda x: x.p_value)
         
-        headers = ["ID", "name", "p-value"]
+        headers = ["ID", "name"]
+        if enrichment.method == "term_for_term" or enrichment.method.startswith("parent_child"):
+            headers += ["No. genes in term", "No. genes from list"]
+        headers.append("p-value")
         for x in enrichment.corrections:
             if x in corrections_labels:
                 headers.append(corrections_labels[x])
@@ -308,7 +311,12 @@ class TabularPrinter(PrettyPrinter):
         self.handle.write("\t".join(headers) + "\n")
         
         for x in sorted_entries:
-            self.handle.write("\t".join([str(x.id), str(x.name), str(x.p_value)]))
+            self.handle.write("\t".join([str(x.id), str(x.name)]))            
+            if "population_hits" in x.attrs:
+                self.handle.write("\t%s"%  str(x.attrs["population_hits"]))
+            if "study_hits" in x.attrs:
+                self.handle.write("\t%s"% str(x.attrs["study_hits"]))
+            self.handle.write("\t%s"% str(x.p_value))
             for cr in enrichment.corrections:
                 self.handle.write("\t%s"% str(x.corrections[cr]))
             self.handle.write("\n")
@@ -405,12 +413,16 @@ class HtmlPrinter(PrettyPrinter):
         self.open_tag("table")
         
         self.open_tag("tr")
-        headers = ["ID", "name", "p-value"]
+        headers = ["ID", "name"]
+        if enrichment.method == "term_for_term" or enrichment.method.startswith("parent_child"):
+            headers += ["No. genes in term", "No. genes from list"]
+        headers.append("p-value")
         for x in enrichment.corrections:
             if x in corrections_labels:
                 headers.append(corrections_labels[x])
             else:
                 headers.append(x)
+                
         for header in headers:
             self.write_tag("th", header)
         self.close_tag("tr")
@@ -421,9 +433,14 @@ class HtmlPrinter(PrettyPrinter):
             self.write_tag("a", str(x.id), {"href" : self.go_to_url + str(x.id)})
             self.close_tag("td")
             self.write_tag("td", str(x.name))
-            self.write_tag("td", str(x.p_value))
+            if "population_hits" in x.attrs:
+                self.write_tag("td", str(x.attrs["population_hits"]))
+            if "study_hits" in x.attrs:
+                self.write_tag("td", str(x.attrs["study_hits"]))
+                    
             for cr in enrichment.corrections:
                 self.write_tag("td", str(x.corrections[cr]))
+            self.write_tag("td", str(x.p_value))
             self.close_tag("tr")
             
         self.close_tag("table")

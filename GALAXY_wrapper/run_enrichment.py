@@ -141,7 +141,7 @@ def main():
     #assocs = OntoIO.read("Ontology/ga_test.fb", "gaf")
     
     go_graph = OntoIO.read(args.gograph, "obo")
-    assocs = OntoIO.read(args.assoc, "gaf")
+    assocs = OntoIO.read(args.assoc, "gaf", assoc_format = "in_mem_sql")
     result=None
     
         

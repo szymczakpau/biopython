@@ -262,7 +262,7 @@ class InSqlAssoc(object):
             yield k
             
     def keys(self):
-        return self.keys()
+        return list(self.iterkeys())
     
     def values(self):
-        return self.values()
+        return list(self.itervalues())
