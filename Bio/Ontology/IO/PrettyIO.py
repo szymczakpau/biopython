@@ -438,9 +438,9 @@ class HtmlPrinter(PrettyPrinter):
             if "study_hits" in x.attrs:
                 self.write_tag("td", str(x.attrs["study_hits"]))
                     
+            self.write_tag("td", str(x.p_value))
             for cr in enrichment.corrections:
                 self.write_tag("td", str(x.corrections[cr]))
-            self.write_tag("td", str(x.p_value))
             self.close_tag("tr")
             
         self.close_tag("table")

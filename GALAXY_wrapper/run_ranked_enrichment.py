@@ -4,10 +4,11 @@ import sys
 import os
 import math
 import argparse
+import random
+
 
 import Bio.Ontology
 import Bio.Ontology.IO as OntoIO
-
 
 
 def read_deseq_output(filename, column):
@@ -58,11 +59,11 @@ def read_deseq_output(filename, column):
 
 
 
-def run_gsea(assocs, go_graph, gene_rank, perms, minset, corr):
+def run_gsea(assocs, go_graph, gene_rank, perms, minset, corr, seed=None):
     from Bio.Ontology import GseaEnrichmentFinder
 
     ef = GseaEnrichmentFinder(assocs, go_graph)
-    result = ef.find_enrichment(gene_rank, perms_no = perms, min_set_rank_intersection=minset, corr_power=corr)
+    result = ef.find_enrichment(gene_rank, perms_no = perms, min_set_rank_intersection=minset, corr_power=corr, seed=seed)
 
     return result
 
@@ -168,7 +169,6 @@ def main():
         if args.perms < 1:
             parser.error('wrong number of permutations: %d' % args.p)
 
-
     gene_rank = read_deseq_output(args.inp, 1)
     
     #gene_rank = [('FBgn0043467', 0.1), ('FBgn0010339', 0.7), ('FBgn0070057', 0.4), ('FBgn0070052', 0.9)]
@@ -178,11 +178,13 @@ def main():
     #assocs = OntoIO.read("Ontology/ga_test.fb", "gaf")
     
     go_graph = OntoIO.read(args.gograph, "obo")
+    #assocs = OntoIO.read(args.assoc, "gaf")
     assocs = OntoIO.read(args.assoc, "gaf", assoc_format = "in_mem_sql")
+    
     result=None
     
     if args.which == "GSEA":
-        result = run_gsea(assocs, go_graph, gene_rank, args.perms, args.minset, args.corrpower)
+        result = run_gsea(assocs, go_graph, gene_rank, args.perms, args.minset, args.corrpower, args.seed)
     else:
         #parser.error("Method unimplemented!")
         result = run_parent_child(assocs, go_graph, gene_rank, args.side, args.corrections, args.rank_as_population, args.method)

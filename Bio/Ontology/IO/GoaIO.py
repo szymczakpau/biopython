@@ -160,7 +160,7 @@ class GafReader(OntoReader):
                 first = row[0]
                 if not first.startswith('!'):
                     raw_records[row[self._ID_IDX]].append(row)
-            return dict([(k, _to_goa(v, version)) for k, v in raw_records.items()]) # Possible py2 slow down
+            return dict([(unicode(k), _to_goa(v, version)) for k, v in raw_records.items()]) # Possible py2 slow down
         elif self.assoc_format == "in_mem_sql":
             try:
                 sqla = InSqlAssoc(GAF_VERSION[version], [1,4], lambda x:  _to_goa(x, version))
@@ -246,8 +246,8 @@ class InSqlAssoc(object):
             if cur_id and cur_id != row[self.index[0]]:
                 obj = self.fun(row_list)
                 row_list = [row]
-                cur_id = row[self.index[0]]
                 yield (cur_id, obj)
+                cur_id = row[self.index[0]]
             else:
                 cur_id = row[self.index[0]]
                 row_list.append(row)

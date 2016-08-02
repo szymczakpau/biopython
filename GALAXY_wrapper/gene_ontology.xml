@@ -219,6 +219,10 @@ Gene Ontology returns HTML file with several columns:
         
         - -name
 
+	- -(only for non-ranking methods) No. genes in term
+
+	- -(only for non-ranking methods) No. genes from list
+
         - -p-value
 
         - -(optional) p-values after multiple hypothesis corrections

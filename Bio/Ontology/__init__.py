@@ -102,8 +102,14 @@ class BaseEnrichmentFinder(EnrichmentFinder):
 
     def _find_terms_associations(self, gene_list):
         terms_assocs = collections.defaultdict(set)
-        for gene in gene_list:
+        for gene in gene_list:                
+            if  'A0A024QZP7' == gene:
+                    print (gene)
             if gene in self.annotations:
+                    
+                if  'A0A024QZP7' == gene:
+                    print (gene)
+                    print (self.annotations[gene].associations)
                 enriched_terms = set()
                 for term in self.annotations[gene].associations:
                     node = self.ontology_graph.get_node(term.term_id)
@@ -113,6 +119,9 @@ class BaseEnrichmentFinder(EnrichmentFinder):
                         enriched_terms |= self.ontology_graph.get_ancestors(nid)
                 for t in enriched_terms:
                     terms_assocs[t].add(gene)
+                if  'A0A024QZP7' == gene:
+                    for t in enriched_terms:
+                        print(t)
         return terms_assocs
 
     def _resolve_ids(self, gene_list, warnings):
@@ -261,6 +270,10 @@ class TermForTermEnrichmentFinder(BaseEnrichmentFinder):
         if len(self.ontology_graph.cycles) > 0:
             warnings.append("Graph contains cycles: " + str(self.ontology_graph.cycles))
         return Enrichment("term_for_term", result, warnings, corrections)
+
+
+#from guppy import hpy
+#h = hpy()
 
 
 class ParentChildEnrichmentFinder(BaseEnrichmentFinder):
@@ -439,23 +452,34 @@ class ParentChildEnrichmentFinder(BaseEnrichmentFinder):
         resolved_list = self._resolve_ids(gene_list, warnings)
             
         terms_to_study_genes = self._find_terms_associations(resolved_list)
+        
+        #population_parents_sizes = self._parent_sizes(resolved_list, method)
 
         for term, study_set in terms_to_study_genes.items():
             study_hits = len(study_set)
             population_hits = len(self.terms_to_population_genes[term])
             study_set_list = []
+            
+            #if term == 'GO:0005634':
+                #print ("\n".join(sorted(self.terms_to_population_genes[term])))
+            
+            #pop_list = []
             # calculate sets of genes annotated to parents
             for parent in self.ontology_graph.get_parents(term):
                 study_set_list.append(terms_to_study_genes[parent])
+                #pop_list.append(self.terms_to_population_genes[parent])
             
             
             parents_study_size = self._count_op_items(study_set_list, set_op)
             population_parents_size = population_parents_sizes[term]
+            #print( population_parents_size, self._count_op_items(pop_list, set_op))
             
             if study_hits <= parents_study_size and population_hits <= population_parents_size:
                 pval = Stats.hypergeometric_test(study_hits, parents_study_size,
                                              population_hits, population_parents_size)
 
+                #print( term, study_hits, parents_study_size, population_hits, population_parents_size, pval)
+                #print( term, study_hits, parents_study_size, population_hits)
                 entry = EnrichmentEntry(term, self.ontology_graph.get_term(term).name, pval)
                 result.append(entry)
         
@@ -519,7 +543,7 @@ class GseaEnrichmentFinder(BaseEnrichmentFinder):
         return perms
 
     def find_enrichment(self, gene_rank, perms_no = 1000,
-                        min_set_rank_intersection = 2,  corr_power = 1., plot=False):
+                        min_set_rank_intersection = 2,  corr_power = 1., plot=False, seed=None):
         """
         Finds enrichment using GSEA method.
         
@@ -533,7 +557,7 @@ class GseaEnrichmentFinder(BaseEnrichmentFinder):
           the set and rank to take the set into account
         - corr_power - weight of correlation when computing enrichment score
         - plot - generate plot of ES depending on ranking
-        
+        - seed - random seed for generating permutations
         """
         
         sorted_gene_rank = sorted(gene_rank, key = lambda x: x[1], reverse = True)
@@ -548,6 +572,9 @@ class GseaEnrichmentFinder(BaseEnrichmentFinder):
         result = []
         resolved_list = self._resolve_ids(gene_list, warnings)
         enriched_terms = self._find_enriched_terms(resolved_list, min_set_rank_intersection)
+        
+        if seed:
+            random.seed(seed)
         perms = self._get_perms(resolved_list, perms_no)
         
         # Computing both: uncorrected and FDR corrected p-value
@@ -648,6 +675,9 @@ class GseaEnrichmentFinder(BaseEnrichmentFinder):
                 enriched_terms[k] = v
         return enriched_terms
 
+
+
+#from pympler import asizeof
 class RankedParentChildEnrichmentFinder(BaseEnrichmentFinder):
     """
     Utility for finding enriched group of terms given list of genes ranked
@@ -683,20 +713,37 @@ class RankedParentChildEnrichmentFinder(BaseEnrichmentFinder):
         super(RankedParentChildEnrichmentFinder, self).__init__(annotations, ontology_graph,
                                                      resolver_generator)
     
-    def _get_half_results(self, resolved_list, ef, method, warnings):
+    def _get_half_results(self, resolved_list, ef, method, warnings, plot = False):
         list_slice = []
         results = collections.defaultdict(list)
 
         parent_sizes = ef._parent_sizes(resolved_list, method = method)
+        #print( "parent_sizes %d"% asizeof.asizeof(parent_sizes))
         for gene in resolved_list:
             list_slice.append(gene)
             #slice_res = ef.find_enrichment(list_slice, method = method)
             slice_res = ef._find_ranked_enrichment(list_slice, parent_sizes, method = method)
             warnings += slice_res.warnings
-            for e in slice_res.entries:
-                results[e.id].append(e.p_value)
+            #print( "slice_res %d"% asizeof.asizeof(slice_res))
+            if plot:
+                for e in slice_res.entries:
+                    results[e.id].append(e.p_value)
+            else:
+                for e in slice_res.entries:
+                    if results[e.id] != []:
+                        if e.p_value < results[e.id][0]:
+                            results[e.id] = [e.p_value]
+                    else:
+                        results[e.id] = [e.p_value]
+                    
+        #print( "warnings %d"% asizeof.asizeof(warnings))
+        
+        #print( "results %d"% asizeof.asizeof(results))
+        
+        #print( h.heap())
         return results
     
+    #@profile
     def find_enrichment(self, gene_rank, side = "+", corrections = [],
                                      rank_as_population = False, method = "union", plot=False):
         """
@@ -733,17 +780,26 @@ class RankedParentChildEnrichmentFinder(BaseEnrichmentFinder):
             ef = ParentChildEnrichmentFinder(self.annotations, self.ontology_graph,
                                   resolver_generator = IdResolver.Resolver)
         
+        #print ("ef %d"% asizeof.asizeof(ef))
+        #print("gene_list %d"% asizeof.asizeof(gene_list))
+        #print( "resolved_list %d"% asizeof.asizeof(resolved_list))
+        
+        
         if side == "-":
-            all_results = self._get_half_results(resolved_list[::-1], ef, method, warnings)
+            all_results = self._get_half_results(resolved_list[::-1], ef, method, warnings, plot)
         elif side == "+":
-            all_results = self._get_half_results(resolved_list, ef, method, warnings)
+            all_results = self._get_half_results(resolved_list, ef, method, warnings, plot)
         elif side == "+/-":
-            minus_results = self._get_half_results(resolved_list[::-1], ef, method, warnings)
-            all_results = self._get_half_results(resolved_list, ef, method, warnings)
+            minus_results = self._get_half_results(resolved_list[::-1], ef, method, warnings, plot)
+            all_results = self._get_half_results(resolved_list, ef, method, warnings, plot)
             for k, v in minus_results.items():
                 all_results[k] += v
+            del minus_results
         else:
             raise ValueError('"{0}" is not correct side specification.'.format(side))
+        
+        
+        #print( "all_results %d"% asizeof.asizeof(all_results))
         
         if len(ef.ontology_graph.cycles) > 0:
             warnings.append("Graph contains cycles: " + str(ef.ontology_graph.cycles))
