@@ -103,13 +103,7 @@ class BaseEnrichmentFinder(EnrichmentFinder):
     def _find_terms_associations(self, gene_list):
         terms_assocs = collections.defaultdict(set)
         for gene in gene_list:                
-            if  'A0A024QZP7' == gene:
-                    print (gene)
             if gene in self.annotations:
-                    
-                if  'A0A024QZP7' == gene:
-                    print (gene)
-                    print (self.annotations[gene].associations)
                 enriched_terms = set()
                 for term in self.annotations[gene].associations:
                     node = self.ontology_graph.get_node(term.term_id)
@@ -119,9 +113,6 @@ class BaseEnrichmentFinder(EnrichmentFinder):
                         enriched_terms |= self.ontology_graph.get_ancestors(nid)
                 for t in enriched_terms:
                     terms_assocs[t].add(gene)
-                if  'A0A024QZP7' == gene:
-                    for t in enriched_terms:
-                        print(t)
         return terms_assocs
 
     def _resolve_ids(self, gene_list, warnings):
