@@ -263,10 +263,6 @@ class TermForTermEnrichmentFinder(BaseEnrichmentFinder):
         return Enrichment("term_for_term", result, warnings, corrections)
 
 
-#from guppy import hpy
-#h = hpy()
-
-
 class ParentChildEnrichmentFinder(BaseEnrichmentFinder):
     """
     Finder implementing different method for finding enrichment called
@@ -420,10 +416,8 @@ class ParentChildEnrichmentFinder(BaseEnrichmentFinder):
         Parameters
         ----------
         gene_list - list of genes to study
-        corrections - list of corrections that should be applied to result.
-            Possible values are:
-                o "bonferroni" - Bonferroni correction,
-                o "bh_fdr" - Benjamin-Hochberg FDR correction.
+        population_parents_sizes = precomputed dictionary for each term containing 
+                    number of genes in population in parents of a term
         method - method of computing the p-values
             Possible values are:
                 o "union",
@@ -463,14 +457,11 @@ class ParentChildEnrichmentFinder(BaseEnrichmentFinder):
             
             parents_study_size = self._count_op_items(study_set_list, set_op)
             population_parents_size = population_parents_sizes[term]
-            #print( population_parents_size, self._count_op_items(pop_list, set_op))
             
             if study_hits <= parents_study_size and population_hits <= population_parents_size:
                 pval = Stats.hypergeometric_test(study_hits, parents_study_size,
                                              population_hits, population_parents_size)
 
-                #print( term, study_hits, parents_study_size, population_hits, population_parents_size, pval)
-                #print( term, study_hits, parents_study_size, population_hits)
                 entry = EnrichmentEntry(term, self.ontology_graph.get_term(term).name, pval)
                 result.append(entry)
         
@@ -547,7 +538,7 @@ class GseaEnrichmentFinder(BaseEnrichmentFinder):
         - min_set_rank_intersection - minimal number of genes common to
           the set and rank to take the set into account
         - corr_power - weight of correlation when computing enrichment score
-        - plot - generate plot of ES depending on ranking
+        - plot - generate plot of ES depending on ranking (uses much more memory)
         - seed - random seed for generating permutations
         """
         
@@ -574,7 +565,7 @@ class GseaEnrichmentFinder(BaseEnrichmentFinder):
         all_nes = []
         
 
-        # Adjust correlations taking accoriding to p parameter
+        # Adjust correlations taking according to p parameter
         if corr_power != 1:
             adj_corr = [pow(abs(x), corr_power) for x in gene_corr]
         else:
@@ -667,8 +658,6 @@ class GseaEnrichmentFinder(BaseEnrichmentFinder):
         return enriched_terms
 
 
-
-#from pympler import asizeof
 class RankedParentChildEnrichmentFinder(BaseEnrichmentFinder):
     """
     Utility for finding enriched group of terms given list of genes ranked
@@ -709,13 +698,10 @@ class RankedParentChildEnrichmentFinder(BaseEnrichmentFinder):
         results = collections.defaultdict(list)
 
         parent_sizes = ef._parent_sizes(resolved_list, method = method)
-        #print( "parent_sizes %d"% asizeof.asizeof(parent_sizes))
         for gene in resolved_list:
             list_slice.append(gene)
-            #slice_res = ef.find_enrichment(list_slice, method = method)
             slice_res = ef._find_ranked_enrichment(list_slice, parent_sizes, method = method)
             warnings += slice_res.warnings
-            #print( "slice_res %d"% asizeof.asizeof(slice_res))
             if plot:
                 for e in slice_res.entries:
                     results[e.id].append(e.p_value)
@@ -726,15 +712,8 @@ class RankedParentChildEnrichmentFinder(BaseEnrichmentFinder):
                             results[e.id] = [e.p_value]
                     else:
                         results[e.id] = [e.p_value]
-                    
-        #print( "warnings %d"% asizeof.asizeof(warnings))
-        
-        #print( "results %d"% asizeof.asizeof(results))
-        
-        #print( h.heap())
         return results
     
-    #@profile
     def find_enrichment(self, gene_rank, side = "+", corrections = [],
                                      rank_as_population = False, method = "union", plot=False):
         """
@@ -753,7 +732,7 @@ class RankedParentChildEnrichmentFinder(BaseEnrichmentFinder):
         - method - method of parent-child to use
           o "union"
           o "intersection"
-        - plot - generate plot of score depending on ranking
+        - plot - generate plot of score depending on ranking (uses much more memory)
           
         """
         
@@ -771,10 +750,6 @@ class RankedParentChildEnrichmentFinder(BaseEnrichmentFinder):
             ef = ParentChildEnrichmentFinder(self.annotations, self.ontology_graph,
                                   resolver_generator = IdResolver.Resolver)
         
-        #print ("ef %d"% asizeof.asizeof(ef))
-        #print("gene_list %d"% asizeof.asizeof(gene_list))
-        #print( "resolved_list %d"% asizeof.asizeof(resolved_list))
-        
         
         if side == "-":
             all_results = self._get_half_results(resolved_list[::-1], ef, method, warnings, plot)
@@ -789,8 +764,6 @@ class RankedParentChildEnrichmentFinder(BaseEnrichmentFinder):
         else:
             raise ValueError('"{0}" is not correct side specification.'.format(side))
         
-        
-        #print( "all_results %d"% asizeof.asizeof(all_results))
         
         if len(ef.ontology_graph.cycles) > 0:
             warnings.append("Graph contains cycles: " + str(ef.ontology_graph.cycles))

@@ -55,7 +55,7 @@
                 <option value="1000">1000</option>
                 <option value="10000">10000</option>
           </param>
-          <param name="minset" label="Minimal intersection between set of genes in rank and in studied set" type="integer" value="1" min="1" max="100" />
+          <param name="minset" label="Minimal intersection between set of genes in rank and in studied set" type="integer" value="15" min="1" max="100" />
           <param name="corrpower" label="How strong correlation will affect enrichment" type="float" value="1" min="0" max="1" />
         </when>
 
@@ -73,7 +73,7 @@
           <param name="rmethod" label="method used to compute probabilities" type="select" multiple="false" required="true" >
                 <option value="union" selected="True">parent_child_union (default)</option>
                 <option value="intersection">parent_child_intersection</option>
-                <option value="term">Term for term</option>
+                <!--<option value="term">Term for term</option>-->
           </param>
         </when>
 
@@ -170,9 +170,6 @@ in provided genes, or enriched at some point of gene ranking.
         
                         - *intersection* - gene set associated with parents of term `t` is set of all genes associated with all of the parents of term `t`
 
-                        - *term-for-term* - each term is analysed independently of its context in ontology.
-
-
 -----
 
 **Input**
@@ -229,10 +226,11 @@ Gene Ontology returns HTML file with several columns:
 
 Example::
 
-        ID              name                                                            p-value                 FDR correction  Bonferroni correction
-        GO:0003700      transcription factor activity, sequence-specific DNA binding    0.000271074085594       0.188938637659  0.188938637659
-        GO:0001071      nucleic acid binding transcription factor activity              0.000271074085594       0.188938637659  0.188938637659
-        GO:0006357      regulation of transcription from RNA polymerase II promoter     0.000318367651929       0.188938637659  0.221902253394
+	#Enrichments found using parent_child_intersection method.
+	ID		name			No. genes in term	No. genes from list	p-value			FDR correction		Bonferroni correction
+	GO:0005737	cytoplasm		11011			72			0.000112659418604	0.00698488395347	0.00698488395347
+	GO:0007155	cell adhesion		606			9			0.00579391522139	0.179611371863		0.359222743726
+	GO:0007165	signal transduction	1689			14			0.063198962127		1.0			1.0
 
 -----
 
