@@ -58,7 +58,7 @@ class Gaf( Tabular ):
         with open( filename ) as handle:
             for line in handle:
                 if line.startswith('!gaf-version:'):
-                    headers = get_headers( filename, '\t' )   
+                    headers = get_headers( filename, '\t' )[:100]
                     for hdr in headers:
                         if len( hdr ) > 1 and hdr[0] and not hdr[0].startswith( '!' ):
                             if not 15 <= len(hdr) <= 17:
