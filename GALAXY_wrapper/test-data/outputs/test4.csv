@@ -1,0 +1,197 @@
+#Enrichments found using term_for_term method.
+
+ID	name	No. genes in term	No. genes from list	p-value	Bonferroni correction
+GO:0050877	neurological system process	8	1	0.466703422827	1.0
+GO:0016798	hydrolase activity, acting on glycosyl bonds	10	1	0.554297593841	1.0
+GO:0051276	chromosome organization	22	1	0.90853725342	1.0
+GO:0005886	plasma membrane	4711	27	0.999999999938	1.0
+GO:0005730	nucleolus	1146	6	0.999999999942	1.0
+GO:0003674	molecular_function	8219	37	0.999999999953	1.0
+GO:0005739	mitochondrion	1600	9	0.999999999957	1.0
+GO:0043226	organelle	13298	68	0.999999999957	1.0
+GO:0003723	RNA binding	1050	2	0.999999999958	1.0
+GO:0006810	transport	1627	5	0.999999999961	1.0
+GO:0005829	cytosol	3476	19	0.999999999962	1.0
+GO:0034641	cellular nitrogen compound metabolic process	837	1	0.999999999968	1.0
+GO:0005575	cellular_component	23677	120	0.999999999969	1.0
+GO:0005622	intracellular	18691	92	0.999999999977	1.0
+GO:0005634	nucleus	9725	50	0.99999999998	1.0
+GO:0005654	nucleoplasm	3749	21	0.999999999983	1.0
+GO:0005615	extracellular space	1486	10	0.999999999984	1.0
+GO:0005576	extracellular region	3050	22	0.999999999984	1.0
+GO:0005623	cell	21379	105	0.999999999988	1.0
+GO:0008150	biological_process	9323	48	0.999999999989	1.0
+GO:0005737	cytoplasm	11011	72	0.999999999993	1.0
+GO:0003677	DNA binding	2344	8	0.999999999995	1.0
+GO:0006520	cellular amino acid metabolic process	49	1	1.0	1.0
+GO:0006457	protein folding	292	1	1.0	1.0
+GO:0005783	endoplasmic reticulum	1027	7	1.0	1.0
+GO:0005929	cilium	132	2	1.0	1.0
+GO:0019899	enzyme binding	352	4	1.0	1.0
+GO:0007267	cell-cell signaling	253	3	1.0	1.0
+GO:0007165	signal transduction	1689	14	1.0	1.0
+GO:0004871	signal transducer activity	327	3	1.0	1.0
+GO:0007067	mitotic nuclear division	270	2	1.0	1.0
+GO:0005815	microtubule organizing center	225	1	1.0	1.0
+GO:0007049	cell cycle	528	2	1.0	1.0
+GO:0005764	lysosome	237	2	1.0	1.0
+GO:0005773	vacuole	443	5	1.0	1.0
+GO:0005811	lipid particle	64	1	1.0	1.0
+GO:0005198	structural molecule activity	924	2	1.0	1.0
+GO:0006397	mRNA processing	204	1	1.0	1.0
+GO:0030198	extracellular matrix organization	196	2	1.0	1.0
+GO:0051301	cell division	371	1	1.0	1.0
+GO:0005794	Golgi apparatus	1118	4	1.0	1.0
+GO:0030154	cell differentiation	471	4	1.0	1.0
+GO:0006629	lipid metabolic process	208	2	1.0	1.0
+GO:0008283	cell proliferation	378	2	1.0	1.0
+GO:0008134	transcription factor binding	307	1	1.0	1.0
+GO:0003924	GTPase activity	411	2	1.0	1.0
+GO:0008289	lipid binding	198	3	1.0	1.0
+GO:0004386	helicase activity	97	1	1.0	1.0
+GO:0009058	biosynthetic process	645	1	1.0	1.0
+GO:0007155	cell adhesion	606	9	1.0	1.0
+GO:0005975	carbohydrate metabolic process	350	1	1.0	1.0
+GO:0006605	protein targeting	37	1	1.0	1.0
+GO:0016874	ligase activity	309	1	1.0	1.0
+GO:0055085	transmembrane transport	563	1	1.0	1.0
+GO:0043234	protein complex	484	2	1.0	1.0
+GO:0007568	aging	179	1	1.0	1.0
+GO:0016192	vesicle-mediated transport	281	1	1.0	1.0
+GO:0005856	cytoskeleton	762	2	1.0	1.0
+GO:0016023	cytoplasmic, membrane-bounded vesicle	130	3	1.0	1.0
+GO:0016301	kinase activity	171	1	1.0	1.0
+GO:0008233	peptidase activity	98	2	1.0	1.0
+GO:0003729	mRNA binding	137	1	1.0	1.0
+GO:0005768	endosome	227	3	1.0	1.0
+GO:0005578	proteinaceous extracellular matrix	360	1	1.0	1.0
+GO:0044281	small molecule metabolic process	55	1	1.0	1.0
+#Warnings:
+#Unknown id: 'JARID1D' was resolved to: 'Q9BY66'
+#Unknown id: 'C12orf2' was resolved to: 'Q8NHQ8'
+#Unknown id: 'RAI' was resolved to: 'Q8WUF5'
+#Unknown id: 'KIAA0683' was resolved to: 'Q9Y4R8'
+#Unknown id: 'TRIP' was resolved to: 'Q9BWF2'
+#Unknown id: 'PDZK7' was resolved to: 'Q9H5P4'
+#Unknown id: 'HBA2' was resolved to: 'P69905'
+#Unknown id: 'PLEKHA9' was resolved to: 'O95397'
+#Unknown id: 'NPL4' was resolved to: 'Q8TAT6'
+#Unknown id: 'GOLPH2' was resolved to: 'Q8NBJ4'
+#Unknown id: 'C22orf1' was resolved to: 'O15442'
+#Unknown id: 'LR8' was resolved to: 'Q3YBM2'
+#Unknown id: 'COVA1' was resolved to: 'Q16206'
+#Unknown id: 'MPRG' was resolved to: 'Q9NXK6'
+#Unknown id: 'C19orf27' was resolved to: 'Q96GS6'
+#Unknown id: 'ZNF225' was resolved to: 'P18146'
+#Unknown id: 'FAM12B' was resolved to: 'P56851'
+#Unknown id: 'SLC17A2' was resolved to: 'Q06495'
+#Unknown id: 'NOV' was resolved to: 'Q9UIW2'
+#Unknown id: 'APC2' was resolved to: 'P02655'
+#Unknown id: 'AWP1' was resolved to: 'Q6FIF0'
+#Unknown id: 'C2orf31' was resolved to: 'Q13467'
+#Unknown id: 'C14orf102' was resolved to: 'Q9H7Z3'
+#Unknown id: 'GRIP1' was resolved to: 'Q96DT0'
+#Unknown id: 'C11orf30' was resolved to: 'Q7Z589'
+#Unknown id: 'CHL1' was resolved to: 'Q96FC9'
+#Unknown id: 'SAS' was resolved to: 'Q9NR45'
+#Unknown id: 'SAMD4' was resolved to: 'Q9UPU9'
+#Unknown id: 'KIAA0773' was resolved to: 'Q86XD5'
+#Unknown id: 'BIRC1' was resolved to: 'Q13075'
+#Unknown id: 'PTPRO' was resolved to: 'Q92729'
+#Unknown id: 'ANKRD25' was resolved to: 'Q63ZY3'
+#Unknown id: 'SIRPB2' was resolved to: 'Q9P1W8'
+#Unknown id: 'CSPG3' was resolved to: 'O14594'
+#Unknown id: 'C14orf58' was resolved to: 'Q9UPI3'
+#Unknown id: 'PTHR2' was resolved to: 'P49190'
+#Unknown id: 'KIAA1539' was resolved to: 'Q7L5A3'
+#Unknown id: 'KIAA0870' was resolved to: 'A2RUS2'
+#Unknown id: 'MYT1' was resolved to: 'Q99640'
+#Unknown id: 'C1orf10' was resolved to: 'Q9UBG3'
+#Unknown id: 'CENTD1' was resolved to: 'Q8WZ64'
+#Unknown id: 'KIAA1305' was resolved to: 'Q9P2P1'
+#Unknown id: 'PLIN' was resolved to: 'O60240'
+#Unknown id: 'VMD2' was resolved to: 'O76090'
+#Unknown id: 'ORC4L' was resolved to: 'O43929'
+#Unknown id: 'C10orf42' was resolved to: 'Q8NE86'
+#Unknown id: 'KAT3' was resolved to: 'Q6YP21'
+#Unknown id: 'PLGL' was resolved to: 'Q02325'
+#Unknown id: 'C4.4A' was resolved to: 'O95274'
+#Unknown id: 'MT1K' was resolved to: 'P13640'
+#Unknown id: 'KRTHB3' was resolved to: 'P78385'
+#Unknown id: 'EFG1' was resolved to: 'Q96RP9'
+#Unknown id: 'FEZ1' was resolved to: 'Q9Y250'
+#Unknown id: 'DVL1' was resolved to: 'P54792'
+#Unknown id: 'TACSTD1' was resolved to: 'P16422'
+#Unknown id: 'ARL7' was resolved to: 'P56559'
+#Unknown id: 'ZNFN1A4' was resolved to: 'Q9H2S9'
+#Unknown id: 'C20orf104' was resolved to: 'Q9BVI0'
+#Unknown id: 'PDZK3' was resolved to: 'O15018'
+#Unknown id: 'TSC' was resolved to: 'P55017'
+#Unknown id: 'PPAP2C' was resolved to: 'O43688'
+#Unknown id: 'LRP16' was resolved to: 'Q9BQ69'
+#Unknown id: 'C17orf31' was resolved to: 'Q86US8'
+#Unknown id: 'FGIF' was resolved to: 'Q8WVL7'
+#Unknown id: 'SMA3' was resolved to: 'Q15486'
+#Unknown id: 'NGFB' was resolved to: 'P01138'
+#Unknown id: 'MLC1' was resolved to: 'P12829'
+#Unknown id: 'GPR43' was resolved to: 'O15552'
+#Unknown id: 'MASS1' was resolved to: 'Q8WXG9'
+#Unknown id: 'DERP6' was resolved to: 'Q8TE02'
+#Unknown id: 'NID' was resolved to: 'P14543'
+#Unknown id: 'NALP1' was resolved to: 'Q9C000'
+#Unknown id: 'CDH19' was resolved to: 'Q96JQ0'
+#Unknown id: 'C20orf28' was resolved to: 'Q9Y4P9'
+#Unknown id: 'AQP6' was resolved to: 'Q9NSV5'
+#Unknown id: 'C21orf25' was resolved to: 'Q9Y426'
+#Unknown id: 'TIE' was resolved to: 'P35590'
+#Unknown id: 'C1QR1' was resolved to: 'Q9NPY3'
+#Unknown id: 'CD8B1' was resolved to: 'P10966'
+#Unknown id: 'RNF3' was resolved to: 'Q3KNV8'
+#Unknown id: 'PLCL4' was resolved to: 'O75038'
+#Unknown id: 'TTC15' was resolved to: 'Q8WVT3'
+#Unknown id: 'RGR' was resolved to: 'Q8IZJ4'
+#Unknown id: 'PAMCI' was resolved to: 'O75901'
+#Unknown id: 'SRGAP2' was resolved to: 'O43295'
+#Unknown id: 'KIAA0562' was resolved to: 'O60308'
+#Unknown id: 'KIAA0582' was resolved to: 'Q76N32'
+#Unknown id: 'CYB5' was resolved to: 'P00167'
+#Unknown id: 'CGI-143' was resolved to: 'Q9Y3E2'
+#Unknown id: 'PGCP' was resolved to: 'Q9Y646'
+#Unknown id: 'BTBD14B' was resolved to: 'Q96RE7'
+#Unknown id: 'C14orf120' was resolved to: 'Q8NEJ9'
+#Unknown id: 'CXorf6' was resolved to: 'Q13495'
+#Unknown id: 'FAT' was resolved to: 'Q14517'
+#Unknown id: 'TMEM8' was resolved to: 'Q9HCN3'
+#Unknown id: 'CAMP' was resolved to: 'Q96JM3'
+#Unknown id: 'CLN2' was resolved to: 'O14773'
+#Unknown id: 'ANKRD15' was resolved to: 'Q14678'
+#Unknown id: 'KIAA0999' was resolved to: 'Q9Y2K2'
+#Unknown id: 'HCNGP' was resolved to: 'Q9UHR5'
+#Unknown id: 'CROP' was resolved to: 'O95232'
+#Unknown id: 'AGTRL1' was resolved to: 'P35414'
+#Unknown id: 'TRERF1' was resolved to: 'Q05GC8'
+#Unknown id: 'CSN3' was resolved to: 'Q9UNS2'
+#Unknown id: 'PRKACA' was resolved to: 'P17252'
+#Unknown id: 'C1orf14' was resolved to: 'Q9BZQ2'
+#Unknown id: 'C9orf86' was resolved to: 'Q3YEC7'
+#Unknown id: 'BGR' was resolved to: 'Q9BXN2'
+#Unknown id: 'PTTG3' was resolved to: 'Q9NZH4'
+#Unknown id: 'BAI3' was resolved to: 'O60242'
+#Unknown id: 'C4orf16' was resolved to: 'Q63HQ0'
+#Unknown id: 'IL8RB' was resolved to: 'P25025'
+#Unknown id: 'THY28' was resolved to: 'Q9P016'
+#Unknown id: 'SLD5' was resolved to: 'Q9BRT9'
+#Unknown id: 'SFRS14' was resolved to: 'Q8IX01'
+#Unknown id: 'ZNF237' was resolved to: 'Q9UJ78'
+#Unknown id: 'GAPDS' was resolved to: 'O14556'
+#Unknown id: 'DELGEF' was resolved to: 'Q9UGK8'
+#Unknown id: 'PDIP' was resolved to: 'Q13087'
+#Unknown id: 'MAK' was resolved to: 'Q96L96'
+#Unknown id: 'C9orf13' was resolved to: 'Q4LDE5'
+#Unknown id: 'LRRN5' was resolved to: 'O75325'
+#Unknown id: 'CPA3' was resolved to: 'Q9UI42'
+#Unknown id: 'KIAA0469' was resolved to: 'Q9UJP4'
+#Unknown id: 'KRTHB1' was resolved to: 'Q14533'
+#Unknown id: 'ELA3B' was resolved to: 'P08861'
+#Unknown id: 'CSN2' was resolved to: 'P61201'
+#Unknown id: 'RCV1' was resolved to: 'P35243'

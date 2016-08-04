@@ -16389,7 +16389,7 @@ or orfs (\verb|"orfs"|) as the annotations.
 
 Let's assume we read gene rank to \verb|ranked_genes|.
 Now we create enrichment finder from annotation and graph. Afterwards we run it
-giving as arguments: gene ranking and a number of permuations
+giving as arguments: gene ranking and a number of permutations
 \begin{verbatim}
 >>> ef = GseaEnrichmentFinder(assocs, go_graph)
 >>> en = ef.find_enrichment_from_rank(ranked_genes, 1000)
@@ -16403,12 +16403,15 @@ enrichment is presented in Figure~\ref{fig:prettyhtml}.
 
 The list of parameters to \verb|find_enrichment| method is:
 \begin{itemize}
-\item \verb|gene_rank|
+\item \verb|gene_rank| 
 \item \verb|perms_no| - number of permutations used to compute p-value
 \item \verb|min_set_rank_intersection| - minimal number of genes common
 to the set and rank to take the set into account
 \item \verb|corr_power| - weight of correlation when computing
 enrichment score
+\item \verb|plot| - if \verb|True| for every term will add plot (in form of list) 
+		of ES depending on ranking (requires much more memory)
+\item \verb|seed| - seed for random methods generating permutations
 \end{itemize}
 
 \subsection{RankedParentChildEnrichmentFinder}
@@ -16452,6 +16455,8 @@ will be set as the population,
 \item "union"
 \item "intersection"
 \end{itemize}
+\item \verb|plot| - if \verb|True| for every term will add plot (in form of list) 
+		of ES depending on ranking (requires much more memory)
 \end{itemize}
 
 You can use these methods as follows:
@@ -16473,7 +16478,7 @@ or orfs (\verb|"orfs"|) as the annotations.
 
 Let's assume we read gene rank to \verb|ranked_genes|.
 Now we create enrichment finder from annotation and graph. Afterwards we run it
-giving as arguments: gene ranking, number of permuations and list of corrections with
+giving as arguments: gene ranking, number of permutations and list of corrections with
 FDR correction in it.
 \begin{verbatim}
 >>> ref = RankedEnrichmentFinder(anno, graph)
@@ -16504,7 +16509,7 @@ Additional arguments are:
 \item \verb|color_b| - the gradient finishing color,
 \item \verb|color_none| - color of irrelevant nodes.
 \end{itemize}
-The colors shoud be given in \verb|"#xxxxxx"| format, where \verb|x| is hex digit.
+The colors should be given in \verb|"#xxxxxx"| format, where \verb|x| is hex digit.
 \item \verb|"png"| - writes \verb|Enrichment| graphical representation to the png file.
 It needs \verb|pygraphviz| to be installed in order to work. In addition to arguments that
 can be specified for "gml" you can set the \verb|dpi| of the picture.
@@ -16524,11 +16529,12 @@ name : crystal cell primordium
 p-value : 0.00493912072185
 corrected p-values: {'bh_fdr': 0.9483111785961312, 'bonferroni': 0.9483111785961312}
 \end{verbatim}
+
 \item \verb|"html"|- writes \verb|Enrichment| to html file. Additional argument that
 can be specified is \verb|go_to_url|. It is prefix which is added to ontology
 term id to create links from term names to their detailed descriptions online.
 Example output can be seen in Figure~\ref{fig:prettyhtml}
-\end{itemize}
+
 
 \begin{htmlonly}
 \label{fig:prettyhtml}
@@ -16543,6 +16549,10 @@ Example output can be seen in Figure~\ref{fig:prettyhtml}
 \label{fig:prettyhtml}
 \end{figure}
 \end{latexonly}
+
+\item \verb|"tabular"| - writes enrichment results to tab-separated csv file, which
+contain same columns as html output
+\end{itemize}
 
 
 \chapter{Cookbook -- Cool things to do with it}

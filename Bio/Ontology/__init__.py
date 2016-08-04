@@ -97,12 +97,12 @@ class BaseEnrichmentFinder(EnrichmentFinder):
         
         self.ontology_graph = ontology_graph
         self.annotations = annotations
-        self.resolver = resolver_generator(iter(self.annotations.values()))
+        self.resolver = resolver_generator(self.annotations.itervalues())
     
 
     def _find_terms_associations(self, gene_list):
         terms_assocs = collections.defaultdict(set)
-        for gene in gene_list:
+        for gene in gene_list:                
             if gene in self.annotations:
                 enriched_terms = set()
                 for term in self.annotations[gene].associations:
@@ -251,7 +251,8 @@ class TermForTermEnrichmentFinder(BaseEnrichmentFinder):
                                              population_hits, population_size)
 
             entry = EnrichmentEntry(term, self.ontology_graph.get_term(term).name, pval)
-
+            entry.attrs = {"study_hits" : study_hits, 
+                            "population_hits" : population_hits, }
             result.append(entry)
         # Calculate chosen corrections
         BaseEnrichmentFinder._calculate_corrections(result, corrections)
@@ -408,19 +409,15 @@ class ParentChildEnrichmentFinder(BaseEnrichmentFinder):
         return sizes_dict
     
     
-    def _find_ranked_enrichment(self, gene_list, population_parents_sizes, corrections = [], method = "union"):
+    def _find_ranked_enrichment(self, gene_list, population_parents_sizes, method = "union"):
         """
-        Finds enrichment of specified group of genes. Method takes
-        the parent-child relationship into account when computing p-value.
-        Reference: http://bioinformatics.oxfordjournals.org/content/23/22/3024.long
+        helper function used by RankedEnrichmentFinder
         
         Parameters
         ----------
         gene_list - list of genes to study
-        corrections - list of corrections that should be applied to result.
-            Possible values are:
-                o "bonferroni" - Bonferroni correction,
-                o "bh_fdr" - Benjamin-Hochberg FDR correction.
+        population_parents_sizes = precomputed dictionary for each term containing 
+                    number of genes in population in parents of a term
         method - method of computing the p-values
             Possible values are:
                 o "union",
@@ -440,14 +437,22 @@ class ParentChildEnrichmentFinder(BaseEnrichmentFinder):
         resolved_list = self._resolve_ids(gene_list, warnings)
             
         terms_to_study_genes = self._find_terms_associations(resolved_list)
+        
+        #population_parents_sizes = self._parent_sizes(resolved_list, method)
 
         for term, study_set in terms_to_study_genes.items():
             study_hits = len(study_set)
             population_hits = len(self.terms_to_population_genes[term])
             study_set_list = []
+            
+            #if term == 'GO:0005634':
+                #print ("\n".join(sorted(self.terms_to_population_genes[term])))
+            
+            #pop_list = []
             # calculate sets of genes annotated to parents
             for parent in self.ontology_graph.get_parents(term):
                 study_set_list.append(terms_to_study_genes[parent])
+                #pop_list.append(self.terms_to_population_genes[parent])
             
             
             parents_study_size = self._count_op_items(study_set_list, set_op)
@@ -458,17 +463,13 @@ class ParentChildEnrichmentFinder(BaseEnrichmentFinder):
                                              population_hits, population_parents_size)
 
                 entry = EnrichmentEntry(term, self.ontology_graph.get_term(term).name, pval)
-                entry.attrs = {"study_hits" : study_hits, "parents_study_size": parents_study_size,
-                            "population_hits" : population_hits, "population_parents_size" : population_parents_size}
                 result.append(entry)
         
-        # Calculate chosen corrections
-        BaseEnrichmentFinder._calculate_corrections(result, corrections)
         
         # check for warnings
         if len(self.ontology_graph.cycles) > 0:
             warnings.append("Graph contains cycles: " + str(self.ontology_graph.cycles))
-        return Enrichment("parent_child_" + method, result, warnings, corrections)
+        return Enrichment("parent_child_" + method, result, warnings, [])
 
 class GseaEnrichmentFinder(BaseEnrichmentFinder):
     """
@@ -524,7 +525,7 @@ class GseaEnrichmentFinder(BaseEnrichmentFinder):
         return perms
 
     def find_enrichment(self, gene_rank, perms_no = 1000,
-                        min_set_rank_intersection = 2,  corr_power = 1., plot=False):
+                        min_set_rank_intersection = 2,  corr_power = 1., plot=False, seed=None):
         """
         Finds enrichment using GSEA method.
         
@@ -537,8 +538,9 @@ class GseaEnrichmentFinder(BaseEnrichmentFinder):
         - min_set_rank_intersection - minimal number of genes common to
           the set and rank to take the set into account
         - corr_power - weight of correlation when computing enrichment score
-        - plot - generate plot of ES depending on ranking
-        
+        - plot - if True for every term will add plot (in form of list) 
+		of score depending on ranking (requires much more memory)
+        - seed - seed for random methods generating permutations
         """
         
         sorted_gene_rank = sorted(gene_rank, key = lambda x: x[1], reverse = True)
@@ -553,6 +555,9 @@ class GseaEnrichmentFinder(BaseEnrichmentFinder):
         result = []
         resolved_list = self._resolve_ids(gene_list, warnings)
         enriched_terms = self._find_enriched_terms(resolved_list, min_set_rank_intersection)
+        
+        if seed:
+            random.seed(seed)
         perms = self._get_perms(resolved_list, perms_no)
         
         # Computing both: uncorrected and FDR corrected p-value
@@ -561,7 +566,7 @@ class GseaEnrichmentFinder(BaseEnrichmentFinder):
         all_nes = []
         
 
-        # Adjust correlations taking accoriding to p parameter
+        # Adjust correlations taking according to p parameter
         if corr_power != 1:
             adj_corr = [pow(abs(x), corr_power) for x in gene_corr]
         else:
@@ -653,6 +658,7 @@ class GseaEnrichmentFinder(BaseEnrichmentFinder):
                 enriched_terms[k] = v
         return enriched_terms
 
+
 class RankedParentChildEnrichmentFinder(BaseEnrichmentFinder):
     """
     Utility for finding enriched group of terms given list of genes ranked
@@ -688,38 +694,47 @@ class RankedParentChildEnrichmentFinder(BaseEnrichmentFinder):
         super(RankedParentChildEnrichmentFinder, self).__init__(annotations, ontology_graph,
                                                      resolver_generator)
     
-    def _get_half_results(self, resolved_list, ef, method, warnings):
+    def _get_half_results(self, resolved_list, ef, method, warnings, plot = False):
         list_slice = []
         results = collections.defaultdict(list)
 
         parent_sizes = ef._parent_sizes(resolved_list, method = method)
         for gene in resolved_list:
             list_slice.append(gene)
-            #slice_res = ef.find_enrichment(list_slice, method = method)
             slice_res = ef._find_ranked_enrichment(list_slice, parent_sizes, method = method)
             warnings += slice_res.warnings
-            for e in slice_res.entries:
-                results[e.id].append(e.p_value)
+            if plot:
+                for e in slice_res.entries:
+                    results[e.id].append(e.p_value)
+            else:
+                for e in slice_res.entries:
+                    if results[e.id] != []:
+                        if e.p_value < results[e.id][0]:
+                            results[e.id] = [e.p_value]
+                    else:
+                        results[e.id] = [e.p_value]
         return results
     
     def find_enrichment(self, gene_rank, side = "+", corrections = [],
-                                     rank_as_population = False, method = "union"):
+                                     rank_as_population = False, method = "union", plot=False):
         """
         Finds enrichment by applying parent-child analysis to list slices.
         
         Parameters
         ----------
-        - gene_rank
+        - gene_rank 
         - side - states which side of the rank (ordered by correlation) we are interested in
           o "+" - highest correlation
           o "-" - lowest correlation
           o "+/-" - both
-        - corrections - corrections that shuld be applied
+        - corrections - corrections that should be applied
         - rank_as_population - if set to True only the genes in the rank will be set as
             the population,
         - method - method of parent-child to use
           o "union"
           o "intersection"
+        - plot - if True for every term will add plot (in form of list) 
+		of ES depending on ranking (requires much more memory)
           
         """
         
@@ -737,38 +752,43 @@ class RankedParentChildEnrichmentFinder(BaseEnrichmentFinder):
             ef = ParentChildEnrichmentFinder(self.annotations, self.ontology_graph,
                                   resolver_generator = IdResolver.Resolver)
         
+        
         if side == "-":
-            all_results = self._get_half_results(resolved_list[::-1], ef, method, warnings)
+            all_results = self._get_half_results(resolved_list[::-1], ef, method, warnings, plot)
         elif side == "+":
-            all_results = self._get_half_results(resolved_list, ef, method, warnings)
+            all_results = self._get_half_results(resolved_list, ef, method, warnings, plot)
         elif side == "+/-":
-            minus_results = self._get_half_results(resolved_list[::-1], ef, method, warnings)
-            all_results = self._get_half_results(resolved_list, ef, method, warnings)
+            minus_results = self._get_half_results(resolved_list[::-1], ef, method, warnings, plot)
+            all_results = self._get_half_results(resolved_list, ef, method, warnings, plot)
             for k, v in minus_results.items():
                 all_results[k] += v
+            del minus_results
         else:
             raise ValueError('"{0}" is not correct side specification.'.format(side))
         
+        
+        if len(ef.ontology_graph.cycles) > 0:
+            warnings.append("Graph contains cycles: " + str(ef.ontology_graph.cycles))
+            
+        del ef
+        
         result = []
         for oid, p_vals in all_results.items():
-            min_pval = 1.0
-            plot = []
-            for pv in p_vals:
-                if pv < min_pval:
-                    min_pval = pv
-                plot.append(1 - pv)
+            min_pval = min([1.0]+p_vals)
+            if plot:
+                plot_list = [1 - pv for pv in p_vals]
+            else:
+                plot_list = None
             entry = EnrichmentEntry(oid, self.ontology_graph.get_term(oid).name,
                                           min_pval)
-            entry.attrs["plot"] = plot
+            entry.attrs["plot"] = plot_list
             entry.attrs["score"] = 1 - min_pval
             
             result.append(entry)
             
         BaseEnrichmentFinder._calculate_corrections(result, corrections)
         
-        if len(self.ontology_graph.cycles) > 0:
-            warnings.append("Graph contains cycles: " + str(self.ontology_graph.cycles))
-            
+
         return Enrichment("ranked parent-child", result, warnings, corrections)
 
 if __name__ == "__main__":

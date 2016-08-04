@@ -1,0 +1,24 @@
+This is Galaxy wrapper for Bio.Ontology package.
+
+###  Requirements:  ###
+This wrapper has no other requirements than biopython package and running local 
+Galaxy instance with Obo datatype ( tested on release_16.04 ). 
+
+###  Instalation on local Galaxy server:  ###
+
+1. Place biopython folder in GALAXY_DIR/tools
+2. Move gene_ontology.xml, run_enrichment.py, run_ranked_enrichment.py
+ to upper directory (biopython)
+3. Add tool to the toolpanel by adding to the GALAXY_DIR/config/tool_conf.xml
+ line:
+	<tool file="biopython/gene_ontology.xml" />
+4. Add Gaf datatype to you Galaxy by placing in 
+GALAXY_DIR/config/datatypes_conf.xml lines:
+inside <registration> tag:
+    <datatype extension="gaf" type="galaxy.datatypes.gaf:Gaf" subclass="True" 
+		display_in_upload="True" />  
+inside <sniffers> tag  (before text and tabular sniffers)
+    <sniffed type="galaxy.datatypes.gaf:Gaf"/>
+5. Create a link to gaf.py: GALAXY_DIR/lib/galaxy/datatypes/gaf.py
+6. Restart Galaxy server
+
