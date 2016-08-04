@@ -538,8 +538,9 @@ class GseaEnrichmentFinder(BaseEnrichmentFinder):
         - min_set_rank_intersection - minimal number of genes common to
           the set and rank to take the set into account
         - corr_power - weight of correlation when computing enrichment score
-        - plot - generate plot of ES depending on ranking (uses much more memory)
-        - seed - random seed for generating permutations
+        - plot - if True for every term will add plot (in form of list) 
+		of score depending on ranking (requires much more memory)
+        - seed - seed for random methods generating permutations
         """
         
         sorted_gene_rank = sorted(gene_rank, key = lambda x: x[1], reverse = True)
@@ -721,7 +722,7 @@ class RankedParentChildEnrichmentFinder(BaseEnrichmentFinder):
         
         Parameters
         ----------
-        - gene_rank
+        - gene_rank 
         - side - states which side of the rank (ordered by correlation) we are interested in
           o "+" - highest correlation
           o "-" - lowest correlation
@@ -732,7 +733,8 @@ class RankedParentChildEnrichmentFinder(BaseEnrichmentFinder):
         - method - method of parent-child to use
           o "union"
           o "intersection"
-        - plot - generate plot of score depending on ranking (uses much more memory)
+        - plot - if True for every term will add plot (in form of list) 
+		of ES depending on ranking (requires much more memory)
           
         """
         
